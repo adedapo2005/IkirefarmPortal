@@ -33,8 +33,30 @@ export function App() {
       if (roleParam) {
         setUserRole(roleParam);
       }
+      const routeParam = params.get('route');
+      if (routeParam) {
+        setCurrentRoute(routeParam);
+      }
     }
+
+    const syncRouteFromHash = () => {
+      const rawHash = window.location.hash.replace(/^#\/?/, '');
+      if (rawHash) {
+        setCurrentRoute(rawHash);
+      }
+    };
+
+    if (window.location.hash) {
+      syncRouteFromHash();
+    }
+    window.addEventListener('hashchange', syncRouteFromHash);
+    return () => window.removeEventListener('hashchange', syncRouteFromHash);
   }, []);
+
+  const navigateTo = (routeId: string) => {
+    setCurrentRoute(routeId);
+    window.location.hash = `#/${routeId}`;
+  };
 
   const handleSignInSuccess = (role: string, name: string) => {
     localStorage.setItem('daenem_auth', 'true');
@@ -42,12 +64,14 @@ export function App() {
     setUserName(name);
     setIsAuthenticated(true);
     setCurrentRoute('dashboard');
+    window.location.hash = '#/dashboard';
   };
 
   const handleRoleChange = (newRole: string, newName: string) => {
     setUserRole(newRole);
     setUserName(newName);
     setCurrentRoute('dashboard');
+    window.location.hash = '#/dashboard';
   };
 
   const handleSignOut = () => {
@@ -55,6 +79,7 @@ export function App() {
     setIsAuthenticated(false);
     setUserRole('owner');
     setCurrentRoute('dashboard');
+    window.location.hash = '';
     if (window.location.search) {
       window.history.replaceState({}, '', window.location.pathname);
     }
@@ -176,7 +201,7 @@ export function App() {
       userRole={userRole}
       userName={userName}
       currentRoute={currentRoute}
-      onNavigate={(routeId) => setCurrentRoute(routeId)}
+      onNavigate={navigateTo}
       onRoleChange={handleRoleChange}
       onSignOut={handleSignOut}
     >
@@ -184,28 +209,28 @@ export function App() {
       {currentRoute === 'dashboard' && renderHomeForRole()}
 
       {/* Attendant My Day Shift Desk Route */}
-      {currentRoute === 'myday' && <AttendantMyDayHome onNavigate={(routeId) => setCurrentRoute(routeId)} />}
+      {currentRoute === 'myday' && <AttendantMyDayHome onNavigate={navigateTo} />}
 
       {/* Executive Command Decisions */}
-      {currentRoute === 'owner-decisions' && <SituationRoom onNavigate={(routeId) => setCurrentRoute(routeId)} />}
+      {currentRoute === 'owner-decisions' && <SituationRoom onNavigate={navigateTo} />}
       
       {/* Customer Orders & Wholesale Commerce */}
       {isSalesRoute && <CustomerOrdersWorkspace />}
 
       {/* 7-Column Daily Pen Register & Flock Cohorts */}
-      {isFlockRoute && <DailyPenRegisterWorkspace onBackToDashboard={() => setCurrentRoute('dashboard')} />}
+      {isFlockRoute && <DailyPenRegisterWorkspace onBackToDashboard={() => navigateTo('dashboard')} />}
 
       {/* 5-Step Guided Chick Placement Wizard */}
       {currentRoute === 'flock-add' && (
         <AddFlockWorkspace 
-          onBackToFlocks={() => setCurrentRoute('flocks')}
-          onFlockCreated={() => setCurrentRoute('flocks')}
+          onBackToFlocks={() => navigateTo('flocks')}
+          onFlockCreated={() => navigateTo('flocks')}
         />
       )}
 
       {/* Egg Room & Cold Storage Inventory */}
       {isEggRoute && (
-        <EggRoomWorkspace onNavigateToOrders={() => setCurrentRoute('orders')} />
+        <EggRoomWorkspace onNavigateToOrders={() => navigateTo('orders')} />
       )}
 
       {/* Feed Mill, Grain Silos, and Formulations */}

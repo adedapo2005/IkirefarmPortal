@@ -1,0 +1,146 @@
+.console {
+  min-width: 0;
+}
+
+.flockForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(250px, .65fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.flockFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 18px;
+  min-width: 0;
+}
+
+.flockFields :global(.field) {
+  min-width: 0;
+}
+
+.flockFields :global(.field) > span {
+  color: #315f4d;
+}
+
+.flockFields :global(.field) input:focus,
+.flockFields :global(.field) select:focus,
+.flockFields :global(.field) textarea:focus {
+  border-color: #158365;
+  outline: 3px solid rgba(21, 131, 101, .12);
+  outline-offset: 1px;
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.fullWidth :global(small) {
+  color: #73877d;
+  font-size: .7rem;
+  line-height: 1.45;
+}
+
+.actionPane {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid #cfe1d7;
+  border-radius: 15px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(53, 157, 119, .12), transparent 42%),
+    linear-gradient(145deg, #fbfffc, #f0f8f3);
+  box-shadow: 0 10px 30px rgba(25, 74, 55, .055);
+}
+
+.actionPane::before {
+  width: 38px;
+  height: 3px;
+  border-radius: 99px;
+  background: #15906d;
+  content: "";
+}
+
+.actionPane :global(.form-note) {
+  margin: 0;
+  color: #5f776c;
+  line-height: 1.55;
+}
+
+.actionPane > button {
+  width: 100%;
+  justify-content: center;
+}
+
+@media (max-width: 1100px) {
+  .flockForm {
+    grid-template-columns: 1fr;
+  }
+
+  .actionPane {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .actionPane::before {
+    grid-column: 1 / -1;
+  }
+
+  .actionPane > button {
+    width: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .flockFields,
+  .actionPane {
+    grid-template-columns: 1fr;
+  }
+
+  .actionPane > button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .console *,
+  .console *::before,
+  .console *::after {
+    scroll-behavior: auto !important;
+  }
+}
+
+.placementBlocked {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid #e6d3a5;
+  border-left: 4px solid #b7822f;
+  border-radius: 13px;
+  color: #704d1b;
+  background: #fffaf0;
+}
+
+.placementBlocked > svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+.placementBlocked strong {
+  display: block;
+  font-size: .9rem;
+  font-weight: 800;
+  letter-spacing: -.012em;
+  color: #654316;
+}
+
+.placementBlocked p {
+  margin: 5px 0 0;
+  line-height: 1.6;
+  font-size: .81rem;
+  color: #725b39;
+}

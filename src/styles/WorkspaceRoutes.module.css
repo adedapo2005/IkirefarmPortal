@@ -1,0 +1,785 @@
+/* Route-level post-login completion layer.
+   Mounted only on the authenticated/review workspace shell. */
+
+.routeSurfaces {
+  --route-line: color-mix(in srgb, var(--border) 82%, var(--primary));
+  --route-soft: color-mix(in srgb, var(--canvas) 84%, #edf5ef);
+  --route-raised: #fff;
+  --route-gold: #c3a24d;
+  min-width: 0;
+}
+.routeSurfaces :global(.stack),
+.routeSurfaces :global(.grid2),
+.routeSurfaces :global(.grid3),
+.routeSurfaces :global(.project-layout),
+.routeSurfaces :global(.receipt-layout),
+.routeSurfaces :global(.dashboard-layout),
+.routeSurfaces :global(.profile-layout),
+.routeSurfaces :global(.configuration-layout),
+.routeSurfaces :global(.day-layout) {
+  min-width: 0;
+}
+.routeSurfaces :global(.filters) {
+  padding: 11px;
+  border: 1px solid rgba(18,89,69,.09);
+  border-radius: 14px;
+  background: var(--route-soft);
+}
+.routeSurfaces :global(.filters .filter-input) {
+  min-height: 43px;
+  border-color: rgba(18,89,69,.15);
+  background: #fff;
+}
+.routeSurfaces :global(.filters .filter-count) {
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(18,89,69,.07);
+  color: var(--primary);
+  font-weight: 700;
+}
+.routeSurfaces :global(.mini-list > button),
+.routeSurfaces :global(.record-row) {
+  min-height: 66px;
+  padding: 13px 11px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  transition: border-color .16s ease, background .16s ease, transform .16s ease, box-shadow .16s ease;
+}
+.routeSurfaces :global(.mini-list > button:hover),
+.routeSurfaces :global(.record-row:hover) {
+  border-color: rgba(18,89,69,.11);
+  background: linear-gradient(90deg, rgba(18,89,69,.055), rgba(18,89,69,.015));
+  box-shadow: 0 8px 20px rgba(13,48,40,.045);
+  transform: translateY(-1px);
+}
+.routeSurfaces :global(.list-symbol) {
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(18,89,69,.08);
+  border-radius: 12px;
+  background: linear-gradient(145deg, #f2f7ee, #e6efe0);
+  box-shadow: inset 0 1px 0 #fff;
+}
+.routeSurfaces :global(.setting-row) {
+  min-height: 68px;
+  padding: 14px 2px;
+  border-bottom: 1px solid rgba(18,89,69,.08);
+}
+.routeSurfaces :global(.setting-row:last-of-type) {
+  border-bottom: 0;
+}
+.routeSurfaces :global(.timeline-item) {
+  padding-left: 29px;
+  border-left-color: rgba(18,89,69,.16);
+}
+.routeSurfaces :global(.timeline-item::before) {
+  width: 11px;
+  height: 11px;
+  left: -6px;
+  border-color: #fff;
+  background: var(--primary);
+  box-shadow: 0 0 0 3px rgba(18,89,69,.08);
+}
+.routeSurfaces :global(.state-surface),
+.routeSurfaces :global(.empty-grid),
+.routeSurfaces :global(.spatial-empty),
+.routeSurfaces :global(.enterprise-grid-message) {
+  border: 1px dashed rgba(18,89,69,.2);
+  border-radius: 17px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(18,89,69,.06), transparent 16rem),
+    linear-gradient(150deg, #fff, #f5f9f6);
+  box-shadow: inset 0 1px 0 #fff;
+}
+.routeSurfaces :global(.state-surface > svg),
+.routeSurfaces :global(.empty-grid > svg),
+.routeSurfaces :global(.spatial-empty > svg) {
+  color: var(--primary);
+}
+.routeSurfaces :global(.auth-state),
+.routeSurfaces :global(.validation-summary),
+.routeSurfaces :global(.review-note),
+.routeSurfaces :global(.page-lab-note) {
+  border-radius: 11px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.65);
+}
+.routeSurfaces :global(.form-note) {
+  padding-left: 10px;
+  border-left: 2px solid rgba(18,89,69,.18);
+  line-height: 1.55;
+}
+.routeSurfaces :global(.field > span:first-child),
+.routeSurfaces :global(.field:not(:has(> span)) ) {
+  color: color-mix(in srgb, var(--ink) 78%, var(--primary));
+}
+.routeSurfaces :global(.field-error) {
+  color: #963d35;
+  font-weight: 650;
+}
+.routeSurfaces :global(.tabs-line) {
+  gap: 5px;
+  height: auto !important;
+  min-height: 48px;
+  padding: 5px !important;
+  border: 1px solid rgba(18,89,69,.1);
+  border-radius: 13px !important;
+  background: rgba(239,245,241,.72) !important;
+}
+.routeSurfaces :global(.tabs-line button) {
+  min-height: 38px;
+  padding-inline: 14px;
+  border: 1px solid transparent !important;
+  border-radius: 9px !important;
+}
+.routeSurfaces :global(.tabs-line button[data-state="active"]) {
+  border-color: rgba(18,89,69,.11) !important;
+  background: #fff !important;
+  box-shadow: 0 5px 15px rgba(13,48,40,.07) !important;
+}
+.routeSurfaces :global(.mobile-record) {
+  border-color: rgba(18,89,69,.11);
+  border-radius: 14px;
+  background: linear-gradient(150deg, #fff, #f7faf8);
+  box-shadow: 0 8px 22px rgba(13,48,40,.05);
+}
+.routeSurfaces :global(.mobile-record dl > div) {
+  padding: 7px;
+  border-radius: 8px;
+  background: rgba(239,245,241,.66);
+}
+
+/* Smart record creation and automated-form surfaces. */
+.routeSurfaces :global(.smart-form-studio) {
+  display: grid;
+  gap: 18px;
+  padding: clamp(18px, 2.2vw, 30px);
+  border: 1px solid var(--route-line);
+  border-radius: 21px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(195,162,77,.11), transparent 22rem),
+    linear-gradient(150deg, #fff, #f5f9f6);
+  box-shadow: 0 18px 46px rgba(13,48,40,.08);
+}
+.routeSurfaces :global(.smart-form-studio > header) {
+  display: grid;
+  gap: 8px;
+  max-width: 900px;
+  padding-bottom: 17px;
+  border-bottom: 1px solid rgba(18,89,69,.085);
+}
+.routeSurfaces :global(.smart-form-studio > header .eyebrow) {
+  color: var(--primary);
+}
+.routeSurfaces :global(.smart-record-grid) {
+  gap: 18px;
+}
+.routeSurfaces :global(.smart-record-grid > aside) {
+  border: 1px solid rgba(18,89,69,.12);
+  border-radius: 16px;
+  background: linear-gradient(160deg, #f0f6f2, #e8f1eb);
+  box-shadow: inset 0 1px 0 #fff;
+}
+.routeSurfaces :global(.smart-record-grid > aside dl) {
+  display: grid;
+  gap: 10px;
+}
+.routeSurfaces :global(.smart-record-grid > aside dl > *) {
+  overflow-wrap: anywhere;
+}
+.routeSurfaces :global(.smart-review) {
+  padding: 18px;
+  border: 1px solid rgba(18,89,69,.15);
+  border-radius: 14px;
+  background: linear-gradient(145deg, #f3f8f5, #fff);
+}
+.routeSurfaces :global(.smart-review dl) {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 8px;
+}
+.routeSurfaces :global(.smart-review dl > div) {
+  padding: 10px;
+  border-radius: 9px;
+  background: rgba(18,89,69,.045);
+}
+.routeSurfaces :global(.smart-review dt) {
+  color: var(--muted);
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.routeSurfaces :global(.smart-review dd) {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+}
+
+/* Camera, logs, messages, and operational workspaces. */
+.routeSurfaces :global(.camera-grid) {
+  min-width: 0;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 15px;
+}
+.routeSurfaces :global(.camera-frame) {
+  min-width: 0;
+  width: 100%;
+  min-height: 250px;
+  overflow: hidden;
+  border-color: rgba(18,89,69,.15);
+  border-radius: 17px;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(94,139,119,.16), transparent 8rem),
+    linear-gradient(145deg, #173b31, #0c2922);
+  color: #edf7f0;
+  box-shadow: 0 18px 40px rgba(7,34,27,.15), inset 0 1px 0 rgba(255,255,255,.08);
+}
+.routeSurfaces :global(.camera-frame header) {
+  border-bottom-color: rgba(255,255,255,.09);
+  color: rgba(235,246,239,.78);
+}
+.routeSurfaces :global(.camera-frame:hover) {
+  border-color: rgba(210,187,105,.4);
+  box-shadow: 0 24px 50px rgba(7,34,27,.2), inset 0 0 0 1px rgba(210,187,105,.12);
+}
+.routeSurfaces :global(.terminal-panel) {
+  overflow: hidden;
+  border: 1px solid rgba(120,164,147,.26);
+  border-radius: 17px;
+  background: #0a211c;
+  box-shadow: 0 20px 50px rgba(5,27,21,.2);
+}
+.routeSurfaces :global(.terminal-toolbar) {
+  padding: 13px 16px;
+  background: linear-gradient(180deg, #15382f, #102f28);
+  border-bottom-color: rgba(255,255,255,.09);
+}
+.routeSurfaces :global(.terminal-lines) {
+  min-height: 250px;
+  background:
+    linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+    #091f1a;
+  background-size: 100% 32px;
+}
+.routeSurfaces :global(.log-line) {
+  min-height: 34px;
+  border-bottom: 1px solid rgba(255,255,255,.045);
+}
+.routeSurfaces :global(.inbox-layout),
+.routeSurfaces :global(.chat-layout) {
+  overflow: hidden;
+  border-color: var(--route-line);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 16px 42px rgba(13,48,40,.07);
+}
+.routeSurfaces :global(.inbox-item) {
+  border: 1px solid transparent;
+  border-radius: 12px;
+}
+.routeSurfaces :global(.inbox-item:hover),
+.routeSurfaces :global(.inbox-item.active) {
+  border-color: rgba(18,89,69,.12);
+  background: linear-gradient(90deg, rgba(18,89,69,.08), rgba(18,89,69,.025));
+}
+.routeSurfaces :global(.chat-header),
+.routeSurfaces :global(.chat-composer) {
+  background: rgba(242,247,244,.8);
+}
+.routeSurfaces :global(.message > div) {
+  padding: 12px 14px;
+  border: 1px solid rgba(18,89,69,.08);
+  border-radius: 6px 14px 14px 14px;
+  background: #f7faf8;
+}
+
+/* Construction and treasury: preserve workflows, elevate hierarchy. */
+.routeSurfaces :global(.construction-route-tabs) {
+  position: sticky;
+  top: 84px;
+  z-index: 18;
+  border-color: rgba(18,89,69,.11);
+  background: #fff;
+  box-shadow: 0 9px 26px rgba(13,48,40,.06);
+}
+.routeSurfaces :global(.construction-route-tabs button) {
+  min-height: 58px;
+  transition: border-color .15s ease, background .15s ease, transform .15s ease;
+}
+.routeSurfaces :global(.construction-route-tabs button:hover) {
+  transform: translateY(-1px);
+}
+.routeSurfaces :global(.construction-route-tabs button.active) {
+  border-color: rgba(18,89,69,.12);
+  background: linear-gradient(145deg, #f0f6f2, #fff);
+  box-shadow: inset 0 3px var(--primary), 0 5px 14px rgba(13,48,40,.05);
+}
+.routeSurfaces :global(.construction-hero) {
+  overflow: hidden;
+  border-color: var(--route-line);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 94% 10%, rgba(195,162,77,.14), transparent 18rem),
+    linear-gradient(145deg, #fff, #f0f6f2);
+  box-shadow: 0 16px 40px rgba(13,48,40,.075);
+}
+.routeSurfaces :global(.construction-kpi-grid article),
+.routeSurfaces :global(.construction-source-grid article),
+.routeSurfaces :global(.construction-profile-grid article),
+.routeSurfaces :global(.construction-action-list button),
+.routeSurfaces :global(.inspection-board > button) {
+  border-color: rgba(18,89,69,.1);
+  background: linear-gradient(145deg, #fff, #f7faf8);
+  box-shadow: 0 7px 18px rgba(13,48,40,.04);
+}
+.routeSurfaces :global(.treasury-hero) {
+  overflow: hidden;
+  border-color: var(--route-line);
+  border-radius: 21px;
+  background:
+    radial-gradient(circle at 92% 8%, rgba(195,162,77,.15), transparent 20rem),
+    linear-gradient(145deg, #fff, #eff6f2);
+  box-shadow: 0 18px 46px rgba(13,48,40,.08);
+}
+.routeSurfaces :global(.treasury-tabs) {
+  padding: 6px;
+  border: 1px solid rgba(18,89,69,.1);
+  border-radius: 13px;
+  background: #eef4f0;
+}
+.routeSurfaces :global(.treasury-tabs button) {
+  min-height: 40px;
+  border-radius: 9px;
+}
+.routeSurfaces :global(.treasury-tabs button[aria-selected="true"]),
+.routeSurfaces :global(.treasury-tabs button.active) {
+  background: #fff;
+  color: var(--primary);
+  box-shadow: 0 5px 15px rgba(13,48,40,.07);
+}
+.routeSurfaces :global(.treasury-metric),
+.routeSurfaces :global(.treasury-terminal),
+.routeSurfaces :global(.treasury-section),
+.routeSurfaces :global(.treasury-chart) {
+  border-color: rgba(18,89,69,.1);
+  border-radius: 15px;
+  box-shadow: 0 9px 24px rgba(13,48,40,.045);
+}
+.routeSurfaces :global(.treasury-fixture-switch) {
+  border-radius: 13px;
+  background: #f1f6f3;
+}
+.routeSurfaces :global(.production-node),
+.routeSurfaces :global(.project-phase),
+.routeSurfaces :global(.person-card),
+.routeSurfaces :global(.lesson-card) {
+  border-color: rgba(18,89,69,.11);
+  border-radius: 14px;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+.routeSurfaces :global(.production-node:hover),
+.routeSurfaces :global(.project-phase:hover),
+.routeSurfaces :global(.person-card:hover),
+.routeSurfaces :global(.lesson-card:hover) {
+  transform: translateY(-2px);
+  border-color: rgba(18,89,69,.28);
+  box-shadow: 0 13px 30px rgba(13,48,40,.08);
+}
+
+/* Dashboard and integrated widgets. */
+.routeSurfaces :global(.home-context-grid) {
+  align-items: stretch;
+}
+.routeSurfaces :global(.home-context-grid > *) {
+  min-width: 0;
+}
+.routeSurfaces :global(.home-context-grid > section > .panel),
+.routeSurfaces :global(.home-context-grid > .panel),
+.routeSurfaces :global(.gateway-widget) {
+  height: 100%;
+}
+.routeSurfaces :global(.home-widget-guide) {
+  display: none;
+}
+.routeSurfaces :global(.home-system-strip) {
+  border-radius: 15px;
+  background: linear-gradient(145deg, #eef5f1, #f8faf9);
+}
+.routeSurfaces :global(.home-system-strip strong) {
+  color: var(--primary);
+}
+.routeSurfaces :global(.notice-feature) {
+  overflow: hidden;
+  border-radius: 20px;
+  box-shadow: 0 20px 48px rgba(13,48,40,.1);
+}
+.routeSurfaces :global(.dark-panel) {
+  border-color: rgba(226,205,132,.14);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(226,205,132,.12), transparent 17rem),
+    linear-gradient(145deg, #153d32, #0c2e26);
+  box-shadow: 0 20px 48px rgba(7,34,27,.16);
+}
+
+/* Portalled communication surfaces are unique to the authenticated workspace. */
+:global(.cc-composer) {
+  width: min(620px, 96vw) !important;
+  padding: 0 !important;
+  border-color: rgba(18,89,69,.14) !important;
+  background: linear-gradient(155deg, #fff, #f5f9f6) !important;
+  box-shadow: -24px 0 70px rgba(6,32,25,.17) !important;
+}
+:global(.cc-composer [data-slot="sheet-header"]) {
+  padding: 26px 58px 21px 25px;
+  border-bottom: 1px solid rgba(18,89,69,.1);
+}
+:global(.cc-composer-body) {
+  padding: 22px 25px 32px;
+}
+:global(.cc-preview) {
+  overflow: hidden;
+  border-color: rgba(18,89,69,.14) !important;
+  border-radius: 20px !important;
+  background: linear-gradient(150deg, #fff, #f6faf7) !important;
+  box-shadow: 0 34px 90px rgba(6,32,25,.22) !important;
+}
+:global(.cc-message-preview) {
+  border-radius: 14px !important;
+  box-shadow: inset 0 1px 0 #fff;
+}
+
+/* Responsive certification model. */
+@media (min-width: 1600px) {
+  .routeSurfaces :global(.home-context-grid) {
+    grid-template-columns: repeat(3,minmax(0,1fr));
+  }
+  .routeSurfaces :global(.home-command-grid) {
+    grid-template-columns: repeat(3,minmax(0,1fr));
+  }
+  .routeSurfaces :global(.camera-grid) {
+    grid-template-columns: repeat(4,minmax(0,1fr));
+  }
+}
+@media (max-width: 1280px) {
+  .routeSurfaces :global(.construction-route-tabs) {
+    top: 76px;
+  }
+  .routeSurfaces :global(.construction-route-tabs small) {
+    display: none;
+  }
+  .routeSurfaces :global(.home-command-grid) {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+  .routeSurfaces :global(.home-command-grid > :last-child) {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 1024px) {
+  .routeSurfaces :global(.construction-route-tabs) {
+    position: static;
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+  .routeSurfaces :global(.construction-route-tabs button) {
+    flex: 0 0 min(44vw, 210px);
+    scroll-snap-align: start;
+  }
+  .routeSurfaces :global(.home-widget-guide) {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: -5px 0 -6px;
+    color: var(--muted);
+    font-size: .76rem;
+    font-weight: 650;
+  }
+  .routeSurfaces :global(.home-context-grid) {
+    display: flex;
+    overflow-x: auto;
+    padding: 4px 2px 14px;
+    scroll-padding-inline: 2px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+  }
+  .routeSurfaces :global(.home-context-grid > *) {
+    flex: 0 0 min(76vw, 480px);
+    scroll-snap-align: start;
+  }
+  .routeSurfaces :global(.smart-record-grid) {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 760px) {
+  .routeSurfaces :global(.filters) {
+    padding: 9px;
+  }
+  .routeSurfaces :global(.tabs-line) {
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+  }
+  .routeSurfaces :global(.tabs-line button) {
+    min-width: max-content;
+    scroll-snap-align: start;
+  }
+  .routeSurfaces :global(.smart-form-studio) {
+    padding: 16px 13px;
+    border-radius: 16px;
+  }
+  .routeSurfaces :global(.smart-review dl) {
+    grid-template-columns: 1fr;
+  }
+  .routeSurfaces :global(.camera-grid) {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    scroll-snap-type: x mandatory;
+  }
+  .routeSurfaces :global(.camera-frame) {
+    flex: 0 0 min(82vw, 340px);
+    min-height: 220px;
+    scroll-snap-align: start;
+  }
+  .routeSurfaces :global(.home-command-grid) {
+    grid-template-columns: 1fr;
+  }
+  .routeSurfaces :global(.home-command-grid > :last-child) {
+    grid-column: auto;
+  }
+  .routeSurfaces :global(.home-context-grid > *) {
+    flex-basis: min(86vw, 390px);
+  }
+  .routeSurfaces :global(.home-system-strip) {
+    grid-template-columns: auto 1fr;
+  }
+  :global(.cc-composer) {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    border-radius: 20px 20px 0 0 !important;
+  }
+  :global(.cc-composer [data-slot="sheet-header"]) {
+    padding: 23px 53px 18px 18px;
+  }
+  :global(.cc-composer-body) {
+    padding: 18px 16px 26px;
+  }
+}
+@media (max-width: 480px) {
+  .routeSurfaces :global(.home-context-grid > *) {
+    flex-basis: calc(100vw - 34px);
+  }
+  .routeSurfaces :global(.construction-route-tabs button) {
+    flex-basis: 62vw;
+  }
+  .routeSurfaces :global(.mini-list > button),
+  .routeSurfaces :global(.record-row) {
+    align-items: flex-start;
+  }
+}
+
+/* Keyboard, motion, and contrast safeguards. */
+.routeSurfaces :global(button:focus-visible),
+.routeSurfaces :global(a:focus-visible),
+.routeSurfaces :global(input:focus-visible),
+.routeSurfaces :global(textarea:focus-visible),
+.routeSurfaces :global(select:focus-visible),
+:global(.cc-composer button:focus-visible),
+:global(.cc-preview button:focus-visible) {
+  outline: 3px solid #b58d2c;
+  outline-offset: 3px;
+}
+.routeSurfaces :global(button),
+.routeSurfaces :global(a),
+.routeSurfaces :global(summary) {
+  touch-action: manipulation;
+}
+@media (prefers-reduced-motion: reduce) {
+  .routeSurfaces :global(*),
+  :global(.cc-composer *),
+  :global(.cc-preview *) {
+    scroll-behavior: auto !important;
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+  .routeSurfaces :global(.home-context-grid),
+  .routeSurfaces :global(.camera-grid),
+  .routeSurfaces :global(.construction-route-tabs) {
+    scroll-snap-type: none;
+  }
+}
+@media (prefers-contrast: more) {
+  .routeSurfaces {
+    --route-line: currentColor;
+  }
+  .routeSurfaces :global(.panel),
+  .routeSurfaces :global(.btn),
+  .routeSurfaces :global(.field input),
+  .routeSurfaces :global(.field textarea),
+  .routeSurfaces :global(.field select) {
+    border-color: currentColor;
+  }
+}
+
+
+/* Stage 17 record-workspace correction.
+   The focused composer remains a drawer, but no longer erases the page context. */
+:global([data-slot="sheet-overlay"]:has(+ .master-record-sheet)) {
+  background: rgba(6,31,24,.24) !important;
+  backdrop-filter: blur(1.5px) saturate(.9);
+}
+:global(.master-record-sheet) {
+  width: min(760px,calc(100vw - 28px)) !important;
+  max-width: min(760px,calc(100vw - 28px)) !important;
+  height: 100dvh;
+  max-height: 100dvh !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+  border-left: 1px solid rgba(18,89,69,.17) !important;
+  background:
+    radial-gradient(circle at 100% 0%,rgba(204,178,84,.1),transparent 21rem),
+    linear-gradient(160deg,#fff,#f3f8f5) !important;
+  box-shadow: -24px 0 76px rgba(5,31,24,.2) !important;
+}
+:global(.master-record-sheet [data-slot="sheet-header"]) {
+  position: relative;
+  flex: 0 0 auto;
+  gap: 7px;
+  padding: 26px 62px 20px 26px;
+  border-bottom: 1px solid rgba(18,89,69,.1);
+  background: rgba(255,255,255,.88);
+}
+:global(.master-record-sheet [data-slot="sheet-title"]) {
+  color: #153a30;
+  font-size: clamp(1.15rem,2vw,1.45rem);
+  font-weight: 780;
+  letter-spacing: -.035em;
+}
+:global(.master-record-sheet [data-slot="sheet-description"]) {
+  color: #5a7067;
+  font-size: .76rem;
+  font-weight: 620;
+  letter-spacing: .035em;
+}
+:global(.record-workspace-toolbar) {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 18px;
+  border-bottom: 1px solid rgba(18,89,69,.1);
+  background: #edf5f0;
+}
+:global(.record-workspace-toolbar > div:first-child) {
+  display: grid;
+  gap: 2px;
+}
+:global(.record-workspace-toolbar strong) {
+  color: #173d32;
+  font-size: .83rem;
+  font-weight: 760;
+}
+:global(.record-workspace-toolbar small) {
+  color: #62786f;
+  font-size: .68rem;
+  font-weight: 630;
+}
+:global(.record-workspace-toolbar .btn) {
+  min-height: 36px;
+  background: #fff;
+}
+:global(.master-record-sheet > .master-record-form) {
+  display: grid !important;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  align-content: start;
+  gap: 16px !important;
+  margin: 0 !important;
+  padding: 22px 24px 34px !important;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: rgba(18,89,69,.25) transparent;
+}
+:global(.master-record-form .system-prefill),
+:global(.master-record-form .smart-textarea),
+:global(.master-record-form .record-workspace-error),
+:global(.master-record-form .record-workspace-note),
+:global(.master-record-form .record-workspace-review) {
+  grid-column: 1 / -1;
+}
+:global(.master-record-form .system-prefill) {
+  padding: 15px 17px;
+  border: 1px solid rgba(18,89,69,.12);
+  border-left: 3px solid #b8963f;
+  border-radius: 12px;
+  background: linear-gradient(135deg,#f1f7f3,#fff);
+  color: #284b40;
+}
+:global(.master-record-form .system-prefill p) {
+  margin: 4px 0 0;
+  color: #597068;
+}
+:global(.master-record-form .field) {
+  align-self: start;
+  color: #25493e;
+  font-size: .78rem;
+  font-weight: 680;
+}
+:global(.master-record-form .field input) {
+  min-height: 44px;
+  margin-top: 6px;
+  border-color: rgba(18,89,69,.17);
+  background: #fff;
+  color: #17382f;
+}
+:global(.master-record-form .record-workspace-error) {
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 3px solid #ad4c3f;
+  border-radius: 8px;
+  background: #fff2ef;
+  color: #773329;
+  font-weight: 680;
+}
+:global(.master-record-form .record-workspace-review) {
+  position: sticky;
+  bottom: -18px;
+  z-index: 2;
+  min-height: 46px;
+}
+:global(.master-record-form .record-workspace-note) {
+  margin: 0;
+  padding: 11px 13px;
+  border-radius: 10px;
+  background: rgba(18,89,69,.055);
+  color: #4c655c;
+  font-size: .72rem;
+  line-height: 1.55;
+}
+@media (max-width: 760px) {
+  :global([data-slot="sheet-overlay"]:has(+ .master-record-sheet)) {
+    background: rgba(6,31,24,.18) !important;
+  }
+  :global(.master-record-sheet) {
+    inset: auto 0 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: min(88dvh,820px);
+    max-height: 88dvh !important;
+    border: 1px solid rgba(18,89,69,.15) !important;
+    border-radius: 22px 22px 0 0;
+  }
+  :global(.master-record-sheet > .master-record-form) {
+    grid-template-columns: 1fr;
+    padding: 18px 17px 28px !important;
+  }
+  :global(.master-record-form .system-prefill),
+  :global(.master-record-form .smart-textarea),
+  :global(.master-record-form .record-workspace-error),
+  :global(.master-record-form .record-workspace-note),
+  :global(.master-record-form .record-workspace-review) {
+    grid-column: auto;
+  }
+  :global(.record-workspace-toolbar) {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

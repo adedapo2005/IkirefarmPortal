@@ -1,0 +1,59 @@
+/* Authenticated workspace branding only. */
+[data-experience="post-login-premium"] .portal-sidebar .official-brand {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  max-width: 205px;
+  min-height: 78px;
+  display: flex;
+  align-items: center;
+  overflow: visible;
+}
+[data-experience="post-login-premium"] .portal-sidebar .official-logo {
+  width: min(195px, 100%);
+  height: auto;
+  max-height: 84px;
+  object-fit: contain;
+  object-position: left center;
+  border-radius: 0;
+  box-shadow: none;
+  filter: drop-shadow(0 4px 9px rgba(13,55,38,.14));
+  animation: farm-postlogin-mark-arrive 750ms cubic-bezier(.21,.78,.29,1) both;
+  transition: filter 240ms ease, transform 240ms ease;
+}
+[data-experience="post-login-premium"] .portal-sidebar .official-brand:hover .official-logo {
+  filter: drop-shadow(0 0 9px rgba(188,147,63,.36)) drop-shadow(0 5px 9px rgba(13,55,38,.15));
+  transform: translateY(-1px);
+}
+[data-experience="post-login-premium"] .portal-sidebar[data-state="collapsed"] .official-brand {
+  min-height: 48px;
+  max-width: 48px;
+  justify-content: center;
+}
+[data-experience="post-login-premium"] .portal-sidebar[data-state="collapsed"] .official-logo {
+  width: 42px;
+  height: 42px;
+  max-height: 42px;
+  object-fit: contain;
+  object-position: left center;
+}
+[data-experience="post-login-premium"] .topbar {
+  background: #fff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+@keyframes farm-postlogin-mark-arrive {
+  from { opacity: .75; transform: translateY(5px) scale(.975); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (max-width: 1100px) {
+  [data-experience="post-login-premium"] .portal-sidebar .official-brand { min-height: 60px; }
+  [data-experience="post-login-premium"] .portal-sidebar .official-logo { width: min(168px,100%); max-height: 70px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-experience="post-login-premium"] .portal-sidebar .official-logo { animation: none; transition: none; transform: none; }
+}
+.reduce-motion [data-experience="post-login-premium"] .portal-sidebar .official-logo,
+[data-experience="post-login-premium"].reduce-motion .portal-sidebar .official-logo {
+  animation: none; transition: none; transform: none;
+}

@@ -1,0 +1,292 @@
+.weather { display: grid; gap: 18px; }
+.weatherHeading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.condition { display: flex; align-items: center; gap: 14px; }
+.symbol { display: grid; place-items: center; width: 60px; height: 60px; border-radius: 18px; color: #0d7564; background: #e8f5f0; flex-shrink: 0; }
+.condition strong { display: block; font-size: 36px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.condition small { display: block; margin-top: 6px; font-size: 13px; }
+.units { display: inline-flex; padding: 3px; gap: 2px; border: 1px solid #c9dcd5; border-radius: 9px; }
+.units button { border: 0; background: transparent; color: inherit; min-width: 32px; min-height: 30px; border-radius: 6px; cursor: pointer; }
+.units button[aria-pressed="true"] { background: #145c50; color: #fff; }
+.measures { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; margin: 0; }
+.measures dt { display: flex; align-items: center; gap: 5px; font-size: 13px; opacity: .8; }
+.measures dd { margin: 6px 0 0; font-weight: 650; font-size: 15px; }
+.source { display: flex; justify-content: space-between; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; opacity: .85; }
+.source button { display: inline-flex; align-items: center; gap: 5px; background: transparent; border: 0; color: inherit; padding: 5px; cursor: pointer; }
+.clockGrid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,150px),1fr)); gap: 12px; }
+.clock { border: 1px solid #c7dcd6; border-radius: 14px; padding: 14px; min-width: 0; background: #f5faf8; color: #153f39; }
+.clockTop { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; }
+.clock time { display: block; font-size: clamp(20px,2vw,28px); line-height: 1.2; letter-spacing: -.04em; font-weight: 650; font-variant-numeric: tabular-nums; margin-top: 14px; }
+.clock time small { font-size: 13px; letter-spacing: 0; margin-left: 4px; }
+.clockDate { display: block; margin: 5px 0 12px; font-size: 13px; }
+.clockWeather { display: flex; align-items: center; gap: 7px; font-size: 13px; min-height: 24px; }
+.clock[data-phase="night"] { background: #112b3b; color: #eef5f5; border-color: #214356; }
+.articles { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.articles li { padding: 12px 0; border-bottom: 1px solid #dbe5df; }
+.articles li:last-child { border-bottom: 0; }
+.articles a { display: flex; gap: 10px; align-items: flex-start; color: inherit; text-decoration: none; font-size: 14px; font-weight: 550; line-height: 1.5; }
+.articles a:hover { text-decoration: underline; }
+.articles a svg { flex-shrink: 0; margin-top: 3px; }
+.articles small { display: block; margin-top: 5px; font-size: 13px; font-weight: 400; opacity: .8; }
+.paging { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; font-size: 13px; }
+.paging button { min-height: 32px; padding: 5px 10px; border: 1px solid #c7dcd6; border-radius: 7px; background: transparent; color: inherit; cursor: pointer; }
+.paging button:disabled { opacity: .4; cursor: default; }
+.tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
+.tabs button { border: 1px solid #c7dcd6; border-radius: 7px; background: transparent; color: inherit; padding: 6px 9px; font-size: 13px; cursor: pointer; }
+.tabs button[aria-pressed="true"] { background: #145c50; color: #fff; border-color: #145c50; }
+.editorial { display: grid; align-content: start; gap: 12px; }
+.editorial h3 { margin: 0; font-size: 20px; line-height: 1.4; }
+.editorial p, .editorial blockquote { margin: 0; font-size: 16px; line-height: 1.65; }
+.editorial blockquote { border-left: 3px solid #278675; padding-left: 14px; }
+.editorial footer { font-size: 13px; opacity: .85; }
+.empty { display: flex; align-items: center; gap: 10px; min-height: 80px; font-size: 14px; line-height: 1.5; }
+.weather button:focus-visible,.articles a:focus-visible,.paging button:focus-visible,.tabs button:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+@media(max-width:400px) { .measures { grid-template-columns: repeat(2,minmax(0,1fr)); } .weatherHeading { flex-wrap: wrap; } .clock { padding: 11px; } }
+
+.localWeather { justify-self: start; border: 1px solid #c7dcd6; border-radius: 7px; color: inherit; background: transparent; min-height: 36px; padding: 6px 10px; cursor: pointer; }
+
+.clockWeather svg, .clockTop svg { flex-shrink: 0; }
+.clockWeather span, .clockDate { min-width: 0; overflow-wrap: anywhere; }
+
+.clock small { color: inherit; opacity: .85; }
+
+
+/* Premium post-login widget treatment. */
+.weather {
+  min-width: 0;
+}
+.symbol {
+  border: 1px solid rgba(18,89,69,.1);
+  background:
+    radial-gradient(circle at 34% 28%, #fff8cf, transparent 38%),
+    linear-gradient(145deg, #edf8f3, #dceee6);
+  box-shadow: inset 0 1px 0 #fff, 0 8px 20px rgba(13,48,40,.07);
+}
+.condition strong {
+  font-size: clamp(28px, 2.35vw, 38px);
+  letter-spacing: -.055em;
+}
+.units {
+  border-color: rgba(18,89,69,.14);
+  border-radius: 11px;
+  background: #f0f5f2;
+}
+.units button {
+  min-width: 35px;
+  min-height: 34px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+.units button[aria-pressed="true"] {
+  background: linear-gradient(180deg, #1d6c5a, #145c50);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 5px 13px rgba(18,89,69,.16);
+}
+.weather .units button {
+  min-width: 44px;
+  min-height: 44px;
+}
+.measures > div {
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid rgba(18,89,69,.085);
+  border-radius: 11px;
+  background: linear-gradient(145deg, #f7faf8, #eef5f1);
+}
+.measures dt {
+  color: #60736b;
+  opacity: 1;
+}
+.measures dt svg {
+  color: #1a7560;
+}
+.measures dd {
+  color: #183f35;
+  font-variant-numeric: tabular-nums;
+}
+.source {
+  padding-top: 11px;
+  border-top: 1px solid rgba(18,89,69,.085);
+  opacity: 1;
+  color: #64776f;
+}
+.source button,
+.localWeather {
+  min-height: 36px;
+  border: 1px solid rgba(18,89,69,.12);
+  border-radius: 9px;
+  background: #f5f8f6;
+  color: #175c4d;
+  font-weight: 650;
+}
+.weather .source button,
+.weather .localWeather {
+  min-height: 44px;
+}
+.source button:hover,
+.localWeather:hover {
+  border-color: rgba(18,89,69,.3);
+  background: #fff;
+}
+.clockGrid {
+  gap: 10px;
+}
+.clock {
+  position: relative;
+  overflow: hidden;
+  min-height: 146px;
+  border-color: rgba(18,89,69,.12);
+  border-radius: 15px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(195,162,77,.1), transparent 10rem),
+    linear-gradient(145deg, #f8fbf9, #edf5f1);
+  box-shadow: 0 7px 18px rgba(13,48,40,.045), inset 0 1px 0 #fff;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+.clock:hover {
+  transform: translateY(-2px);
+  border-color: rgba(18,89,69,.26);
+  box-shadow: 0 13px 28px rgba(13,48,40,.08);
+}
+.clockTop strong {
+  font-size: 13px;
+  letter-spacing: .01em;
+}
+.clock time {
+  font-size: clamp(20px, 1.7vw, 27px);
+}
+.clock[data-phase="night"] {
+  border-color: rgba(208,190,128,.16);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(221,199,120,.12), transparent 10rem),
+    linear-gradient(145deg, #15394b, #102b3a);
+  box-shadow: 0 10px 24px rgba(7,28,38,.14), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.articles {
+  gap: 5px;
+}
+.articles li {
+  padding: 0;
+  border-bottom: 0;
+}
+.articles a {
+  min-height: 54px;
+  padding: 10px 11px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  transition: border-color .15s ease, background .15s ease, transform .15s ease;
+}
+.articles a:hover {
+  border-color: rgba(18,89,69,.1);
+  background: linear-gradient(90deg, rgba(18,89,69,.065), rgba(18,89,69,.015));
+  text-decoration: none;
+  transform: translateX(2px);
+}
+.articles a svg {
+  color: #1b705d;
+}
+.articles small {
+  color: #66786f;
+  opacity: 1;
+}
+.paging {
+  padding-top: 9px;
+  border-top: 1px solid rgba(18,89,69,.075);
+}
+.paging button {
+  min-width: 44px;
+  min-height: 44px;
+  border-color: rgba(18,89,69,.13);
+  border-radius: 9px;
+  background: #f5f8f6;
+  color: #175c4d;
+  font-weight: 650;
+}
+.tabs {
+  padding: 5px;
+  border: 1px solid rgba(18,89,69,.09);
+  border-radius: 11px;
+  background: #f0f5f2;
+}
+.tabs button {
+  min-width: 44px;
+  min-height: 44px;
+  border-color: transparent;
+  border-radius: 8px;
+  font-weight: 650;
+}
+.tabs button[aria-pressed="true"] {
+  border-color: rgba(18,89,69,.14);
+  background: #fff;
+  color: #155c4d;
+  box-shadow: 0 5px 13px rgba(13,48,40,.07);
+}
+.editorial {
+  min-height: 150px;
+}
+.editorial h3 {
+  color: #183f35;
+  font-size: clamp(18px, 1.4vw, 22px);
+  letter-spacing: -.03em;
+}
+.editorial p,
+.editorial blockquote {
+  color: #50675e;
+}
+.editorial blockquote {
+  padding: 14px 15px;
+  border: 1px solid rgba(18,89,69,.09);
+  border-left: 3px solid #278675;
+  border-radius: 0 12px 12px 0;
+  background: linear-gradient(90deg, #eef6f2, #f9fbfa);
+}
+.empty {
+  padding: 14px;
+  border: 1px dashed rgba(18,89,69,.17);
+  border-radius: 12px;
+  background: #f7faf8;
+}
+.empty svg {
+  color: #28735f;
+}
+.editorialRetry,
+.widgetRetry {
+  justify-self: start;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid rgba(18,89,69,.18);
+  border-radius: 10px;
+  background: #f5f8f6;
+  color: #175c4d;
+  font-weight: 650;
+  cursor: pointer;
+}
+.editorialRetry:hover,
+.widgetRetry:hover { background: #fff; border-color: rgba(18,89,69,.32); }
+.editorialRetry:focus-visible,
+.widgetRetry:focus-visible { outline: 3px solid #b98835; outline-offset: 3px; }
+.updateStatus { margin: 0; color: #50675e; font-size: 14px; line-height: 1.5; }
+
+@media(max-width:760px) {
+  .weather { gap: 15px; }
+  .condition strong { font-size: 29px; }
+  .measures { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; }
+  .measures > div { padding: 9px 8px; }
+  .clock { min-height: 138px; padding: 12px; }
+  .clock time { font-size: 22px; }
+  .editorial { min-height: 132px; }
+}
+@media(max-width:430px) {
+  .weatherHeading { align-items: flex-start; }
+  .symbol { width: 52px; height: 52px; border-radius: 15px; }
+  .measures { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media(prefers-reduced-motion:reduce) {
+  .clock,
+  .articles a {
+    transition: none;
+  }
+  .clock:hover,
+  .articles a:hover {
+    transform: none;
+  }
+}

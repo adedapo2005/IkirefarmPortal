@@ -1,0 +1,172 @@
+.filters {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr);
+  align-items: end;
+  gap: 14px;
+}
+.filters :global(.field) { min-width: 0; }
+.filters :global(.field > span) { display: block; margin-bottom: 7px; font-weight: 700; color: #285742; }
+.filters :global(.field select),
+.filters :global(.field input) {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  font-size: 15px;
+}
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(10px, 1vw, 17px);
+}
+.metricCard {
+  min-width: 0;
+  min-height: 122px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+  padding: clamp(15px, 1.1vw, 24px);
+  border: 1px solid #c9ddcf;
+  border-radius: 14px;
+  background: #f5faf7;
+  box-shadow: 0 2px 9px rgb(16 70 41 / 5%);
+  overflow-wrap: anywhere;
+}
+.metricLabel { display: block; color: #355e49; font-size: 14px; line-height: 1.45; font-weight: 700; }
+.metricValue { display: block; color: #075439; font-size: clamp(19px, 1.3vw, 26px); line-height: 1.3; font-weight: 800; }
+.metricHint { display: block; color: #526d5c; font-size: 13px; line-height: 1.48; }
+.summaryRow { gap: 8px 20px; align-items: flex-start; padding-block: 14px 4px; border-top: 1px solid #d9e6dc; }
+.summaryRow :global(.metadata) { min-width: 0; line-height: 1.5; }
+@media (min-width: 701px) and (max-width: 1240px) {
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+  .filters { grid-template-columns: minmax(0, 1fr); gap: 13px; }
+  .filters :global(.field select),
+  .filters :global(.field input) { font-size: 16px; }
+  .metrics { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .metricCard { min-height: 0; padding: 15px 16px; gap: 6px; }
+  .metricValue { font-size: 21px; }
+  .metricLabel { font-size: 14px; }
+  .metricHint { font-size: 13px; }
+  .summaryRow { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+}
+@media (min-width: 2560px) {
+  .filters { grid-template-columns: minmax(0, 2.3fr) minmax(350px, 1fr); gap: 24px; }
+  .filters :global(.field > span) { font-size: 18px; }
+  .filters :global(.field select),
+  .filters :global(.field input) { min-height: 58px; font-size: 18px; padding: 12px 16px; }
+  .metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+  .metricCard { min-height: 152px; padding: 25px; gap: 12px; border-radius: 17px; }
+  .metricLabel { font-size: 18px; }
+  .metricValue { font-size: 31px; }
+  .metricHint { font-size: 17px; }
+  .summaryRow :global(.metadata) { font-size: 17px; }
+}
+.entryForm, .importSection { min-width: 0; width: min(100%, 960px); margin-inline: auto; }
+@media (min-width: 2560px) { .entryForm, .importSection { width: min(100%, 1200px); } }
+.entryForm :global(button:disabled) {
+  background: #e8f0eb;
+  color: #526e5f;
+  border-color: #c2d4c7;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.86;
+}
+
+/* Keep operational summaries scannable without hiding fields on narrow screens. */
+@media (max-width: 700px) {
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .metricCard { padding: 12px; gap: 4px; }
+  .metricValue { font-size: 19px; }
+}
+/* Larger controls and metadata for the Owner's wide, high-resolution display. */
+@media (min-width: 2560px) {
+  .entryForm, .importSection { width: min(100%, 1400px); font-size: 18px; }
+  .entryForm :global(input), .entryForm :global(textarea),
+  .entryForm :global(button), .entryForm :global(label),
+  .importSection :global(input), .importSection :global(textarea),
+  .importSection :global(button), .importSection :global(label) { font-size: 18px; }
+}
+
+/* FarmPortal operations retain their approved palette in every shell theme. */
+.farmPanel {
+  --primary: #087950;
+  --ink: #173d2d;
+  --muted: #486b59;
+  --border: #d2e5d7;
+  --panel: #fff;
+}
+.farmPanel :global(.chip.blue) { color: #075b3f; background: #e7f6ed; border-color: #c5e6d0; }
+
+.fieldlineDisclosure { min-width: 0; }
+.fieldlineDisclosure > summary { display: none; }
+@media (max-width: 700px) {
+  .fieldlineDisclosure > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding: 14px 16px; border: 1px solid #b7d9c3; border-radius: 12px; background: #edf8f0; color: #075439; cursor: pointer; font-size: 16px; font-weight: 750; }
+  .fieldlineDisclosure > summary span { font-size: 13px; font-weight: 600; }
+  .fieldlineDisclosure > summary:focus-visible { outline: 3px solid #087950; outline-offset: 3px; }
+  .fieldlineDisclosure[open] > summary { margin-bottom: 18px; }
+}
+
+@media (min-width: 2560px) {
+  .farmPanel { max-width: 2600px; margin-inline: auto; }
+}
+
+@media (min-width: 2560px) {
+  .workGrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+  .workGrid > div { min-width: 0; }
+  .workGrid .entryForm, .workGrid .importSection { width: 100%; margin-inline: 0; }
+}
+
+/* Task-first report navigation and a clear, solid entry surface. */
+.farmPanel { background: #fff; backdrop-filter: none; }
+.taskRail { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.taskRail button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  min-height: 46px; padding: 11px 15px; border: 1px solid #bfdcc9; border-radius: 10px;
+  color: #075b40; background: #eff9f2; font: inherit; font-weight: 750; cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+.taskRail button:hover { background: #dff3e5; border-color: #78bc94; }
+.taskRail button:focus-visible { outline: 3px solid #087950 !important; outline-offset: 3px; }
+.entryForm {
+  scroll-margin-top: 6rem;
+  padding: clamp(18px, 1.2vw, 28px);
+  border: 1px solid #c8dfd1; border-radius: 16px;
+  background: #f9fcfa; box-shadow: 0 8px 24px rgb(14 74 45 / 5%);
+}
+.importSection { scroll-margin-top: 6rem; }
+.entryEyebrow { display: flex; align-items: center; gap: 8px; color: #087950; font-size: 12px; font-weight: 800; letter-spacing: .08em; }
+.entrySteps { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.entrySteps li { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 9px; border: 1px solid #d9e9df; border-radius: 10px; color: #365c48; background: #fff; font-size: 13px; font-weight: 700; }
+.entrySteps li > span { display: grid; flex: none; place-items: center; width: 25px; height: 25px; border-radius: 8px; color: #087950; background: #e2f3e9; }
+.entrySteps .entryCurrent { border-color: #6cbb91; color: #075439; background: #eaf8ee; }
+.entrySteps .entryCurrent > span { color: #fff; background: #087950; }
+.entryForm :is(button,input,textarea,select):focus-visible { outline: 3px solid #087950 !important; outline-offset: 3px; }
+@media (max-width: 700px) {
+  .taskRail { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .taskRail button { padding: 10px 8px; font-size: 14px; }
+  .entryForm { padding: 16px; }
+  .entrySteps li { display: grid; gap: 5px; padding: 8px; font-size: 13px; }
+}
+@media (min-width: 2560px) {
+  .taskRail button { min-height: 54px; padding: 14px 18px; font-size: 18px; }
+  .entryEyebrow { font-size: 16px; }
+  .entrySteps li { padding: 13px; font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .taskRail button { transition: none; } }
+
+.handoverNote { display: none; }
+@media (min-width: 2560px) {
+  .handoverNote { display: grid; gap: 12px; max-width: 100%; margin-top: 24px; padding: 24px; border: 1px solid #c8dfd1; border-left: 4px solid #0a9762; border-radius: 14px; color: #204c36; background: #f2faf5; }
+  .handoverNote > div { display: flex; align-items: center; gap: 10px; color: #075b40; font-size: 19px; }
+  .handoverNote p { max-width: 65ch; margin: 0; font-size: 17px; line-height: 1.6; }
+  .handoverNote button { display: inline-flex; align-items: center; justify-self: start; gap: 8px; min-height: 48px; padding: 0; border: 0; color: #087950; background: transparent; font: inherit; font-size: 17px; font-weight: 750; cursor: pointer; }
+  .handoverNote button:focus-visible { outline: 3px solid #087950 !important; outline-offset: 3px; }
+}
+
+/* Report-state metadata remains readable on high-resolution operations screens. */
+@media (min-width: 2560px) {
+  .farmPanel :global(#daily-flock-history .metadata) { font-size: 18px; line-height: 1.5; }
+}

@@ -1,0 +1,97 @@
+.feedback {
+  --s25-ink: #143c2b;
+  --s25-muted: #45645a;
+  --s25-accent: #176b4e;
+  --s25-border: #bcdcc9;
+  --s25-symbol: #e5f5ea;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  min-width: 0;
+  max-width: 100%;
+  padding: 16px 18px;
+  border: 1px solid var(--s25-border);
+  border-inline-start: 4px solid var(--s25-accent);
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(18, 66, 44, .07), 0 1px 3px rgba(18, 66, 44, .04);
+  color: var(--s25-ink);
+  animation: s25-enter .22s cubic-bezier(.22,.84,.32,1) both;
+}
+.feedback[data-tone="warning"] {
+  --s25-ink: #50380f;
+  --s25-muted: #6b532e;
+  --s25-accent: #966313;
+  --s25-border: #e9d5ad;
+  --s25-symbol: #fff4dc;
+}
+.feedback[data-tone="error"] {
+  --s25-ink: #6b242b;
+  --s25-muted: #7f4147;
+  --s25-accent: #b13d45;
+  --s25-border: #ecc5c9;
+  --s25-symbol: #fff0f1;
+}
+.feedback[data-tone="info"] {
+  --s25-ink: #204653;
+  --s25-muted: #476773;
+  --s25-accent: #27718c;
+  --s25-border: #c4dfe9;
+  --s25-symbol: #eaf6fb;
+}
+.iconSurface {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: var(--s25-symbol);
+  color: var(--s25-accent);
+}
+.content { min-width: 0; display: grid; gap: 3px; overflow-wrap: anywhere; }
+.eyebrow {
+  margin: 0;
+  color: var(--s25-accent);
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 1.35;
+  letter-spacing: .01em;
+}
+.title {
+  display: block;
+  font-size: 16px;
+  font-weight: 760;
+  line-height: 1.4;
+  letter-spacing: -.01em;
+  color: var(--s25-ink);
+}
+.message {
+  margin: 2px 0 0;
+  color: var(--s25-muted);
+  font-size: 14px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+@keyframes s25-enter {
+  from { opacity: .6; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 640px) {
+  .feedback {
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 10px;
+    padding: 13px 14px;
+    border-radius: 13px;
+  }
+  .eyebrow { font-size: 13px; }
+  .title { font-size: 16px; }
+  .message { font-size: 14px; line-height: 1.55; }
+}
+@media (max-width: 360px) {
+  .feedback { gap: 9px; padding: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .feedback { animation: none; }
+}

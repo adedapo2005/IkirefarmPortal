@@ -1,0 +1,71 @@
+.suite {
+  display: grid;
+  grid-template-columns: minmax(0, .92fr) minmax(300px, 1.15fr) minmax(285px, .93fr);
+  gap: 18px;
+  margin: 20px 0;
+}
+
+.panel {
+  position: relative;
+  overflow: visible;
+  border: 1px solid color-mix(in srgb, var(--home-primary, #0f6b4f) 18%, #dbe8e2);
+  box-shadow: 0 18px 45px rgba(20, 64, 48, .08), 0 2px 8px rgba(20, 64, 48, .05);
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, var(--home-primary, #0f6b4f), var(--home-accent, #5aa487), transparent 88%);
+}
+
+.timeGrid { display: grid; gap: 12px; }
+.timeCard {
+  display: grid;
+  gap: 5px;
+  padding: 18px;
+  color: #f7fffb;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 18px;
+  background: linear-gradient(145deg, #0b5a42, #123f33 78%);
+  box-shadow: inset 0 1px rgba(255,255,255,.12), 0 12px 26px rgba(13,72,54,.18);
+}
+.timeCard span { display: flex; align-items: center; gap: 8px; color: #c9eadc; font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.timeCard span svg { width: 16px; }
+.timeCard time { font-size: clamp(1.65rem, 2.3vw, 2.35rem); font-weight: 760; letter-spacing: -.045em; font-variant-numeric: tabular-nums; }
+.timeCard small { color: #c7ddD4; }
+.permissionNote { margin: 12px 2px 0; color: #587066; font-size: .78rem; line-height: 1.45; }
+
+.calendarHead { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; }
+.calendarHead strong { display: flex; align-items: center; justify-content: center; gap: 8px; color: #183d31; }
+.calendarHead button, .todayButton { min-height: 44px; border: 1px solid #d8e5df; border-radius: 12px; background: #f7fbf9; color: #245b48; cursor: pointer; }
+.calendarHead button:hover, .todayButton:hover { border-color: #84b6a2; background: #edf7f2; }
+.calendarHead svg { width: 18px; }
+.weekdays, .calendarGrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.weekdays { margin-top: 14px; color: #6a7f76; font-size: .69rem; font-weight: 800; text-align: center; text-transform: uppercase; }
+.calendarGrid { margin-top: 7px; gap: 4px; }
+.calendarGrid span { display: grid; min-height: 34px; place-items: center; border-radius: 10px; color: #314b41; font-size: .82rem; font-variant-numeric: tabular-nums; }
+.calendarGrid span[data-today] { color: #fff; font-weight: 850; background: #0f6b4f; box-shadow: 0 7px 18px rgba(15,107,79,.24); }
+.todayButton { width: 100%; margin-top: 12px; font-weight: 750; }
+
+.calculator { display: grid; gap: 12px; }
+.calculatorDisplay { min-height: 86px; padding: 14px 16px; border: 1px solid #cfe0d8; border-radius: 16px; background: linear-gradient(145deg, #f2f8f5, #fff); text-align: right; }
+.calculatorDisplay small { display: block; min-height: 18px; color: #71847b; font-size: .72rem; }
+.calculatorDisplay output { display: block; min-width: 0; max-width: 100%; color: #183d31; font-size: clamp(1.25rem, 1.5vw, 1.65rem); line-height: 1.25; font-weight: 780; letter-spacing: -.03em; overflow-wrap: anywhere; white-space: normal; }
+.keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.keys button { display: inline-flex; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; gap: 6px; border: 1px solid #dce8e3; border-radius: 12px; background: #fff; color: #24483b; font-weight: 760; cursor: pointer; }
+.keys button:hover { border-color: #85b8a3; background: #f0f8f4; transform: translateY(-1px); }
+.keys button:focus-visible, .calendarHead button:focus-visible, .todayButton:focus-visible { outline: 3px solid rgba(15,107,79,.25); outline-offset: 2px; }
+.keys .clearKey { grid-column: span 3; background: #f5f7f6; color: #475b53; }
+.keys .clearKey svg, .keys .equalsKey svg { width: 15px; }
+.keys .operatorKey { color: #0f6b4f; background: #ecf7f2; }
+.keys .operatorKey[aria-pressed="true"] { color: #fff; background: #0f6b4f; }
+.keys .zeroKey { grid-column: span 2; }
+.keys .equalsKey { color: #fff; background: #0f6b4f; border-color: #0f6b4f; }
+.keys .equalsKey:hover { color: #fff; background: #0b5a42; }
+
+@media (max-width: 1180px) { .suite { grid-template-columns: repeat(2, minmax(0, 1fr)); } .suite > :last-child { grid-column: 1 / -1; } }
+@media (max-width: 720px) { .suite { grid-template-columns: 1fr; } .suite > :last-child { grid-column: auto; } }
+@media (max-width: 430px) { .suite { gap: 14px; } .calendarGrid span { min-height: 31px; } }
+@media (prefers-reduced-motion: reduce) { .keys button { transition: none; } .keys button:hover { transform: none; } }
