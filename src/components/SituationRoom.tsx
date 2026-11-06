@@ -1,7 +1,8 @@
 import React from 'react';
 import { 
   AlertTriangle, DollarSign, Activity, CheckCircle2, 
-  ArrowRight, ShieldAlert, FileText, ChevronRight, Clock
+  ArrowRight, ShieldAlert, FileText, ChevronRight, Clock,
+  BadgePercent, Bird, Egg, Wheat, Landmark, Users, Plus, ShieldCheck
 } from 'lucide-react';
 import { formatDualTime, formatNaira, formatCount } from '../lib/temporal.ts';
 
@@ -31,6 +32,87 @@ export const SituationRoom: React.FC<SituationRoomProps> = ({ onNavigate }) => {
         </div>
       </div>
 
+      {/* High-Priority Executive Quick Launch Dock */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <button
+          type="button"
+          onClick={() => onNavigate('orders')}
+          className="p-3.5 bg-white hover:bg-emerald-50 border border-emerald-200 hover:border-emerald-400 rounded-xl text-left transition shadow-2xs group cursor-pointer"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <BadgePercent className="w-5 h-5 text-[#008751] group-hover:scale-110 transition-transform" />
+            <span className="px-1.5 py-0.2 bg-rose-500 text-white rounded-full text-[10px] font-bold">14</span>
+          </div>
+          <span className="text-xs font-bold text-slate-900 block group-hover:text-[#008751]">Customer Orders</span>
+          <span className="text-[10px] text-slate-500 block">Wholesale & POS</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onNavigate('daily-register')}
+          className="p-3.5 bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 rounded-xl text-left transition shadow-2xs group cursor-pointer"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <Bird className="w-5 h-5 text-emerald-600 group-hover:scale-110 transition-transform" />
+            <span className="px-1.5 py-0.2 bg-amber-400 text-slate-900 rounded-full text-[10px] font-bold">7</span>
+          </div>
+          <span className="text-xs font-bold text-slate-900 block group-hover:text-[#008751]">Daily Pen Register</span>
+          <span className="text-[10px] text-slate-500 block">7-Column Ledger</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onNavigate('eggs')}
+          className="p-3.5 bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 rounded-xl text-left transition shadow-2xs group cursor-pointer"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <Egg className="w-5 h-5 text-amber-500 group-hover:scale-110 transition-transform" />
+            <span className="text-[10px] font-bold text-slate-400">16°C</span>
+          </div>
+          <span className="text-xs font-bold text-slate-900 block group-hover:text-[#008751]">Egg Cold Room</span>
+          <span className="text-[10px] text-slate-500 block">3,420 Crates Held</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onNavigate('feed')}
+          className="p-3.5 bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 rounded-xl text-left transition shadow-2xs group cursor-pointer"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <Wheat className="w-5 h-5 text-amber-700 group-hover:scale-110 transition-transform" />
+            <span className="text-[10px] font-bold text-emerald-700">9.7d</span>
+          </div>
+          <span className="text-xs font-bold text-slate-900 block group-hover:text-[#008751]">Feed Mill & Silos</span>
+          <span className="text-[10px] text-slate-500 block">Maize & Soya Stock</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onNavigate('treasury')}
+          className="p-3.5 bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 rounded-xl text-left transition shadow-2xs group cursor-pointer"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <Landmark className="w-5 h-5 text-blue-600 group-hover:scale-110 transition-transform" />
+            <span className="text-[10px] font-bold text-[#008751]">Live</span>
+          </div>
+          <span className="text-xs font-bold text-slate-900 block group-hover:text-[#008751]">Treasury Feeds</span>
+          <span className="text-[10px] text-slate-500 block">Providus & Zenith</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onNavigate('rbac')}
+          className="p-3.5 bg-white hover:bg-purple-50 border border-slate-200 hover:border-purple-300 rounded-xl text-left transition shadow-2xs group cursor-pointer"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <ShieldCheck className="w-5 h-5 text-purple-600 group-hover:scale-110 transition-transform" />
+            <span className="text-[10px] font-bold text-purple-700 font-mono">24 Perms</span>
+          </div>
+          <span className="text-xs font-bold text-slate-900 block group-hover:text-purple-700">Dynamic Roles</span>
+          <span className="text-[10px] text-slate-500 block">Custom RBAC Studio</span>
+        </button>
+      </div>
+
       {/* 4 Pillars Matrix */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
@@ -54,10 +136,10 @@ export const SituationRoom: React.FC<SituationRoomProps> = ({ onNavigate }) => {
                 <p className="text-slate-600 mt-0.5">Post-mortem review required by Attending Veterinarian.</p>
               </div>
               <button 
-                onClick={() => onNavigate('health')}
+                onClick={() => onNavigate('daily-register')}
                 className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-semibold shrink-0 cursor-pointer"
               >
-                Inspect Necropsy
+                Inspect Ledger
               </button>
             </div>
 
@@ -68,10 +150,10 @@ export const SituationRoom: React.FC<SituationRoomProps> = ({ onNavigate }) => {
                 <p className="text-slate-600 mt-0.5">3-way quote matrix validated. Awaiting Owner authorization.</p>
               </div>
               <button 
-                onClick={() => onNavigate('procurement')}
+                onClick={() => onNavigate('feed')}
                 className="px-3 py-1.5 bg-[#008751] hover:bg-[#007043] text-white rounded-lg font-semibold shrink-0 cursor-pointer"
               >
-                Review & Sign
+                Inspect Silo
               </button>
             </div>
 
@@ -82,10 +164,10 @@ export const SituationRoom: React.FC<SituationRoomProps> = ({ onNavigate }) => {
                 <p className="text-slate-600 mt-0.5">Farm Attendant applicant submitted verified NIN & WhatsApp.</p>
               </div>
               <button 
-                onClick={() => onNavigate('signup-admin')}
+                onClick={() => onNavigate('rbac')}
                 className="px-3 py-1.5 border border-slate-300 hover:bg-white text-slate-700 rounded-lg font-semibold shrink-0 cursor-pointer"
               >
-                Triage Account
+                Triage & Assign Role
               </button>
             </div>
           </div>
@@ -98,7 +180,13 @@ export const SituationRoom: React.FC<SituationRoomProps> = ({ onNavigate }) => {
               <DollarSign className="w-5 h-5 text-[#008751]" />
               <h2 className="text-sm font-bold text-slate-900">24-Hour Treasury Cash Bridge</h2>
             </div>
-            <span className="text-xs text-slate-400 font-mono-numbers">4 Banks Synchronized</span>
+            <button 
+              onClick={() => onNavigate('treasury')} 
+              className="text-xs text-[#008751] font-bold hover:underline cursor-pointer flex items-center gap-1"
+            >
+              <span>View Multi-Bank Feed</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
 
           <div className="mb-4">

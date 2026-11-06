@@ -4,6 +4,12 @@ import { AppShell } from './components/AppShell.tsx';
 import { SituationRoom } from './components/SituationRoom.tsx';
 import { AddFlockWorkspace } from './components/AddFlockWorkspace.tsx';
 import { RoleManagementWorkspace } from './components/RoleManagementWorkspace.tsx';
+import { CustomerOrdersWorkspace } from './components/CustomerOrdersWorkspace.tsx';
+import { DailyPenRegisterWorkspace } from './components/DailyPenRegisterWorkspace.tsx';
+import { EggRoomWorkspace } from './components/EggRoomWorkspace.tsx';
+import { FeedMillWorkspace } from './components/FeedMillWorkspace.tsx';
+import { BankingTreasuryWorkspace } from './components/BankingTreasuryWorkspace.tsx';
+import { PayrollWorkspace } from './components/PayrollWorkspace.tsx';
 import { Shield, Clock, AlertTriangle, ArrowRight, UserCheck } from 'lucide-react';
 import { formatDualTime } from './lib/temporal.ts';
 
@@ -85,6 +91,15 @@ export function App() {
     );
   }
 
+  // Routing Helper
+  const isCommandRoute = ['dashboard', 'owner-decisions', 'daily-brief', 'myday', 'bulletins'].includes(currentRoute);
+  const isSalesRoute = ['orders', 'order-create', 'dispatch', 'customers', 'pricing-catalog', 'point-of-sale'].includes(currentRoute);
+  const isFlockRoute = ['daily-register', 'flocks', 'houses', 'weight-sampling', 'lighting-program', 'breed-benchmarks'].includes(currentRoute);
+  const isEggRoute = ['eggs', 'egg-collections', 'egg-grading', 'egg-reconciliation'].includes(currentRoute);
+  const isFeedRoute = ['feed', 'feed-formulas', 'feed-silos', 'feed-quality', 'feed-consumption'].includes(currentRoute);
+  const isTreasuryRoute = ['treasury', 'banking', 'collections', 'reconciliation', 'expenses', 'general-ledger'].includes(currentRoute);
+  const isPayrollRoute = ['payroll', 'employees', 'attendance', 'leave', 'statutory', 'payslips'].includes(currentRoute);
+
   return (
     <AppShell
       userRole={userRole}
@@ -94,8 +109,15 @@ export function App() {
       onSignOut={handleSignOut}
     >
       {/* Dynamic Route Switching */}
-      {currentRoute === 'dashboard' && <SituationRoom onNavigate={(routeId) => setCurrentRoute(routeId)} />}
+      {isCommandRoute && <SituationRoom onNavigate={(routeId) => setCurrentRoute(routeId)} />}
       
+      {/* Customer Orders & Wholesale Commerce */}
+      {isSalesRoute && <CustomerOrdersWorkspace />}
+
+      {/* 7-Column Daily Pen Register & Flock Cohorts */}
+      {isFlockRoute && <DailyPenRegisterWorkspace onBackToDashboard={() => setCurrentRoute('dashboard')} />}
+
+      {/* 5-Step Guided Chick Placement Wizard */}
       {currentRoute === 'flock-add' && (
         <AddFlockWorkspace 
           onBackToFlocks={() => setCurrentRoute('flocks')}
@@ -103,14 +125,37 @@ export function App() {
         />
       )}
 
+      {/* Egg Room & Cold Storage Inventory */}
+      {isEggRoute && (
+        <EggRoomWorkspace onNavigateToOrders={() => setCurrentRoute('orders')} />
+      )}
+
+      {/* Feed Mill, Grain Silos, and Formulations */}
+      {isFeedRoute && <FeedMillWorkspace />}
+
+      {/* Finance, Corporate Treasury & Multi-Bank Feeds */}
+      {isTreasuryRoute && <BankingTreasuryWorkspace />}
+
+      {/* Human Resources, Biometric Attendance & Payroll Platform */}
+      {isPayrollRoute && <PayrollWorkspace />}
+
       {/* Full Admin Dynamic Role & Permission Creation Studio */}
       {currentRoute === 'rbac' && <RoleManagementWorkspace />}
 
-      {currentRoute !== 'dashboard' && currentRoute !== 'flock-add' && currentRoute !== 'rbac' && (
+      {/* Fallback Scoped Module Workspace for other leaves */}
+      {!isCommandRoute && 
+       !isSalesRoute && 
+       !isFlockRoute && 
+       !isEggRoute && 
+       !isFeedRoute && 
+       !isTreasuryRoute && 
+       !isPayrollRoute && 
+       currentRoute !== 'flock-add' && 
+       currentRoute !== 'rbac' && (
         <div className="premium-card rounded-2xl p-8 max-w-4xl">
           <div className="flex items-center gap-3 text-slate-900 font-bold text-lg mb-2">
             <Shield className="w-5 h-5 text-[#008751]" />
-            <span>Workspace: {currentRoute.replace('-', ' ').toUpperCase()}</span>
+            <span>Workspace Directorate: {currentRoute.replace('-', ' ').toUpperCase()}</span>
           </div>
           <p className="text-xs text-slate-500 mb-6">
             Operational workspace scoped for Balogun-Ikire Facility Unit. Enforcing strict conservation invariants, maker-checker authorization, and dual Lagos WAT/New York EST reporting.
@@ -118,10 +163,18 @@ export function App() {
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
-              onClick={() => setCurrentRoute('flock-add')}
-              className="btn-primary-glow px-4 py-2 text-white text-xs font-semibold rounded-lg cursor-pointer"
+              onClick={() => setCurrentRoute('orders')}
+              className="btn-primary-glow px-4 py-2 text-white text-xs font-semibold rounded-lg cursor-pointer flex items-center gap-1.5"
             >
-              Open 5-Step Guided Placement Flow
+              <span>Open Customer Orders</span>
+              <span className="px-1.5 py-0.2 bg-rose-500 rounded-full text-[10px] font-bold">14</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setCurrentRoute('daily-register')}
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm cursor-pointer"
+            >
+              Open Daily Pen Register
             </button>
             <button
               type="button"

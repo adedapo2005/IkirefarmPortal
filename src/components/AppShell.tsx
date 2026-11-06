@@ -5,7 +5,7 @@ import {
   Egg, Boxes, ShoppingCart, BadgePercent, Landmark, Users, 
   Wallet, HardHat, Truck, TrendingUp, MessageSquare, ShieldCheck,
   CheckCircle2, AlertTriangle, Info, Menu, X, Wheat, Syringe,
-  PanelLeftClose, PanelLeft, ArrowUpRight
+  PanelLeftClose, PanelLeft, ArrowUpRight, Plus, PackageCheck
 } from 'lucide-react';
 import { NAV_GROUPS, NavGroup, NavModule, NavLeaf } from '../lib/navigation.ts';
 import { formatDualTime } from '../lib/temporal.ts';
@@ -28,7 +28,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   children,
 }) => {
   // Navigation State: Smart Accordion (one open group by default)
-  const [openGroup, setOpenGroup] = useState<string>('home');
+  const [openGroup, setOpenGroup] = useState<string>('command-center');
   const [compactRailMode, setCompactRailMode] = useState<boolean>(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -64,7 +64,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   };
 
   // Find active group & leaf for breadcrumbs
-  let activeGroupTitle = 'Home';
+  let activeGroupTitle = 'Command Center';
   let activeLeafTitle = 'Situation Room';
   for (const grp of NAV_GROUPS) {
     for (const mod of grp.modules) {
@@ -117,8 +117,24 @@ export const AppShell: React.FC<AppShellProps> = ({
               </div>
             </div>
 
+            {/* Prominent High-Priority Customer Orders Access Button */}
+            <button
+              type="button"
+              onClick={() => {
+                onNavigate('orders');
+                setOpenGroup('sales-orders');
+              }}
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-[#005A36] text-xs font-bold transition shadow-2xs cursor-pointer ml-2"
+            >
+              <BadgePercent className="w-4 h-4 text-[#008751]" />
+              <span>Customer Orders</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] font-bold">
+                14
+              </span>
+            </button>
+
             {/* Contextual Breadcrumb Path */}
-            <div className="hidden md:flex items-center gap-1.5 text-xs text-slate-400 pl-4 border-l border-slate-200">
+            <div className="hidden xl:flex items-center gap-1.5 text-xs text-slate-400 pl-4 border-l border-slate-200">
               <span className="truncate max-w-[140px] text-slate-500">{activeGroupTitle}</span>
               <span>&gt;</span>
               <span className="text-slate-900 font-semibold truncate max-w-[200px]">{activeLeafTitle}</span>
@@ -131,7 +147,7 @@ export const AppShell: React.FC<AppShellProps> = ({
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input 
                 type="text"
-                placeholder="Search flocks, feed batches, POs, bank alerts (Cmd+K)..."
+                placeholder="Search orders, flocks, batches, POs, bank feeds (Cmd+K)..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-12 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-[#008751] focus:ring-1 focus:ring-[#008751] outline-hidden transition"
@@ -205,7 +221,7 @@ export const AppShell: React.FC<AppShellProps> = ({
             <div className="p-3.5 border-b border-[#007043] bg-[#005A36] flex items-center justify-between">
               <div>
                 <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-300 block">Facility Station</span>
-                <span className="text-xs font-bold text-white">Balogun-Ikire Main Complex</span>
+                <span className="text-xs font-bold text-white">Balogun-Ikire Complex</span>
               </div>
               <span className="text-[10px] bg-[#00A86B] text-white px-2 py-0.5 rounded-full font-bold">
                 Online
@@ -217,7 +233,7 @@ export const AppShell: React.FC<AppShellProps> = ({
             </div>
           )}
 
-          {/* Smart Accordion: The Canonical 9 Operational Groups */}
+          {/* Smart Accordion: Concise Executive ERP Directorates */}
           <nav className="flex-1 overflow-y-auto p-2 space-y-1 text-xs">
             {NAV_GROUPS.map((group) => {
               const isGroupOpen = openGroup === group.id;
@@ -249,7 +265,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 
               // Expanded Full Hierarchy Mode
               return (
-                <div key={group.id} className="rounded-xl overflow-hidden mb-1.5 transition-all">
+                <div key={group.id} className="rounded-xl overflow-hidden mb-1 transition-all">
                   
                   {/* Group Header Accordion Trigger */}
                   <button
@@ -277,7 +293,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                     <div className="bg-[#00472A] p-2 space-y-2 border-t border-[#003822]">
                       {group.modules.map((module) => (
                         <div key={module.id} className="space-y-0.5">
-                          <div className="px-2 py-1 text-[10px] uppercase font-bold text-emerald-300/90 tracking-wider flex items-center gap-1.5">
+                          <div className="px-2 py-0.5 text-[9px] uppercase font-bold text-emerald-300/80 tracking-wider flex items-center gap-1.5">
                             <span>{module.title}</span>
                           </div>
 
@@ -293,7 +309,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                                     onNavigate(leaf.id);
                                     setMobileMenuOpen(false);
                                   }}
-                                  className={`w-full px-2.5 py-2 rounded-lg flex items-center justify-between text-left transition cursor-pointer ${
+                                  className={`w-full px-2.5 py-1.5 rounded-lg flex items-center justify-between text-left transition cursor-pointer ${
                                     isActive
                                       ? 'bg-[#00A86B] text-white font-bold shadow-xs'
                                       : 'text-emerald-100/90 hover:bg-[#005A36] hover:text-white'
@@ -355,7 +371,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 
       </div>
 
-      {/* Mobile-First Bottom App Dock (Inspired by MyPoultryHub & SmartFlok) */}
+      {/* Mobile-First Bottom App Dock */}
       <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 py-2 px-4 z-40 flex items-center justify-around shadow-lg">
         <button
           onClick={() => onNavigate('dashboard')}
@@ -365,6 +381,16 @@ export const AppShell: React.FC<AppShellProps> = ({
         >
           <LayoutDashboard className="w-5 h-5 mb-0.5" />
           <span>Home</span>
+        </button>
+
+        <button
+          onClick={() => onNavigate('orders')}
+          className={`flex flex-col items-center text-[10px] font-medium transition cursor-pointer ${
+            currentRoute === 'orders' ? 'text-[#008751] font-bold' : 'text-slate-500'
+          }`}
+        >
+          <BadgePercent className="w-5 h-5 mb-0.5" />
+          <span>Orders</span>
         </button>
 
         <button
@@ -385,16 +411,6 @@ export const AppShell: React.FC<AppShellProps> = ({
         >
           <Egg className="w-5 h-5 mb-0.5" />
           <span>Eggs</span>
-        </button>
-
-        <button
-          onClick={() => onNavigate('orders')}
-          className={`flex flex-col items-center text-[10px] font-medium transition cursor-pointer ${
-            currentRoute === 'orders' ? 'text-[#008751] font-bold' : 'text-slate-500'
-          }`}
-        >
-          <BadgePercent className="w-5 h-5 mb-0.5" />
-          <span>Sales</span>
         </button>
 
         <button
