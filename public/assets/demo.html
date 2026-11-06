@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DAENEM Farms Official Sign-In Logo</title>
+  <link rel="stylesheet" href="daenem-farms-logo-live.css">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 32px;
+      font-family: Arial, Helvetica, sans-serif;
+      color: white;
+      background:
+        radial-gradient(circle at 24% 18%, rgba(223,197,111,.14), transparent 27%),
+        linear-gradient(135deg, #0a382f 0%, #0b5650 45%, #102c36 100%);
+    }
+    .stage {
+      width: min(980px, 100%);
+      padding: clamp(28px, 5vw, 72px);
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 28px;
+      background: rgba(4, 32, 31, .28);
+      box-shadow: 0 30px 90px rgba(0,0,0,.28);
+      backdrop-filter: blur(16px);
+    }
+    .note {
+      margin-top: 24px;
+      max-width: 680px;
+      color: rgba(255,255,255,.78);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    code { color: #fff4bd; }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <div class="daenem-farms-brand" aria-label="DAENEM Farms official logo">
+      <div class="daenem-farms-mark">
+        <img
+          class="daenem-farms-logo"
+          data-treatment="premium-live"
+          src="daenem-farms-official-logo.png"
+          alt="DAENEM Farms — Modern Agriculture. Naturally Better."
+        >
+      </div>
+    </div>
+    <p class="note">
+      This demo uses the historical premium live treatment. Change
+      <code>data-treatment="premium-live"</code> to
+      <code>original-float</code> or <code>stable-webflow</code> to inspect the other recovered treatments.
+      Reduced-motion preferences disable animation.
+    </p>
+  </main>
+</body>
+</html>

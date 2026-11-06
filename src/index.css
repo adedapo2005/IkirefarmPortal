@@ -1,0 +1,176 @@
+@import "tailwindcss";
+@import "./daenem-farms-logo-live.css";
+
+@layer base {
+  :root {
+    /* Exact Authoritative Typography Hierarchy */
+    --font-portal-body: 'Inter', system-ui, sans-serif;
+    --font-portal-heading: 'Manrope', system-ui, sans-serif;
+    --font-signin-hero: 'Space Grotesk', system-ui, sans-serif;
+    --font-signin-input: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    
+    /* Fieldline V6 Standard Tokens - Elevated Palette */
+    --color-emerald-primary: #008751;
+    --color-jade-active: #00A86B;
+    --color-forest-deep: #005A36;
+    --color-forest-dark: #003822;
+    --color-surface-white: #FFFFFF;
+    --color-surface-slate: #F8FAFC;
+    --color-border-hairline: #E2E8F0;
+    --color-border-subtle: #CBD5E1;
+
+    font-size: 16px;
+  }
+
+  /* Ultra-wide 2560px and 3200px+ Scaling Standards */
+  @media (min-width: 2560px) {
+    :root {
+      font-size: 18px;
+    }
+  }
+
+  @media (min-width: 3200px) {
+    :root {
+      font-size: 23px;
+    }
+  }
+
+  body {
+    font-family: var(--font-portal-body);
+    line-height: 1.55;
+    background-color: #F8FAFC;
+    color: #0F172A;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-portal-heading);
+    letter-spacing: -0.025em;
+  }
+
+  .font-signin-hero {
+    font-family: var(--font-signin-hero);
+  }
+
+  .font-signin-input {
+    font-family: var(--font-signin-input);
+  }
+
+  .font-mono-numbers {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ==========================================================================
+   ULTRA-PREMIUM BESPOKE MICRO-INTERACTIONS & LUXURY MOTION GRAMMAR
+   ========================================================================== */
+
+/* Official Logo Breathing Glow */
+@keyframes daenem-logo-halo {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px rgba(0, 168, 107, 0.3));
+    transform: translateY(0px);
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgba(0, 168, 107, 0.75));
+    transform: translateY(-1px);
+  }
+}
+
+.daenem-logo-glow {
+  animation: daenem-logo-halo 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.daenem-logo-glow:hover {
+  filter: drop-shadow(0 0 20px rgba(0, 168, 107, 0.9));
+  transform: scale(1.03) translateY(-1px);
+}
+
+/* Subtle Shimmer Sheen */
+@keyframes shimmer-sheen {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer-badge {
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer-sheen 3.5s infinite;
+}
+
+/* Premium Card Elevation & Depth Physics */
+.premium-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow, border-color;
+}
+
+.premium-card:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+  transform: translateY(-2px);
+}
+
+/* High-Intent Button Effects */
+.btn-primary-glow {
+  background: linear-gradient(135deg, #008751 0%, #007043 100%);
+  box-shadow: 0 2px 4px rgba(0, 135, 81, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+}
+
+.btn-primary-glow:hover {
+  background: linear-gradient(135deg, #00965a 0%, #007d4b 100%);
+  box-shadow: 0 6px 16px -2px rgba(0, 135, 81, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transform: translateY(-1.5px);
+}
+
+.btn-primary-glow:active {
+  transform: translateY(0.5px);
+  box-shadow: 0 1px 2px rgba(0, 135, 81, 0.2);
+}
+
+/* Interactive Icon Hover Physics */
+.icon-react {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.15s ease;
+}
+
+button:hover .icon-react, a:hover .icon-react {
+  transform: scale(1.12);
+}
+
+/* Clean Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

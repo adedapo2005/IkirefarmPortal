@@ -1,0 +1,44 @@
+{
+  "name": "DAENEM Farms Official Sign-In Logo Pack",
+  "purpose": "Portable exact logo asset plus historical live sign-in presentation behavior",
+  "authoritative_asset": {
+    "file": "daenem-farms-official-logo.png",
+    "format": "PNG",
+    "dimensions": "1320x800",
+    "alpha": true,
+    "tagline_embedded": "Modern Agriculture. Naturally Better.",
+    "sha256": "2c34f4adb338adf6825771e7af8d3f256944429ac08ff99d3644c939b224c213"
+  },
+  "webflow_asset": {
+    "site_id": "6aa859d938e137f2876c0edf",
+    "asset_id": "6aa9862d8d932f38b78dffd1",
+    "display_name": "logo.png",
+    "size_bytes": 851919
+  },
+  "historical_treatments": {
+    "premium_live": {
+      "reveal_duration": "0.8s",
+      "halo_duration": "7s",
+      "halo_delay": "1s",
+      "halo_iterations": 2,
+      "reduced_motion_disables": true
+    },
+    "original_float": {
+      "duration": "7.4s",
+      "vertical_travel": "4px",
+      "iterations": "infinite",
+      "reduced_motion_disables": true
+    },
+    "stable_webflow": {
+      "animation": "none",
+      "responsive": true
+    }
+  },
+  "responsive_widths": {
+    "main": "clamp(180px,13vw,280px)",
+    "medium": "clamp(160px,22vw,230px)",
+    "small": "clamp(145px,38vw,210px)",
+    "tiny": "clamp(132px,44vw,188px)",
+    "large": "clamp(210px,14vw,320px)"
+  }
+}
