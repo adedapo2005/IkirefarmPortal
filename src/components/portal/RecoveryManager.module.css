@@ -1,0 +1,58 @@
+.manager {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+.manager > summary {
+  cursor: pointer;
+  color: #075439;
+  font-size: 17px;
+  line-height: 1.45;
+}
+.manager :global(.field) { min-width: 0; }
+.manager form { max-width: 1400px; }
+.manager input:not([type="checkbox"]), .manager textarea { width: 100%; min-width: 0; }
+.manager :is(button, input, textarea, summary):focus-visible { outline: 3px solid #087950 !important; outline-offset: 3px; }
+.manager button { min-height: 44px; }
+.manager button:disabled { color: #456251 !important; background: #e4eee7 !important; border-color: #bfd3c5 !important; box-shadow: none !important; cursor: not-allowed; opacity: 1; }
+@media (min-width: 2560px) {
+  .manager { font-size: 18px; padding: 26px; }
+  .manager > summary { font-size: 21px; }
+  .manager :is(input, textarea, button, label) { font-size: 18px; }
+}
+@media (max-width: 700px) {
+  .manager { font-size: 15px; }
+  .manager :is(input:not([type="checkbox"]), textarea) { font-size: 16px; }
+}
+
+/* A calm investigation workspace with clear section boundaries. */
+.manager {
+  padding: clamp(18px, 1.3vw, 28px);
+  border: 1px solid #bfdcc9;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(14 74 45 / 5%);
+  backdrop-filter: none;
+}
+.manager > summary {
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #eaf8ee;
+}
+.manager > h4 { margin: 24px 0 10px; color: #075439; font-size: 17px; }
+.manager > ul { max-width: 1100px; padding-left: 22px; }
+.manager > ul > li { padding: 8px 0; }
+.manager form {
+  max-width: 1100px;
+  padding: 18px;
+  border: 1px solid #d6e9dc;
+  border-radius: 12px;
+  background: #f8fcf9;
+}
+.manager form h4 { margin: 0; color: #075439; }
+.manager form p { max-width: 75ch; }
+@media (min-width: 2560px) {
+  .manager > h4 { font-size: 21px; }
+  .manager form { padding: 24px; }
+}

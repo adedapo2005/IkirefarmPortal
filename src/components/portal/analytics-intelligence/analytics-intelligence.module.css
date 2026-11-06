@@ -1,0 +1,1360 @@
+/* Scoped to the analytics-intelligence components. Colours are the approved FarmPortal tokens plus Refined Teal (current period)
+   and Iris Violet (previous period). Layout tiers follow the effective viewport: mobile, tablet, laptop, wide and 4K. */
+
+/* KPI */
+
+.kpi {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #d9eadf;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #181d27;
+  box-shadow: 0 1px 2px rgb(24 29 39 / 6%);
+}
+
+/* Status is shown as a coloured edge and as the text badge, never as colour alone. */
+.kpi:not(.inline)[data-status="ready"] { box-shadow: inset 3px 0 0 #0d9488, 0 1px 2px rgb(24 29 39 / 6%); }
+.kpi:not(.inline)[data-status="stale"] { box-shadow: inset 3px 0 0 #f5a524, 0 1px 2px rgb(24 29 39 / 6%); }
+.kpi:not(.inline)[data-status="error"] { box-shadow: inset 3px 0 0 #d92d20, 0 1px 2px rgb(24 29 39 / 6%); }
+.kpi:not(.inline)[data-status="unavailable"] { box-shadow: inset 3px 0 0 #98a2b3, 0 1px 2px rgb(24 29 39 / 6%); }
+
+/* Inside an existing panel the KPI is a plain block: no second border, background or shadow. */
+.inline {
+  gap: 6px;
+  padding: 0 0 14px;
+  border: 0;
+  border-bottom: 1px solid #e4ece7;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.kpiHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.kpiTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px;
+  border: 1px solid #d9eadf;
+  border-radius: 999px;
+  background: #f4fbf7;
+  color: #181d27;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* Status is carried by the text label as well as this dot, so colour is never the only signal. */
+.badge::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dot, #475467);
+}
+
+.badge[data-status="ready"] { --dot: #12b76a; }
+.badge[data-status="stale"] { --dot: #f5a524; border-style: dashed; background: #fffaeb; }
+.badge[data-status="unavailable"] { --dot: #475467; border-style: dashed; }
+.badge[data-status="empty"] { --dot: #2563eb; background: #eff6ff; }
+.badge[data-status="loading"] { --dot: #475467; }
+.badge[data-status="error"] { --dot: #d92d20; background: #fef3f2; }
+
+.value {
+  margin: 2px 0 0;
+  color: #181d27;
+  font-size: clamp(1.75rem, 6vw, 2.25rem);
+  font-weight: 650;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.valueMissing {
+  margin: 2px 0 0;
+  color: #475467;
+  font-size: clamp(1.75rem, 6vw, 2.25rem);
+  font-weight: 650;
+  line-height: 1.12;
+}
+
+.meta,
+.source,
+.reason,
+.target {
+  margin: 0;
+  color: #475467;
+  font-size: 13px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.trend {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  color: #181d27;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.trend svg {
+  flex: none;
+  margin-top: 2px;
+  color: #475467;
+}
+
+.trend[data-tone="positive"] svg { color: #12b76a; }
+.trend[data-tone="negative"] svg { color: #d92d20; }
+
+.drilldown {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  color: #008751;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.drilldown:focus-visible,
+.button:focus-visible,
+.segment:focus-visible,
+.seriesButton:focus-visible,
+.linkButton:focus-visible,
+.stepButton:focus-visible {
+  outline: 3px solid rgb(0 168 107 / 45%);
+  outline-offset: 2px;
+}
+
+.skeleton {
+  height: 14px;
+  border-radius: 6px;
+  background: #dff7ea;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% { opacity: 0.55; }
+}
+
+/* Settle: a short fade and rise for a newly selected day readout and a tooltip that has just appeared. */
+@keyframes settle {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Trend chart */
+
+/* Trend card, "Editorial precision": a mineral-white canvas, graphite type, emerald as a controlled accent, teal and violet for the series.
+   Order matters: the mobile order is the base; tablet and up move the supporting figures and the chart column into their places. */
+
+.chart {
+  --ink: #181d27;
+  --graphite: #101828;
+  --muted: #475467;
+  --line: #e4ece7;
+  --mineral: #f8faf8;
+  --brand: #008751;
+  --emerald: #12b76a;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur-fast: 140ms;
+  --dur-base: 200ms;
+  --teal: #0d9488;
+  --violet: #6554d9;
+  --cobalt: #2563eb;
+  --champagne: #fbf6e9;
+  --champagne-line: #eadfc2;
+  --tangerine: #f97316;
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+  container: trend / inline-size;
+  padding: 18px;
+  border: 1px solid #dcebe2;
+  border-radius: 20px;
+  background: #ffffff;
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgb(24 29 39 / 6%), 0 18px 40px -30px rgb(0 135 81 / 30%);
+}
+
+/* Header: scope, title and period on the left, controls on the right from tablet up. */
+
+.chartHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: end;
+  gap: 14px;
+  min-width: 0;
+}
+
+.titleBlock {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.eyebrow {
+  margin: 0;
+  /* Deeper than the brand green so the small caps text keeps 4.5:1 on the mineral panel as well as white. */
+  color: #006b43;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.chartTitle {
+  margin: 0;
+  color: var(--graphite);
+  font-size: 24px;
+  font-weight: 760;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.subtitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.freshChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #ecfdf3;
+  color: #067647;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.freshChip::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--emerald);
+}
+
+.freshChip[data-state="unverified"] {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.freshChip[data-state="unverified"]::before {
+  background: #d92d20;
+}
+
+.freshChip[data-state="synthetic"] {
+  background: #eef2ff;
+  color: #3730a3;
+}
+
+.freshChip[data-state="synthetic"]::before {
+  background: var(--violet);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  background: #eef3ef;
+}
+
+.segment,
+.seriesButton,
+.button,
+.linkButton {
+  font: inherit;
+  cursor: pointer;
+}
+
+.segment {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 600;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+
+@media (hover: hover) {
+  .segment:hover:not([aria-pressed="true"]) {
+    background: #ffffff;
+    color: var(--ink);
+    box-shadow: 0 1px 2px rgb(16 24 40 / 10%);
+  }
+}
+
+.segment:active {
+  transform: scale(0.97);
+}
+
+.segment:active:not([aria-pressed="true"]) {
+  background: #e4ece7;
+}
+
+.segment[aria-pressed="true"] {
+  background: var(--graphite);
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgb(16 24 40 / 22%);
+}
+
+@media (hover: hover) {
+  .segment[aria-pressed="true"]:hover {
+    background: #1d2939;
+  }
+}
+
+.seriesGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.seriesButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--ink);
+  font-weight: 600;
+  transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+
+.seriesButton[aria-pressed="true"] {
+  border-color: #b7e3d3;
+  background: #f0fbf6;
+}
+
+.seriesButton[aria-pressed="false"] {
+  color: var(--muted);
+}
+
+/* A series that cannot be hidden (the last one visible) reads as locked: dashed outline and a muted label, with its swatch still in colour. */
+.seriesButton:disabled {
+  border-style: dashed;
+  background: #f9fafb;
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .seriesButton:hover:not(:disabled) {
+    border-color: #98a2b3;
+  }
+
+  .seriesButton[aria-pressed="true"]:hover:not(:disabled) {
+    border-color: #6fc9a6;
+    background: #e6f7ee;
+  }
+}
+
+.seriesButton:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.swatch {
+  display: inline-block;
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--teal);
+}
+
+.swatch[data-series="previous"] {
+  background: var(--violet);
+}
+
+.seriesButton[aria-pressed="false"] .swatch {
+  background: #c4cbd4;
+}
+
+.stale {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  background: #fffaeb;
+  color: #93370d;
+  font-size: 13px;
+}
+
+/* Hero and secondary figures: one primary total, quiet supporting figures, and no nested boxes beyond the tiles themselves. */
+
+.comparison {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.caption {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.comparisonList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  min-width: 0;
+}
+
+.comparisonItem {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 14px 16px 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.comparisonItem::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  border-radius: 2px;
+  background: #98a2b3;
+}
+
+.comparisonItem[data-accent="current"]::before { background: var(--emerald); }
+.comparisonItem[data-accent="previous"]::before { background: var(--violet); }
+.comparisonItem[data-accent="change"]::before { background: var(--cobalt); }
+.comparisonItem[data-accent="target"]::before { background: var(--tangerine); }
+
+.comparisonItem dt {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.comparisonItem dd {
+  margin: 0;
+  color: var(--graphite);
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.comparisonItem[data-accent="current"] dd {
+  font-size: 40px;
+  font-weight: 780;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.comparisonItem[data-accent="change"] dd {
+  color: #1d4ed8;
+  font-size: 20px;
+}
+
+.heroRow {
+  order: 1;
+  min-width: 0;
+}
+
+.secondaryRow {
+  order: 3;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.coverageTile {
+  display: grid;
+  gap: 6px;
+  align-content: center;
+  padding: 14px 16px;
+  border: 1px solid var(--champagne-line);
+  border-radius: 16px;
+  background: var(--champagne);
+}
+
+.coverageLabel {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.coverageValue {
+  color: var(--graphite);
+  font-size: 22px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.coverageBar {
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--champagne-line);
+  overflow: hidden;
+}
+
+.coverageBar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #00a86b 0%, #0d9488 100%);
+}
+
+/* Body: the plot leads; the rail carries the selected day and the observed range beside it. */
+
+.body {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  order: 2;
+}
+
+.plotColumn,
+.sideColumn {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  align-content: start;
+}
+
+.plot {
+  width: 100%;
+  min-width: 0;
+  height: 220px;
+  padding: 8px 10px 4px 2px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbf9 100%);
+  transition: border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
+}
+
+/* The plot is the main pointer target: a quiet lift on hover, and a visible ring while focus is inside it. */
+@media (hover: hover) {
+  .plot:hover {
+    border-color: #b7e3d3;
+    box-shadow: 0 14px 28px -22px rgb(0 107 67 / 60%);
+  }
+}
+
+.plot:focus-within {
+  border-color: #006b43;
+  box-shadow: 0 0 0 3px rgb(0 107 67 / 22%);
+}
+
+.plot :global(.recharts-wrapper) {
+  cursor: crosshair;
+}
+
+/* Loading placeholder: the same box as the plot, pulsing. It is hidden from assistive technology; the status panel above it speaks. */
+.plotSkeletonBar {
+  display: block;
+  height: 100%;
+  border-radius: 12px;
+  background: #eef6f1;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.plot :global(.recharts-cartesian-axis-tick-value) {
+  font-variant-numeric: tabular-nums;
+}
+
+.tooltip {
+  display: grid;
+  gap: 6px;
+  min-width: 150px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--graphite);
+  box-shadow: 0 12px 26px -14px rgb(16 24 40 / 50%);
+  color: #ffffff;
+  animation: settle var(--dur-base) var(--ease-out);
+  font-size: 13px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+.tooltipDate {
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgb(255 255 255 / 18%);
+  font-weight: 650;
+}
+
+.tooltipRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+}
+
+/* Selected-day inspector: a light panel with a brand top rule, so it reads as part of the page rather than a dark slab. */
+
+.inspector {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--mineral);
+}
+
+.inspector::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--emerald) 0%, var(--teal) 55%, var(--violet) 100%);
+}
+
+.inspectorReadout {
+  display: grid;
+  gap: 8px;
+  grid-column: 1 / -1;
+  order: -1;
+  min-width: 0;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.readoutBody {
+  display: grid;
+  gap: 8px;
+  animation: settle var(--dur-base) var(--ease-out);
+}
+
+.inspectorDate {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+}
+
+.inspectorDate strong {
+  color: var(--graphite);
+  font-size: 26px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+
+.readoutRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+}
+
+.readoutRow .swatch {
+  margin: 0;
+}
+
+.readoutRow::before {
+  display: none;
+}
+
+.readoutChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: start;
+  padding: 4px 10px;
+  border: 1px solid #d0d5dd;
+  border-radius: 999px;
+  background: #f2f4f7;
+  color: #344054;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.readoutChip[data-tone="favourable"] { color: #067647; background: #ecfdf3; border-color: #abefc6; }
+.readoutChip[data-tone="unfavourable"] { color: #b42318; background: #fef3f2; border-color: #fecdca; }
+.readoutChip[data-tone="neutral"] { color: #344054; background: #f2f4f7; border-color: #d0d5dd; }
+
+.stepButton,
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid #d0d5dd;
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+
+@media (hover: hover) {
+  .stepButton:hover:not([aria-disabled="true"]) {
+    border-color: #98a2b3;
+    background: #f9fafb;
+    box-shadow: 0 1px 2px rgb(16 24 40 / 8%);
+  }
+}
+
+/* Pressed: the button sinks 1px and darkens, so the press registers without any motion needed to see it. */
+.stepButton:active:not([aria-disabled="true"]) {
+  transform: translateY(1px);
+  border-color: #98a2b3;
+  background: #eef3ef;
+  box-shadow: none;
+}
+
+.stepButton[aria-disabled="true"],
+.stepButton[aria-disabled="true"]:hover {
+  background: #f9fafb;
+  color: #98a2b3;
+  cursor: default;
+}
+
+/* Focus: a solid 3px ring (about 6.5:1 on white), never a faint tint. */
+.stepButton:focus-visible,
+.drilldown:focus-visible,
+.button:focus-visible,
+.segment:focus-visible,
+.seriesButton:focus-visible,
+.linkButton:focus-visible,
+.notes summary:focus-visible {
+  outline: 3px solid #006b43;
+  outline-offset: 2px;
+}
+
+/* Observed range: the highest and lowest verified day in the window. Both come from the same rows as the plot. */
+
+.rangeModule {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.rangeHead {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.rangeGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.rangeCell {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--mineral);
+}
+
+.rangeCell[data-extreme="highest"] {
+  border-color: #bfe9d6;
+  background: #f0fbf6;
+}
+
+.rangeCell[data-extreme="lowest"] {
+  border-color: #f7d2b8;
+  background: #fff8f2;
+}
+
+.rangeLabel {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.rangeValue {
+  color: var(--graphite);
+  font-size: 20px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.rangeDate {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.rangeNote {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* Footer: the source and freshness stay visible. Explanations sit under a disclosure. */
+
+.footer {
+  display: grid;
+  gap: 6px;
+  order: 4;
+  min-width: 0;
+}
+
+.source {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.notes {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.notes summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  border-radius: 8px;
+  color: var(--brand);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+@media (hover: hover) {
+  .notes summary:hover {
+    color: #006b43;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+.notes p {
+  margin: 4px 0 0;
+}
+
+.linkButton {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--brand);
+  font-weight: 600;
+  text-align: left;
+  transition: color var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out);
+}
+
+@media (hover: hover) {
+  .linkButton:hover {
+    color: #006b43;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+.linkButton:active {
+  opacity: 0.75;
+}
+
+.tableToggle {
+  order: 5;
+  min-width: 0;
+}
+
+.tableRegion {
+  min-width: 0;
+  overflow-x: visible;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.table caption {
+  padding: 0 0 8px;
+  color: var(--muted);
+  text-align: left;
+}
+
+.table th,
+.table td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.table th:first-child,
+.table td:first-child {
+  text-align: left;
+}
+
+.statePanel {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #dcebe2;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8faf8 100%);
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.statePanel strong {
+  color: var(--ink);
+}
+
+/* Reduced motion: no pulse, settle or lift animation, and no transitions. Pressed, selected and focus states still change colour and outline,
+   so nothing is communicated by motion alone. */
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+
+  .chart *,
+  .chart *::before,
+  .chart *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .segment:active,
+  .seriesButton:active:not(:disabled),
+  .stepButton:active:not([aria-disabled="true"]) {
+    transform: none;
+  }
+}
+
+/* Touch screens: the chart controls keep 44px targets. */
+
+@media (pointer: coarse) {
+  .segment,
+  .seriesButton,
+  .stepButton,
+  .linkButton {
+    min-height: 44px;
+  }
+}
+
+/* Forced colours: backgrounds are replaced by system colours, so the selected, locked and focused states use borders and outlines. */
+
+@media (forced-colors: active) {
+  .segment[aria-pressed="true"],
+  .seriesButton[aria-pressed="true"] {
+    border: 2px solid CanvasText;
+  }
+
+  .seriesButton:disabled {
+    border-color: GrayText;
+    color: GrayText;
+  }
+
+  .segment:focus-visible,
+  .seriesButton:focus-visible,
+  .stepButton:focus-visible,
+  .linkButton:focus-visible,
+  .notes summary:focus-visible {
+    outline: 3px solid Highlight;
+  }
+}
+
+/* Phones, 320 to 767px: the total and the chart come first in the first fold; touch targets are at least 44px. */
+
+@media (max-width: 767px) {
+  .segment,
+  .seriesButton,
+  .button,
+  .linkButton,
+  .drilldown,
+  .stepButton {
+    min-height: 44px;
+  }
+
+  .chart {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .chartTitle {
+    font-size: 20px;
+  }
+
+  .comparisonItem[data-accent="current"] {
+    grid-column: 1 / -1;
+  }
+
+  .comparisonItem[data-accent="current"] dd {
+    font-size: 36px;
+  }
+
+  .comparisonItem[data-accent="change"] {
+    grid-column: 1 / -1;
+  }
+
+  .comparisonItem[data-accent="change"] dd {
+    font-size: 18px;
+  }
+
+  .inspector {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+/* Tablet, 768 to 1279px: the header sits beside its controls, the supporting figures sit beside the coverage tile, and the plot grows. */
+
+@media (min-width: 768px) {
+  .chart {
+    padding: 20px;
+  }
+
+  .chartHeader {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .controls {
+    justify-content: flex-end;
+  }
+
+  .chartTitle {
+    font-size: 26px;
+  }
+
+  .plot {
+    height: 260px;
+  }
+
+  .comparison[data-variant="hero"] .comparisonList {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  }
+
+  .secondaryRow {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+    order: 2;
+  }
+
+  .body {
+    order: 3;
+  }
+
+  .comparisonItem[data-accent="current"] {
+    grid-column: auto;
+  }
+
+  .comparisonItem[data-accent="current"] dd {
+    font-size: 40px;
+  }
+
+  .comparisonList {
+    gap: 10px;
+  }
+
+  .comparison[data-variant="secondary"] .comparisonList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .inspectorReadout {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Laptop and standard desktop, 1280 to 1999px: the plot leads and the rail sits beside it, with its modules spread over the plot's height. */
+
+@media (min-width: 1280px) {
+  .body {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
+    gap: 28px;
+    align-items: stretch;
+    order: 3;
+  }
+
+  .sideColumn {
+    gap: 14px;
+    align-content: space-between;
+    padding-left: 28px;
+    border-left: 1px solid var(--line);
+  }
+
+  .plot {
+    height: 340px;
+  }
+
+  .secondaryRow {
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 280px);
+  }
+
+  .inspector {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+/* Expanded desktop, 2000 to 2799px: a wider rail and a taller plot. */
+
+@media (min-width: 2000px) {
+  .chart {
+    padding: 24px;
+    gap: 22px;
+  }
+
+  .chartTitle {
+    font-size: 28px;
+  }
+
+  .body {
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 380px);
+    gap: 36px;
+  }
+
+  .sideColumn {
+    padding-left: 36px;
+  }
+
+  .plot {
+    height: 380px;
+  }
+
+  .plot :global(.recharts-cartesian-axis-tick-value) {
+    font-size: 13px;
+  }
+
+  .comparisonItem[data-accent="current"] dd {
+    font-size: 46px;
+  }
+
+  .coverageValue {
+    font-size: 26px;
+  }
+
+  .inspectorDate strong {
+    font-size: 30px;
+  }
+}
+
+/* 4K and ultra-wide, 2800px and above: larger type on every reading surface, and a 2:1 split between plot and rail where the card is wide enough. */
+
+@media (min-width: 2800px) {
+  .chart {
+    padding: 32px;
+    gap: 28px;
+  }
+
+  .chartTitle {
+    font-size: 34px;
+  }
+
+  .eyebrow {
+    font-size: 14px;
+  }
+
+  .subtitle {
+    font-size: 16px;
+  }
+
+  .freshChip {
+    padding: 6px 14px;
+    font-size: 15px;
+  }
+
+  .caption,
+  .source,
+  .notes,
+  .rangeNote,
+  .coverageLabel,
+  .comparisonItem dt {
+    font-size: 15px;
+  }
+
+  .segment,
+  .seriesButton,
+  .button,
+  .linkButton,
+  .stepButton {
+    min-height: 48px;
+    font-size: 15px;
+  }
+
+  .body {
+    grid-template-columns: minmax(0, 1fr) minmax(400px, 460px);
+    gap: 56px;
+  }
+
+  .sideColumn {
+    gap: 22px;
+    padding-left: 56px;
+  }
+
+  .plot {
+    height: 420px;
+  }
+
+  .plot :global(.recharts-cartesian-axis-tick-value) {
+    font-size: 15px;
+  }
+
+  .comparisonItem {
+    padding: 18px 20px 18px 22px;
+  }
+
+  .comparisonItem dd {
+    font-size: 22px;
+  }
+
+  .comparisonItem[data-accent="current"] dd {
+    font-size: 56px;
+  }
+
+  .comparisonItem[data-accent="change"] dd {
+    font-size: 24px;
+  }
+
+  .coverageValue {
+    font-size: 32px;
+  }
+
+  .inspector {
+    gap: 16px;
+    padding: 26px;
+    align-content: space-between;
+  }
+
+  .inspectorReadout {
+    font-size: 18px;
+  }
+
+  .inspectorDate strong {
+    font-size: 40px;
+  }
+
+  .readoutChip {
+    font-size: 16px;
+  }
+
+  .rangeValue {
+    font-size: 30px;
+  }
+
+  .rangeDate {
+    font-size: 15px;
+  }
+
+  .rangeCell {
+    padding: 18px;
+  }
+
+  .table {
+    font-size: 15px;
+  }
+}
+
+/* Wide cards, sized by the chart card's own width: a 2:1 plot-to-rail split with the rail's modules spread over the plot's height.
+   The split and plot height follow the card, not the viewport, so a narrower card in a wide window keeps its composition. */
+
+@container trend (min-width: 2400px) {
+  .body {
+    grid-template-columns: minmax(0, 2fr) minmax(340px, 1fr);
+    gap: 40px;
+    align-items: stretch;
+  }
+
+  .sideColumn {
+    padding-left: 0;
+    border-left: 0;
+    align-content: space-between;
+  }
+
+  .plot {
+    height: 480px;
+  }
+}
+
+/* 4K cards (3000px and wider): the widest plot with a deliberate rail. */
+
+@container trend (min-width: 3000px) {
+  .body {
+    grid-template-columns: minmax(0, 2fr) minmax(440px, 1fr);
+    gap: 56px;
+  }
+
+  .plot {
+    height: 600px;
+  }
+}

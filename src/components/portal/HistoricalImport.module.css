@@ -1,0 +1,62 @@
+.importPanel {
+  min-width: 0;
+  padding: clamp(18px, 1.3vw, 30px);
+  border: 1px solid #c8dfd1;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(14 74 45 / 5%);
+  backdrop-filter: none;
+}
+.stages {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 18px 0;
+  padding: 0;
+  list-style: none;
+}
+.stage {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #d9e9df;
+  border-radius: 10px;
+  color: #365c48;
+  background: #f7faf8;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.stageNumber {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  color: #087950;
+  background: #e2f3e9;
+  font-size: 12px;
+}
+.stageCurrent { border-color: #6cbb91; color: #075439; background: #eaf8ee; }
+.stageCurrent .stageNumber { color: #fff; background: #087950; }
+.candidate { min-width: 0; padding: 18px; border: 1px solid #d2e5d8; border-radius: 13px; background: #f9fcfa; overflow-wrap: anywhere; }
+.candidate :global(.filters) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.candidate :global(.field) { min-width: 0; }
+.importPanel :is(button, input, textarea, select):focus-visible { outline: 3px solid #087950 !important; outline-offset: 3px; }
+.importPanel :is(button, input, select) { min-height: 44px; }
+.importPanel button:disabled { color: #456251 !important; background: #e4eee7 !important; border-color: #bfd3c5 !important; box-shadow: none !important; cursor: not-allowed; opacity: 1; }
+@media (max-width: 700px) {
+  .importPanel { padding: 16px; }
+  .stages { gap: 5px; }
+  .stage { display: grid; justify-items: start; padding: 8px; font-size: 13px; }
+  .candidate :global(.filters) { grid-template-columns: minmax(0, 1fr); }
+  .importPanel :is(input, textarea, select) { font-size: 16px; }
+}
+@media (min-width: 2560px) {
+  .stage { padding: 14px; font-size: 16px; }
+  .stageNumber { width: 34px; height: 34px; font-size: 15px; }
+  .candidate { padding: 24px; }
+}

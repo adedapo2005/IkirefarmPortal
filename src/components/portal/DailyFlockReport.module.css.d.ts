@@ -1,0 +1,20 @@
+declare const styles: {
+  readonly farmPanel: string;
+  readonly filters: string;
+  readonly metrics: string;
+  readonly metricCard: string;
+  readonly metricLabel: string;
+  readonly metricValue: string;
+  readonly metricHint: string;
+  readonly summaryRow: string;
+  readonly entryForm: string;
+  readonly importSection: string;
+  readonly fieldlineDisclosure: string;
+  readonly workGrid: string;
+  readonly taskRail: string;
+  readonly entryEyebrow: string;
+  readonly entrySteps: string;
+  readonly entryCurrent: string;
+  readonly handoverNote: string;
+};
+export default styles;

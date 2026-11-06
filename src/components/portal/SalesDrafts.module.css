@@ -1,0 +1,28 @@
+.workspace { display:grid; gap:20px; min-width:0; color:#183c2a; }
+.hero { padding:24px; background:#eff9f2; border:1px solid #badbc7; border-left:5px solid #008751; border-radius:16px; }
+.hero h2 {font-size:26px;line-height:1.2;margin:8px 0 12px;}
+.hero p {max-width:80ch;font-size:15px;line-height:1.6;}
+.layout {display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr);gap:20px;align-items:start;}
+.panel {min-width:0;background:#fff;border:1px solid #c8dcd0;border-radius:14px;padding:24px;}
+.panel h3 {font-size:20px;margin:0 0 12px;}
+.panel p,.panel small,.panel label {font-size:14px;line-height:1.6;}
+.fields {display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.field {display:grid;gap:6px;min-width:0;font-weight:650;}
+.field input,.field select {width:100%;min-width:0;min-height:46px;border:1px solid #759c85;border-radius:8px;padding:10px 12px;background:#fff;color:#153c28;font:inherit;}
+.field input[aria-invalid=true] {border:2px solid #a43128;}
+.error {color:#922c23;font-weight:500;}
+.actions {display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;}
+.workspace button {display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;max-width:100%;padding:10px 16px;border:1px solid #46775a;border-radius:8px;background:#fff;color:#075b38;font:inherit;font-weight:700;}
+.workspace button[type=submit] {background:#008751;color:#fff;}
+.workspace button:disabled {opacity:.6;cursor:not-allowed;}
+.workspace :is(button,input,select,[role=status]) {scroll-margin-block:160px 120px;}
+.workspace :is(button,input,select,summary):focus-visible {outline:3px solid #a77b13;outline-offset:3px;scroll-margin-block:150px 120px;}
+.alert {padding:18px;border:1px solid #cfa76b;border-left:4px solid #9a650f;border-radius:10px;background:#fff7e9;color:#674008;overflow-wrap:anywhere;}
+.list {display:grid;gap:12px;list-style:none;padding:0;margin:18px 0 0;}
+.record {padding:16px;border:1px solid #c8dcd0;border-radius:10px;overflow-wrap:anywhere;}
+.record strong {font-size:17px;display:block;}
+.record p {margin:6px 0;}
+.scope {display:flex;gap:12px;flex-wrap:wrap;font-weight:650;}
+@media(max-width:1000px){.layout {grid-template-columns:1fr;}}
+@media(max-width:600px){.hero,.panel {padding:18px;}.fields {grid-template-columns:1fr;}.hero h2{font-size:23px;}.actions button {flex:1 1 180px;}}
+@media(min-width:2200px){.hero h2{font-size:32px;}.panel h3{font-size:25px;}.hero p,.panel p,.panel small,.panel label,.workspace button{font-size:17px;}.record strong{font-size:21px;}.layout {grid-template-columns:minmax(0,1fr) minmax(380px,.8fr);}.fields{max-width:1000px;}}

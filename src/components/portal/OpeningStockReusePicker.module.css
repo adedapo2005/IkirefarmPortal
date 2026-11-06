@@ -1,0 +1,39 @@
+.root{display:grid;gap:12px;min-width:0;margin:0 0 22px;padding:clamp(17px,1.25vw,27px);border:1px solid #c7e7d7;border-left:4px solid #0d9488;border-radius:14px;background:linear-gradient(120deg,#fffefa 0%,#f0fbf8 62%,#eaf8f2 100%);color:#183b2c}
+.heading{display:flex;align-items:flex-start;gap:12px;min-width:0;flex-wrap:wrap}
+.symbol{display:grid;place-items:center;flex:0 0 38px;height:38px;border-radius:10px;background:#d9f4e9;color:#086e51}
+.heading>div{flex:1 1 250px;min-width:0}
+.heading strong{display:block;font-weight:830;font-size:clamp(1.02rem,.77vw,1.45rem)}
+.heading p,.hint{color:#496d5a;font-size:clamp(.86rem,.54vw,1.05rem);line-height:1.5;margin:4px 0 0}
+.source{display:inline-flex;align-items:center;gap:6px;padding:7px 9px;border:1px solid #b5ddd0;border-radius:99px;background:#e8f8f0;color:#126244;font-size:.79rem;font-weight:780}
+.searchLabel{font-size:clamp(.92rem,.48vw,1.1rem);font-weight:780;color:#295740}
+.searchBox{display:flex;align-items:center;gap:10px;border:1px solid #a4cbb6;border-radius:10px;background:#fff;padding:0 13px;color:#0d8068;min-width:0}
+.searchBox:focus-within{outline:3px solid #2563eb;outline-offset:2px;border-color:#2563eb}
+.searchBox input{display:block;flex:1;min-width:0;min-height:47px;background:transparent;border:0;color:#143b2b;font:inherit;font-size:1rem;outline:none}
+.searchBox input::placeholder{color:#587365}
+.results{min-width:0;max-height:260px;overflow:auto;overscroll-behavior:contain}
+.results>p,.preview>p{color:#496b59;font-size:.9rem;line-height:1.5;margin:8px 0}
+.choiceList{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.choice{width:100%;min-width:0;display:flex;justify-content:space-between;align-items:center;text-align:left;gap:12px;min-height:52px;border:1px solid #cfdfd6;border-radius:10px;padding:10px 12px;background:#fff;color:#254a38;cursor:pointer;transition:border-color .16s ease,background-color .16s ease}
+.choice:not(:disabled):hover,.choice[aria-pressed="true"]{border-color:#0d9488;background:#eaf9f4}
+.choice:focus-visible,.apply:focus-visible,.undo:focus-visible{outline:3px solid #2563eb;outline-offset:2px}
+.choice:disabled{cursor:not-allowed;background:#f4f5f3;color:#5e7066}
+.choice>span:first-child{min-width:0;display:grid;gap:3px}
+.choice strong{font-size:clamp(.91rem,.48vw,1.1rem);font-weight:810;overflow-wrap:anywhere}
+.choice small{font-size:clamp(.81rem,.39vw,1rem);color:#526f5f;overflow-wrap:anywhere}
+.stage,.approved{flex:0 1 auto;text-align:center;border-radius:99px;padding:5px 9px;border:1px solid #e8cd9a;background:#fff6e8;color:#875114;font-size:.79rem;font-weight:750}
+.approved{border-color:#bad8c7;background:#eaf8ef;color:#215b3c}
+.preview{min-width:0;display:grid;gap:9px;padding:14px;border-radius:12px;background:#fff;border:1px solid #c2e4d8}
+.preview>strong{font-size:1rem;color:#165a3b}
+.preview>small{font-size:.85rem;line-height:1.5;color:#526b5e}
+.preview ul{list-style:none;display:grid;gap:6px;padding:0;margin:0}
+.preview li{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;min-width:0;padding:9px 11px;border-radius:8px;background:#f2faf7}
+.preview li span{font-size:.83rem;color:#536e5e;min-width:110px}
+.preview li strong{font-size:.91rem;color:#224f38;overflow-wrap:anywhere}
+.preview li small{font-size:.78rem;color:#8a5821}
+.actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.apply,.undo{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border:1px solid #146d52;border-radius:10px;background:#008751;color:#fff;padding:9px 15px;cursor:pointer;font:inherit;font-size:.88rem;font-weight:800}
+.apply:disabled{cursor:not-allowed;opacity:.6}
+.undo{border-color:#b6d8c4;background:#fff;color:#176046}
+@media(max-width:650px){.root{padding:14px}.source{margin-left:48px}.choice{align-items:flex-start;flex-wrap:wrap}.stage,.approved{margin-left:0}.results{max-height:240px}}
+@media(min-width:2200px){.root{gap:16px;padding:clamp(24px,1.12vw,44px)}.searchBox input{min-height:clamp(52px,1.55vw,62px);font-size:clamp(1rem,.48vw,1.2rem)}.heading p,.hint,.results>p{font-size:clamp(1rem,.49vw,1.2rem)}.apply,.undo{min-height:clamp(48px,1.55vw,64px);font-size:clamp(.94rem,.46vw,1.1rem)}}
+@media(prefers-reduced-motion:reduce){.choice{transition:none}}

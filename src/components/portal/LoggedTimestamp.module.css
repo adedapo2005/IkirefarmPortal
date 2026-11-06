@@ -1,0 +1,3 @@
+.time { display: inline-flex; flex-direction: column; gap: 2px; max-width: 100%; line-height: 1.45; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.unavailable { overflow-wrap: anywhere; }
+@media (min-width: 2560px) { .time, .unavailable { font-size: 17px; } }

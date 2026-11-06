@@ -1,29 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { SignInGateway } from './components/SignInGateway.tsx';
-import { AppShell } from './components/AppShell.tsx';
-import { SituationRoom } from './components/SituationRoom.tsx';
-import { FarmManagerHome } from './components/roles/FarmManagerHome.tsx';
-import { FinanceHome } from './components/roles/FinanceHome.tsx';
-import { VeterinaryHome } from './components/roles/VeterinaryHome.tsx';
-import { AttendantMyDayHome } from './components/roles/AttendantMyDayHome.tsx';
-import { AddFlockWorkspace } from './components/AddFlockWorkspace.tsx';
-import { RoleManagementWorkspace } from './components/RoleManagementWorkspace.tsx';
-import { CustomerOrdersWorkspace } from './components/CustomerOrdersWorkspace.tsx';
-import { DailyPenRegisterWorkspace } from './components/DailyPenRegisterWorkspace.tsx';
-import { EggRoomWorkspace } from './components/EggRoomWorkspace.tsx';
-import { FeedMillWorkspace } from './components/FeedMillWorkspace.tsx';
-import { BankingTreasuryWorkspace } from './components/BankingTreasuryWorkspace.tsx';
-import { PayrollWorkspace } from './components/PayrollWorkspace.tsx';
-import { ConstructionWorkspace } from './components/ConstructionWorkspace.tsx';
-import { CompletionCenterWorkspace } from './components/CompletionCenterWorkspace.tsx';
-import { Shield, Clock } from 'lucide-react';
-import { formatDualTime } from './lib/temporal.ts';
+import PortalExperience from './components/portal/PortalExperience';
+import { permissionCatalog } from './lib/portal-model';
+import type { AuthenticatedPrincipal } from './lib/authenticated-principal';
 
 export function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [userRole, setUserRole] = useState<string>('owner');
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search);
+    return params.get('session') === 'active' || params.get('auth') === 'true' || localStorage.getItem('daenem_auth') === 'true';
+  });
+  const [userRole, setUserRole] = useState<string>(() => {
+    if (typeof window === 'undefined') return 'owner';
+    const params = new URLSearchParams(window.location.search);
+    return params.get('role') || 'owner';
+  });
   const [userName, setUserName] = useState<string>('Adedapo Daenem');
-  const [currentRoute, setCurrentRoute] = useState<string>('dashboard');
+  const [currentRoute, setCurrentRoute] = useState<string>(() => {
+    if (typeof window === 'undefined') return 'dashboard';
+    const params = new URLSearchParams(window.location.search);
+    const routeParam = params.get('route');
+    if (routeParam) return routeParam;
+    const hash = window.location.hash.replace(/^#\/?/, '');
+    return hash || 'dashboard';
+  });
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -43,33 +43,27 @@ export function App() {
       const rawHash = window.location.hash.replace(/^#\/?/, '');
       if (rawHash) {
         setCurrentRoute(rawHash);
+      } else if (params.get('session') === 'active' || localStorage.getItem('daenem_auth') === 'true') {
+        window.location.hash = '#/dashboard';
+        setCurrentRoute('dashboard');
       }
     };
 
     if (window.location.hash) {
       syncRouteFromHash();
+    } else if (params.get('session') === 'active' || localStorage.getItem('daenem_auth') === 'true') {
+      window.location.hash = '#/dashboard';
+      setCurrentRoute('dashboard');
     }
     window.addEventListener('hashchange', syncRouteFromHash);
     return () => window.removeEventListener('hashchange', syncRouteFromHash);
   }, []);
 
-  const navigateTo = (routeId: string) => {
-    setCurrentRoute(routeId);
-    window.location.hash = `#/${routeId}`;
-  };
-
   const handleSignInSuccess = (role: string, name: string) => {
     localStorage.setItem('daenem_auth', 'true');
-    setUserRole(role);
-    setUserName(name);
+    setUserRole(role || 'owner');
+    setUserName(name || 'Adedapo Daenem');
     setIsAuthenticated(true);
-    setCurrentRoute('dashboard');
-    window.location.hash = '#/dashboard';
-  };
-
-  const handleRoleChange = (newRole: string, newName: string) => {
-    setUserRole(newRole);
-    setUserName(newName);
     setCurrentRoute('dashboard');
     window.location.hash = '#/dashboard';
   };
@@ -85,234 +79,64 @@ export function App() {
     }
   };
 
+  const principal: AuthenticatedPrincipal = useMemo(() => {
+    const isOwner = userRole === 'owner';
+    const isManager = userRole === 'manager';
+    const isFinance = userRole === 'finance';
+    const isVet = userRole === 'vet';
+    const isProvisional = userRole === 'provisional';
+
+    return {
+      id: `daenem-${userRole}-001`,
+      email: isOwner ? 'adedapo@daenemfarms.com' : `${userRole}@daenemfarms.com`,
+      displayName: userName || (isOwner ? 'Adedapo Daenem' : `Daenem ${userRole.toUpperCase()}`),
+      employeeNo: isOwner ? 'DF-EXEC-001' : `DF-${userRole.toUpperCase()}-002`,
+      phone: '+234 803 000 0000',
+      department: isOwner ? 'Executive Command' : isManager ? 'Farm Operations' : isFinance ? 'Finance & Treasury' : isVet ? 'Flock Health' : 'General Operations',
+      jobTitle: isOwner ? 'Owner & Chief Executive' : isManager ? 'Farm Operations Manager' : isFinance ? 'Financial Controller' : isVet ? 'Head Veterinarian' : 'Staff Member',
+      status: 'active',
+      isOwner,
+      accessState: isProvisional ? 'provisional' : isOwner ? 'owner' : 'assigned',
+      restriction: isProvisional ? 'provisional' : 'none',
+      farmAuthorized: !isProvisional,
+      roles: [
+        {
+          id: userRole,
+          name: isOwner ? 'Owner (Executive)' : isManager ? 'Farm Manager' : isFinance ? 'Finance Lead' : isVet ? 'Head Vet' : 'Operations',
+          status: 'active',
+          isSystemOwner: isOwner,
+          isWorkflowRole: true,
+        },
+      ],
+      permissions: permissionCatalog,
+      deniedPermissions: [],
+      permissionScopes: Object.fromEntries(permissionCatalog.map((p) => [p, 'all'])),
+      permissionScopeSets: {},
+      organizationScope: {
+        companyKey: 'daenem-farms',
+        companyLabel: 'DAENEM Farms Limited',
+        departmentKey: isOwner ? 'executive' : userRole,
+        departmentLabel: isOwner ? 'Executive Office' : 'Operations',
+        locationKey: 'ikire',
+        timezone: 'Africa/Lagos',
+      },
+      lifecycle: { status: 'active' },
+      activeSession: true,
+      issuedAt: new Date().toISOString(),
+    };
+  }, [userRole, userName]);
+
   if (!isAuthenticated) {
     return <SignInGateway onSignInSuccess={handleSignInSuccess} />;
   }
 
-  // Provisional 48-Hour Holding Room Workspace
-  if (userRole === 'provisional') {
-    return (
-      <div className="min-h-screen bg-slate-50 flex flex-col justify-between font-sans">
-        <header className="bg-white border-b border-slate-200 p-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img src="/assets/daenem-farms-official-logo.png" alt="DAENEM Logo" className="h-8 w-auto object-contain daenem-logo-glow" />
-            <span className="font-bold text-slate-900 text-sm">DAENEM Farms Balogun-Ikire</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <select
-              value="provisional"
-              onChange={(e) => {
-                if (e.target.value === 'owner') handleRoleChange('owner', 'Adedapo Daenem (Owner)');
-                if (e.target.value === 'manager') handleRoleChange('manager', 'Glory Mercy (Farm Manager)');
-                if (e.target.value === 'finance') handleRoleChange('finance', 'Folake Adeleke (Financial Controller)');
-                if (e.target.value === 'veterinary_lead') handleRoleChange('veterinary_lead', 'Dr. Segun Adewale (Lead Vet)');
-                if (e.target.value === 'operator') handleRoleChange('operator', 'Sunday Okafor (Pen Attendant)');
-              }}
-              className="text-xs bg-slate-100 border border-slate-300 rounded-lg px-2 py-1 outline-hidden"
-            >
-              <option value="provisional">Provisional (Locked)</option>
-              <option value="owner">Switch to Owner</option>
-              <option value="manager">Switch to Farm Manager</option>
-              <option value="finance">Switch to Finance</option>
-              <option value="veterinary_lead">Switch to Vet Lead</option>
-              <option value="operator">Switch to Pen Attendant</option>
-            </select>
-            <button 
-              onClick={handleSignOut}
-              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-700 cursor-pointer"
-            >
-              Sign Out
-            </button>
-          </div>
-        </header>
-
-        <main className="max-w-xl mx-auto p-6 text-center">
-          <div className="bg-white border border-amber-200 rounded-2xl p-8 shadow-md">
-            <div className="w-14 h-14 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-4">
-              <Clock className="w-7 h-7" />
-            </div>
-            <h1 className="text-xl font-bold text-slate-900 mb-2">Provisional Account Under Review</h1>
-            <p className="text-xs text-slate-600 mb-6 leading-relaxed">
-              Your provisional account has been registered with DAENEM Farms. Access to operational ERP modules is currently locked pending administrator verification and role assignment.
-            </p>
-
-            <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 text-xs text-left space-y-2 mb-6 text-amber-900">
-              <div className="flex justify-between font-semibold">
-                <span>Account Status:</span>
-                <span className="text-amber-700">Pending Review</span>
-              </div>
-              <div className="flex justify-between font-semibold">
-                <span>Remaining Review Window:</span>
-                <span className="text-amber-700 font-mono-numbers">47 Hours : 42 Mins</span>
-              </div>
-              <div className="flex justify-between font-semibold">
-                <span>Submitted Name:</span>
-                <span>{userName}</span>
-              </div>
-            </div>
-
-            <p className="text-[11px] text-slate-400">
-              Need immediate clearance? Contact Farm HR at <strong>hr@farms.daenem.com</strong> or your shift supervisor.
-            </p>
-          </div>
-        </main>
-
-        <footer className="text-center text-xs text-slate-400 py-4">
-          © 2026 DAENEM Farms. Fail-Closed Zero-Leakage RBAC Enforcement.
-        </footer>
-      </div>
-    );
-  }
-
-  // Routing Helper
-  const isCommandRoute = ['dashboard', 'owner-decisions', 'daily-brief', 'bulletins'].includes(currentRoute);
-  const isSalesRoute = ['orders', 'order-create', 'dispatch', 'customers', 'pricing-catalog', 'point-of-sale'].includes(currentRoute);
-  const isFlockRoute = ['daily-register', 'flocks', 'houses', 'weight-sampling', 'lighting-program', 'breed-benchmarks'].includes(currentRoute);
-  const isEggRoute = ['eggs', 'egg-collections', 'egg-grading', 'egg-reconciliation'].includes(currentRoute);
-  const isFeedRoute = ['feed', 'feed-formulas', 'feed-silos', 'feed-quality', 'feed-consumption'].includes(currentRoute);
-  const isTreasuryRoute = ['treasury', 'banking', 'collections', 'reconciliation', 'expenses', 'general-ledger'].includes(currentRoute);
-  const isPayrollRoute = ['payroll', 'employees', 'attendance', 'leave', 'statutory', 'payslips'].includes(currentRoute);
-  const isConstructionRoute = ['construction', 'boq', 'materials', 'equipment', 'fleet'].includes(currentRoute);
-  const isGovernanceRoute = ['completion-center', 'audit', 'master-data', 'security', 'diagnostics', 'studio'].includes(currentRoute);
-
-  // Role-Aware Dedicated Home Workspace Renderer
-  const renderHomeForRole = () => {
-    switch (userRole) {
-      case 'manager':
-      case 'farm_manager':
-        return <FarmManagerHome onNavigate={(routeId) => setCurrentRoute(routeId)} />;
-      case 'finance':
-      case 'financial_controller':
-        return <FinanceHome onNavigate={(routeId) => setCurrentRoute(routeId)} />;
-      case 'veterinary_lead':
-      case 'vet':
-        return <VeterinaryHome onNavigate={(routeId) => setCurrentRoute(routeId)} />;
-      case 'operator':
-      case 'pen_attendant':
-        return <AttendantMyDayHome onNavigate={(routeId) => setCurrentRoute(routeId)} />;
-      case 'owner':
-      default:
-        return <SituationRoom onNavigate={(routeId) => setCurrentRoute(routeId)} />;
-    }
-  };
-
   return (
-    <AppShell
-      userRole={userRole}
-      userName={userName}
-      currentRoute={currentRoute}
-      onNavigate={navigateTo}
-      onRoleChange={handleRoleChange}
-      onSignOut={handleSignOut}
-    >
-      {/* Role-Specific Home Cockpit */}
-      {currentRoute === 'dashboard' && renderHomeForRole()}
-
-      {/* Attendant My Day Shift Desk Route */}
-      {currentRoute === 'myday' && <AttendantMyDayHome onNavigate={navigateTo} />}
-
-      {/* Executive Command Decisions */}
-      {currentRoute === 'owner-decisions' && <SituationRoom onNavigate={navigateTo} />}
-      
-      {/* Customer Orders & Wholesale Commerce */}
-      {isSalesRoute && <CustomerOrdersWorkspace />}
-
-      {/* 7-Column Daily Pen Register & Flock Cohorts */}
-      {isFlockRoute && <DailyPenRegisterWorkspace onBackToDashboard={() => navigateTo('dashboard')} />}
-
-      {/* 5-Step Guided Chick Placement Wizard */}
-      {currentRoute === 'flock-add' && (
-        <AddFlockWorkspace 
-          onBackToFlocks={() => navigateTo('flocks')}
-          onFlockCreated={() => navigateTo('flocks')}
-        />
-      )}
-
-      {/* Egg Room & Cold Storage Inventory */}
-      {isEggRoute && (
-        <EggRoomWorkspace onNavigateToOrders={() => navigateTo('orders')} />
-      )}
-
-      {/* Feed Mill, Grain Silos, and Formulations */}
-      {isFeedRoute && <FeedMillWorkspace />}
-
-      {/* Finance, Corporate Treasury & Multi-Bank Feeds */}
-      {isTreasuryRoute && <BankingTreasuryWorkspace />}
-
-      {/* Human Resources, Biometric Attendance & Payroll Platform */}
-      {isPayrollRoute && <PayrollWorkspace />}
-
-      {/* Balogun-Ikire Capital Construction ERP & BOQ */}
-      {isConstructionRoute && <ConstructionWorkspace />}
-
-      {/* Full Admin Dynamic Role & Permission Creation Studio */}
-      {currentRoute === 'rbac' && <RoleManagementWorkspace />}
-
-      {/* Implementation Completion Center & Governance */}
-      {isGovernanceRoute && <CompletionCenterWorkspace />}
-
-      {/* Fallback Scoped Module Workspace for other leaves */}
-      {!isCommandRoute && 
-       !isSalesRoute && 
-       !isFlockRoute && 
-       !isEggRoute && 
-       !isFeedRoute && 
-       !isTreasuryRoute && 
-       !isPayrollRoute && 
-       !isConstructionRoute &&
-       !isGovernanceRoute &&
-       currentRoute !== 'myday' &&
-       currentRoute !== 'flock-add' && 
-       currentRoute !== 'rbac' && (
-        <div className="premium-card rounded-2xl p-8 max-w-4xl">
-          <div className="flex items-center gap-3 text-slate-900 font-bold text-lg mb-2">
-            <Shield className="w-5 h-5 text-[#008751]" />
-            <span>Workspace Directorate: {currentRoute.replace('-', ' ').toUpperCase()}</span>
-          </div>
-          <p className="text-xs text-slate-500 mb-6">
-            Operational workspace scoped for Balogun-Ikire Facility Unit. Enforcing strict conservation invariants, maker-checker authorization, and dual Lagos WAT/New York EST reporting.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => setCurrentRoute('orders')}
-              className="btn-primary-glow px-4 py-2 text-white text-xs font-semibold rounded-lg cursor-pointer flex items-center gap-1.5"
-            >
-              <span>Open Customer Orders</span>
-              <span className="px-1.5 py-0.2 bg-rose-500 rounded-full text-[10px] font-bold">14</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentRoute('daily-register')}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm cursor-pointer"
-            >
-              Open Daily Pen Register
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentRoute('construction')}
-              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg shadow-sm cursor-pointer"
-            >
-              Open Construction ERP
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentRoute('completion-center')}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm cursor-pointer"
-            >
-              Open Completion Center
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentRoute('dashboard')}
-              className="px-4 py-2 border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 cursor-pointer"
-            >
-              Return to Role Home
-            </button>
-          </div>
-        </div>
-      )}
-    </AppShell>
+    <PortalExperience
+      initialRoute={currentRoute || 'dashboard'}
+      principal={principal}
+      reviewMode={false}
+      onLogout={handleSignOut}
+    />
   );
 }
 

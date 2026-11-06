@@ -1,0 +1,18 @@
+/**
+ * Stage 25 isolated House/Breed tablet form correction.
+ * Keep this narrow and separate from Stage 21/24 shared visual-owner CSS.
+ * The shared action pane's auto first column grew to the long form note and
+ * compressed the adjacent copy to a few characters per line at 768px.
+ */
+@media (min-width: 641px) and (max-width: 900px) {
+  .actionPane {
+    grid-template-columns: 28px minmax(0, 1fr);
+  }
+  .actionPane > p {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .actionPane > p:nth-of-type(n + 2) {
+    grid-column: 1 / -1;
+  }
+}

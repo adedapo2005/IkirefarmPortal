@@ -1,0 +1,10 @@
+.task { display:grid; gap:10px; min-width:0; padding:16px; margin-bottom:16px; border:1px solid #afcdbb; border-left:4px solid #008751; border-radius:12px; background:#f3faf5; color:#1c432f; }
+.task > strong { font-size:18px; line-height:1.35; }
+.task p, .task small { margin:0; max-width:80ch; font-size:14px; line-height:1.55; overflow-wrap:anywhere; }
+.task small { color:#405d4b; }
+.task a { scroll-margin-block:110px 80px; display:inline-flex; justify-self:start; align-items:center; gap:8px; min-height:44px; max-width:100%; padding:10px 14px; border:1px solid #46775a; border-radius:8px; background:#fff; color:#075b38; font-size:14px; font-weight:700; line-height:1.4; text-decoration:underline; text-underline-offset:3px; overflow-wrap:anywhere; }
+.task a:focus-visible { outline:3px solid #b48929; outline-offset:3px; }
+@media (min-width:2200px) { .task {padding:22px;} .task > strong {font-size:20px;} .task p, .task small, .task a {font-size:16px;} }
+@media (max-width:420px) { .task {padding:13px;} .task a {justify-self:stretch;} }
+
+@media (max-width:700px) { .task a {scroll-margin-block:160px 120px;} }

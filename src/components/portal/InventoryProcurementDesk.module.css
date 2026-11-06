@@ -1,0 +1,188 @@
+.console {
+  position: relative;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 17rem;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  min-width: 0;
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.actionPane {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+  padding: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--line, #d8e2d5) 88%, transparent);
+  border-radius: 1.15rem;
+  background:
+    radial-gradient(circle at 95% 0%, rgba(87, 145, 104, 0.14), transparent 42%),
+    color-mix(in srgb, var(--panel, #fff) 92%, #eef5ea);
+}
+
+.actionPane svg {
+  color: #326d45;
+}
+
+.register {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1.35rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line, #d8e2d5);
+}
+
+.record {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  min-width: 0;
+  padding: 1rem 1.05rem;
+  border: 1px solid color-mix(in srgb, var(--line, #d8e2d5) 88%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--panel, #fff) 96%, #eef5ea);
+}
+
+.record > div {
+  min-width: 0;
+}
+
+.record strong,
+.record p,
+.record small,
+.record span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.record p {
+  margin: 0.3rem 0;
+}
+
+.record small,
+.record span {
+  color: var(--muted, #607066);
+  font-size: 0.78rem;
+}
+
+.record span {
+  margin-top: 0.35rem;
+}
+
+.completionForm {
+  flex: 1 0 100%;
+  padding-top: 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--line, #d8e2d5) 80%, transparent);
+}
+
+@media (max-width: 900px) {
+  .form {
+    grid-template-columns: 1fr;
+  }
+
+  .actionPane {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .actionPane button {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .fields {
+    grid-template-columns: 1fr;
+  }
+
+  .fullWidth {
+    grid-column: auto;
+  }
+
+  .actionPane {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .record {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .record button {
+    width: 100%;
+  }
+}
+
+/* Keep Breed and House guidance paragraphs in the flexible tablet column. */
+@media (min-width: 641px) and (max-width: 900px) {
+  .actionPane[data-house-actions] > p, .actionPane[data-breed-actions] > p {
+    grid-column: 2;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Farm identity workspaces keep the approved green palette independent of the global theme. */
+.console[data-farm-register] {
+  --primary: #087950;
+  --ink: #173d2d;
+  --muted: #486b59;
+  --border: #d2e5d7;
+  --panel: #fff;
+}
+.console[data-farm-register] :global(.chip.blue) {
+  color: #075b3f;
+  background: #e7f6ed;
+  border-color: #c5e6d0;
+}
+
+@media (min-width: 2560px) {
+  .console[data-farm-register] .form {
+    width: min(100%, 1500px);
+    margin-inline: auto;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 400px);
+    gap: 28px;
+  }
+  .console[data-farm-register] .register { width: min(100%, 2600px); margin-inline: auto; }
+  .console[data-farm-register] :global(.field),
+  .console[data-farm-register] :global(.field input),
+  .console[data-farm-register] :global(.field select),
+  .console[data-farm-register] :global(.field textarea),
+  .console[data-farm-register] :global(button) { font-size: 18px; }
+  .console[data-farm-register] :global(.field input),
+  .console[data-farm-register] :global(.field select) { min-height: 58px; }
+  .console[data-farm-register] :global(.panel-heading h2) { font-size: 28px; }
+  .console[data-farm-register] :global(.panel-heading p),
+  .console[data-farm-register] :global(.metadata),
+  .console[data-farm-register] .actionPane p { font-size: 17px; }
+}
+
+
+/* Keep transfer schedule evidence legible without changing other registers. */
+.record .transferPlannedTime,
+.record .transferPlannedTime span {
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+@media (min-width: 2560px) {
+  .record .transferPlannedTime,
+  .record .transferPlannedTime span {
+    font-size: 18px;
+  }
+}
