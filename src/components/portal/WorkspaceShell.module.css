@@ -130,11 +130,10 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border-right: 1px solid rgba(230,242,234,.09);
-  background:
-    radial-gradient(circle at 12% 0%, rgba(190,218,176,.12), transparent 18rem),
-    linear-gradient(180deg, #10372e 0%, #0d3028 48%, #0a2922 100%);
-  box-shadow: 12px 0 34px rgba(6,31,24,.08);
+  border-right: 1px solid rgba(255,255,255,.14);
+  background: linear-gradient(180deg, #008751 0%, #00683e 50%, #005a36 100%);
+  color: #ffffff;
+  box-shadow: 12px 0 34px rgba(0,50,30,.18);
 }
 .sidebar :global([data-slot="sidebar-inner"])::before {
   content: "";
@@ -169,62 +168,65 @@
   scrollbar-color: rgba(214,231,220,.22) transparent;
 }
 .sidebar :global(.nav-group-trigger) {
-  min-height: 35px;
-  padding: 7px 12px;
-  border-radius: 10px;
-  color: rgba(218,233,223,.66);
-  font-size: .66rem;
-  font-weight: 760;
-  letter-spacing: .105em;
+  min-height: 38px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: #a7f3d0;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
   text-transform: uppercase;
   transition: color .16s ease, background .16s ease;
 }
 .sidebar :global(.nav-group-trigger:hover) {
-  color: #fff;
-  background: rgba(255,255,255,.05);
+  color: #ffffff;
+  background: rgba(255,255,255,.1);
 }
 .sidebar :global([data-slot="sidebar-menu"]) {
   gap: 4px;
 }
 .sidebar :global([data-slot="sidebar-menu-button"]) {
   position: relative;
-  min-height: 44px;
+  min-height: 40px;
   border: 1px solid transparent;
-  border-radius: 11px;
-  font-weight: 580;
+  border-radius: 9px;
+  color: rgba(255,255,255,.9);
+  font-size: 13.5px;
+  font-weight: 600;
   transition: color .16s ease, background .16s ease, border-color .16s ease, transform .16s ease;
 }
 .sidebar :global([data-slot="sidebar-menu-button"] svg) {
-  color: rgba(204,225,212,.78);
+  color: rgba(255,255,255,.8);
   transition: color .16s ease, transform .16s ease;
 }
 .sidebar :global([data-slot="sidebar-menu-button"]:hover) {
   transform: translateX(2px);
-  border-color: rgba(255,255,255,.055);
-  background: rgba(255,255,255,.075);
+  border-color: rgba(255,255,255,.12);
+  background: rgba(255,255,255,.12);
+  color: #ffffff;
 }
 .sidebar :global([data-slot="sidebar-menu-button"][data-active="true"]) {
-  border-color: rgba(226,202,119,.15);
-  border-left: 0;
-  background: linear-gradient(90deg, rgba(211,188,101,.17), rgba(255,255,255,.075));
-  color: #fff2bb;
-  box-shadow: inset 3px 0 #d9bd67, 0 8px 20px rgba(0,0,0,.11);
+  border: 0;
+  background: #00a86b;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(0,168,107,.4), inset 0 1px 0 rgba(255,255,255,.2);
 }
 .sidebar :global([data-slot="sidebar-menu-button"][data-active="true"] svg) {
-  color: #ead27c;
+  color: #ffffff;
   transform: scale(1.05);
 }
 .sidebar :global(.sidebar-profile) {
   width: 100%;
-  padding: 9px;
-  border: 1px solid rgba(255,255,255,.075);
-  border-radius: 13px;
-  background: rgba(255,255,255,.045);
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 11px;
+  background: rgba(0,0,0,.15);
   text-align: left;
+  color: #ffffff;
 }
 .sidebar :global(.sidebar-profile:hover) {
-  border-color: rgba(225,207,139,.2);
-  background: rgba(255,255,255,.075);
+  border-color: rgba(255,255,255,.25);
+  background: rgba(0,0,0,.22);
 }
 
 .premiumShell :global(.page-context-header) {

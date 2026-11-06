@@ -34,15 +34,39 @@ body:has(.canonical-signin-frame-shell) {
   background: #f6f8f2;
 }
 
+@font-face {
+  font-family: 'Inter Variable';
+  src: local('Inter Variable'), local('Inter-Variable'), local('Inter');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Manrope Variable';
+  src: local('Manrope Variable'), local('Manrope-Variable'), local('Manrope');
+  font-weight: 200 800;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     /* Exact Authoritative Typography Hierarchy */
-    --font-portal-body: 'Inter', system-ui, sans-serif;
-    --font-portal-heading: 'Manrope', system-ui, sans-serif;
-    --font-signin-hero: 'Space Grotesk', system-ui, sans-serif;
-    --font-signin-input: 'Inter Tight', 'Inter', system-ui, sans-serif;
+    --font-portal-body: 'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-portal-heading: 'Manrope Variable', 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-signin-hero: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-signin-input: 'Inter Tight', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
     
+    /* Authentic DAENEM Official Signature Green Navigation & Brand Tokens */
+    --color-nav-bg-start: #008751;
+    --color-nav-bg-mid: #00683E;
+    --color-nav-bg-end: #005A36;
+    --color-nav-active: #00A86B;
+    --color-nav-mint-header: #A7F3D0;
+    --color-nav-text-primary: #FFFFFF;
+    --color-nav-text-muted: rgba(255, 255, 255, 0.88);
+    --color-nav-border: rgba(255, 255, 255, 0.14);
+
     /* Fieldline V6 Standard Tokens - Elevated Palette */
     --color-emerald-primary: #008751;
     --color-jade-active: #00A86B;
@@ -53,23 +77,24 @@ body:has(.canonical-signin-frame-shell) {
     --color-border-hairline: #E2E8F0;
     --color-border-subtle: #CBD5E1;
 
-    font-size: 16px;
+    font-size: 15px;
   }
 
   /* Ultra-wide 2560px and 3200px+ Scaling Standards */
   @media (min-width: 2560px) {
     :root {
-      font-size: 18px;
+      font-size: 17px;
     }
   }
 
   @media (min-width: 3200px) {
     :root {
-      font-size: 23px;
+      font-size: 21px;
     }
   }
 
-  body {
+  /* 1. Main portal body, navigation, forms, and tables – Inter Variable, sans-serif */
+  body, html {
     font-family: var(--font-portal-body);
     line-height: 1.55;
     background-color: #F8FAFC;
@@ -79,15 +104,144 @@ body:has(.canonical-signin-frame-shell) {
     -moz-osx-font-smoothing: grayscale;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  /* 2. Main portal headings, prominent titles, and bold display text – Manrope Variable, sans-serif */
+  h1, h2, h3, h4, h5, h6,
+  .page-heading h1,
+  .page-context-main h1,
+  .decision-brief h2,
+  .purpose-dashboard-panel header h2,
+  .panel-heading h2,
+  .panel-heading h3,
+  .person-card h3,
+  .notice-feature h2,
+  .sheet-content h2,
+  .inbox-reading h2,
+  .topbar-context strong,
+  .identity-details h2,
+  .topbar-mobile-title,
+  .metric,
+  .brief-numbers .metric,
+  .pulse-metrics .metric,
+  .equation-term strong,
+  .count-tall,
+  .production-node .metric,
+  .stock-cell .metric,
+  .font-display,
+  .display-text,
+  [data-slot="kpi-value"] {
     font-family: var(--font-portal-heading);
     letter-spacing: -0.025em;
   }
 
-  .font-signin-hero {
+  /* Specific Heading Scales */
+  h1 {
+    font-size: clamp(1.75rem, 2.3vw, 2.4rem);
+    line-height: 1.2;
+    font-weight: 750;
+    letter-spacing: -0.03em;
+  }
+
+  h2 {
+    font-size: clamp(1.25rem, 1.7vw, 1.55rem);
+    line-height: 1.25;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+    line-height: 1.35;
+    font-weight: 650;
+  }
+
+  h4 {
+    font-size: 0.95rem;
+    line-height: 1.4;
+    font-weight: 600;
+  }
+
+  /* Forms & Tables – Inter Variable */
+  form,
+  input,
+  textarea,
+  select,
+  .field,
+  .field input,
+  .field textarea,
+  .field select,
+  .filter-input,
+  .form-grid,
+  table,
+  .data-table,
+  .data-table th,
+  .data-table td,
+  .table-wrap,
+  caption {
+    font-family: var(--font-portal-body);
+  }
+
+  .data-table th {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .data-table td {
+    font-size: 13.5px;
+  }
+
+  .field input,
+  .field select,
+  .field textarea,
+  .filter-input {
+    font-size: 14px;
+  }
+
+  /* 3. Sign-In hero, headings, and primary buttons – Space Grotesk, sans-serif */
+  .signin-visual h1,
+  .visual-copy h1,
+  .hero-title,
+  .signin-hero,
+  .auth-content h2,
+  .signin-auth h2,
+  .auth-mobile-brand,
+  .gw-hero-kicker,
+  .gw-signin-card h1,
+  .gw-signin-card h2,
+  .font-signin-hero,
+  .btn.primary,
+  .btn-primary-glow,
+  button[type="submit"],
+  .auth-form button[type="submit"],
+  .preview-enter,
+  .gw-signin-btn,
+  .btn-brand-primary,
+  .workspace-toolbar-primary,
+  .purpose-dashboard-primary {
     font-family: var(--font-signin-hero);
   }
 
+  /* 4. Sign-In form text and inputs – Inter Tight with Inter fallback, sans-serif */
+  .signin-auth,
+  .auth-content,
+  .auth-form,
+  .auth-form input,
+  .auth-form label,
+  .password-field input,
+  .auth-content p,
+  .auth-tabs,
+  .auth-tabs button,
+  .auth-separator,
+  .provider-button,
+  .remember,
+  .remember label,
+  .auth-footer,
+  .auth-footer button,
+  .auth-state,
+  .gw-auth-form,
+  .gw-auth-input,
+  .gw-auth-label,
   .font-signin-input {
     font-family: var(--font-signin-input);
   }
@@ -206,4 +360,275 @@ button:hover .icon-react, a:hover .icon-react {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ==========================================================================
+   OFFICIAL DAENEM FARMS NAVIGATION CONTRACT & AUTHORITATIVE TYPOGRAPHY
+   ========================================================================== */
+
+/* 1. Continuous Opaque Signature Green Navigation Surface */
+.portal-sidebar,
+.portal-sidebar [data-slot="sidebar-inner"],
+.sidebar [data-slot="sidebar-inner"],
+[data-slot="sidebar-container"] [data-slot="sidebar-inner"],
+div[data-slot="sidebar-inner"] {
+  background: linear-gradient(180deg, #008751 0%, #00683E 50%, #005A36 100%) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #FFFFFF !important;
+  box-shadow: 12px 0 34px rgba(0, 50, 30, 0.22) !important;
+}
+
+.portal-sidebar [data-slot="sidebar-inner"]::before,
+.sidebar [data-slot="sidebar-inner"]::before {
+  display: none !important;
+}
+
+.portal-sidebar [data-slot="sidebar-header"],
+.sidebar [data-slot="sidebar-header"] {
+  padding: 22px 18px 16px !important;
+  background: transparent !important;
+}
+
+.portal-sidebar [data-slot="sidebar-content"],
+.sidebar [data-slot="sidebar-content"] {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent !important;
+  background: transparent !important;
+}
+
+/* 2. Directorate Group Headers (Mint / Light Jade, 11.5px, Bold, Uppercase) */
+.portal-sidebar .nav-group-trigger,
+.sidebar .nav-group-trigger,
+.nav-group-trigger {
+  font-family: var(--font-portal-body) !important;
+  color: #A7F3D0 !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  min-height: 38px !important;
+  padding: 8px 12px !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  transition: background 0.16s ease, color 0.16s ease !important;
+}
+
+.portal-sidebar .nav-group-trigger:hover,
+.sidebar .nav-group-trigger:hover,
+.nav-group-trigger:hover {
+  color: #FFFFFF !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.portal-sidebar .nav-group-trigger svg,
+.sidebar .nav-group-trigger svg,
+.nav-group-trigger svg {
+  color: #A7F3D0 !important;
+}
+
+.portal-sidebar .nav-group-trigger:hover svg,
+.sidebar .nav-group-trigger:hover svg,
+.nav-group-trigger:hover svg {
+  color: #FFFFFF !important;
+}
+
+/* 3. Navigation Links & Submenu Buttons (13.5px, Inter Variable, Touch-Friendly) */
+.portal-sidebar .nav-module-link,
+.portal-sidebar [data-slot="sidebar-menu-button"],
+.sidebar .nav-module-link,
+.sidebar [data-slot="sidebar-menu-button"] {
+  font-family: var(--font-portal-body) !important;
+  font-size: 13.5px !important;
+  line-height: 1.35 !important;
+  min-height: 40px !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  border-radius: 9px !important;
+  border: 0 !important;
+  background: transparent !important;
+  transition: all 0.16s ease !important;
+}
+
+.portal-sidebar .nav-module-link svg,
+.portal-sidebar [data-slot="sidebar-menu-button"] svg,
+.sidebar .nav-module-link svg,
+.sidebar [data-slot="sidebar-menu-button"] svg {
+  color: rgba(255, 255, 255, 0.8) !important;
+  transition: color 0.16s ease, transform 0.16s ease !important;
+}
+
+.portal-sidebar .nav-module-link:hover,
+.portal-sidebar [data-slot="sidebar-menu-button"]:hover,
+.sidebar .nav-module-link:hover,
+.sidebar [data-slot="sidebar-menu-button"]:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #FFFFFF !important;
+}
+
+.portal-sidebar .nav-module-link:hover svg,
+.portal-sidebar [data-slot="sidebar-menu-button"]:hover svg,
+.sidebar .nav-module-link:hover svg,
+.sidebar [data-slot="sidebar-menu-button"]:hover svg {
+  color: #FFFFFF !important;
+}
+
+/* 4. Active Navigation Indicator: Authentic Bright Jade (#00A86B) & Pure White Text */
+.portal-sidebar .nav-module[data-active="true"] .nav-module-link,
+.portal-sidebar [data-slot="sidebar-menu-button"][data-active="true"],
+.sidebar .nav-module[data-active="true"] .nav-module-link,
+.sidebar [data-slot="sidebar-menu-button"][data-active="true"] {
+  background: #00A86B !important;
+  color: #FFFFFF !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  box-shadow: 0 4px 14px rgba(0, 168, 107, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+  font-weight: 650 !important;
+}
+
+.portal-sidebar .nav-module[data-active="true"] .nav-module-link svg,
+.portal-sidebar [data-slot="sidebar-menu-button"][data-active="true"] svg,
+.sidebar .nav-module[data-active="true"] .nav-module-link svg,
+.sidebar [data-slot="sidebar-menu-button"][data-active="true"] svg {
+  color: #FFFFFF !important;
+  transform: scale(1.05) !important;
+}
+
+/* Nav Submenu Rail & Alignment */
+.portal-sidebar .nav-submenu,
+.sidebar .nav-submenu {
+  border-left: 1px solid rgba(255, 255, 255, 0.22) !important;
+  padding-left: 16px !important;
+  margin-left: 16px !important;
+  gap: 2px !important;
+}
+
+.portal-sidebar .nav-module-toggle,
+.sidebar .nav-module-toggle {
+  color: rgba(255, 255, 255, 0.85) !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.portal-sidebar .nav-module-toggle:hover,
+.sidebar .nav-module-toggle:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #FFFFFF !important;
+}
+
+/* 5. Quick Access & Search Input */
+.portal-sidebar .nav-shortcuts,
+.sidebar .nav-shortcuts {
+  color: #FFFFFF !important;
+  padding: 6px 12px 12px !important;
+}
+
+.portal-sidebar .nav-shortcuts-search,
+.sidebar .nav-shortcuts-search {
+  display: flex !important;
+  align-items: center !important;
+  min-height: 40px !important;
+  gap: 8px !important;
+  padding: 0 10px !important;
+  border-radius: 9px !important;
+  background: rgba(0, 0, 0, 0.18) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: #FFFFFF !important;
+}
+
+.portal-sidebar .nav-shortcuts-search input,
+.sidebar .nav-shortcuts-search input {
+  min-width: 0 !important;
+  flex: 1 !important;
+  border: 0 !important;
+  outline: none !important;
+  background: transparent !important;
+  color: #FFFFFF !important;
+  font-family: var(--font-portal-body) !important;
+  font-size: 13px !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+.portal-sidebar .nav-shortcuts-search input::placeholder,
+.sidebar .nav-shortcuts-search input::placeholder {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.portal-sidebar .nav-shortcuts-search svg,
+.sidebar .nav-shortcuts-search svg {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.portal-sidebar .nav-shortcuts-disclosure,
+.sidebar .nav-shortcuts-disclosure {
+  background: rgba(0, 0, 0, 0.16) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 8px !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 12.5px !important;
+  padding: 8px 12px !important;
+}
+
+.portal-sidebar .nav-shortcuts-disclosure:hover,
+.sidebar .nav-shortcuts-disclosure:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+  color: #FFFFFF !important;
+}
+
+/* 6. Sidebar Profile Card & Sign Out */
+.portal-sidebar [data-slot="sidebar-footer"],
+.sidebar [data-slot="sidebar-footer"] {
+  padding: 16px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: transparent !important;
+}
+
+.portal-sidebar .sidebar-profile,
+.sidebar .sidebar-profile {
+  background: rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 11px !important;
+  color: #FFFFFF !important;
+  padding: 10px 12px !important;
+}
+
+.portal-sidebar .sidebar-profile:hover,
+.sidebar .sidebar-profile:hover {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+.portal-sidebar .sidebar-profile .avatar,
+.sidebar .sidebar-profile .avatar {
+  background: rgba(255, 255, 255, 0.22) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+}
+
+.portal-sidebar .sidebar-profile strong,
+.sidebar .sidebar-profile strong {
+  font-size: 13.5px !important;
+  font-weight: 650 !important;
+  color: #FFFFFF !important;
+}
+
+.portal-sidebar .sidebar-profile small,
+.sidebar .sidebar-profile small {
+  font-size: 11px !important;
+  color: #A7F3D0 !important;
+}
+
+.portal-sidebar [data-slot="sidebar-footer"] [data-slot="sidebar-menu-button"],
+.sidebar [data-slot="sidebar-footer"] [data-slot="sidebar-menu-button"] {
+  color: rgba(255, 255, 255, 0.88) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+.portal-sidebar [data-slot="sidebar-footer"] [data-slot="sidebar-menu-button"]:hover,
+.sidebar [data-slot="sidebar-footer"] [data-slot="sidebar-menu-button"]:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #FFFFFF !important;
 }
