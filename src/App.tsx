@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { SignInGateway } from './components/SignInGateway.tsx';
 import { AppShell } from './components/AppShell.tsx';
 import { SituationRoom } from './components/SituationRoom.tsx';
+import { FarmManagerHome } from './components/roles/FarmManagerHome.tsx';
+import { FinanceHome } from './components/roles/FinanceHome.tsx';
+import { VeterinaryHome } from './components/roles/VeterinaryHome.tsx';
+import { AttendantMyDayHome } from './components/roles/AttendantMyDayHome.tsx';
 import { AddFlockWorkspace } from './components/AddFlockWorkspace.tsx';
 import { RoleManagementWorkspace } from './components/RoleManagementWorkspace.tsx';
 import { CustomerOrdersWorkspace } from './components/CustomerOrdersWorkspace.tsx';
@@ -12,7 +16,7 @@ import { BankingTreasuryWorkspace } from './components/BankingTreasuryWorkspace.
 import { PayrollWorkspace } from './components/PayrollWorkspace.tsx';
 import { ConstructionWorkspace } from './components/ConstructionWorkspace.tsx';
 import { CompletionCenterWorkspace } from './components/CompletionCenterWorkspace.tsx';
-import { Shield, Clock, AlertTriangle, ArrowRight, UserCheck } from 'lucide-react';
+import { Shield, Clock } from 'lucide-react';
 import { formatDualTime } from './lib/temporal.ts';
 
 export function App() {
@@ -25,6 +29,12 @@ export function App() {
     setUserRole(role);
     setUserName(name);
     setIsAuthenticated(true);
+    setCurrentRoute('dashboard');
+  };
+
+  const handleRoleChange = (newRole: string, newName: string) => {
+    setUserRole(newRole);
+    setUserName(newName);
     setCurrentRoute('dashboard');
   };
 
@@ -47,12 +57,32 @@ export function App() {
             <img src="/assets/daenem-farms-official-logo.png" alt="DAENEM Logo" className="h-8 w-auto object-contain daenem-logo-glow" />
             <span className="font-bold text-slate-900 text-sm">DAENEM Farms Balogun-Ikire</span>
           </div>
-          <button 
-            onClick={handleSignOut}
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-700 cursor-pointer"
-          >
-            Sign Out
-          </button>
+          <div className="flex items-center gap-3">
+            <select
+              value="provisional"
+              onChange={(e) => {
+                if (e.target.value === 'owner') handleRoleChange('owner', 'Adedapo Daenem (Owner)');
+                if (e.target.value === 'manager') handleRoleChange('manager', 'Glory Mercy (Farm Manager)');
+                if (e.target.value === 'finance') handleRoleChange('finance', 'Folake Adeleke (Financial Controller)');
+                if (e.target.value === 'veterinary_lead') handleRoleChange('veterinary_lead', 'Dr. Segun Adewale (Lead Vet)');
+                if (e.target.value === 'operator') handleRoleChange('operator', 'Sunday Okafor (Pen Attendant)');
+              }}
+              className="text-xs bg-slate-100 border border-slate-300 rounded-lg px-2 py-1 outline-hidden"
+            >
+              <option value="provisional">Provisional (Locked)</option>
+              <option value="owner">Switch to Owner</option>
+              <option value="manager">Switch to Farm Manager</option>
+              <option value="finance">Switch to Finance</option>
+              <option value="veterinary_lead">Switch to Vet Lead</option>
+              <option value="operator">Switch to Pen Attendant</option>
+            </select>
+            <button 
+              onClick={handleSignOut}
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-700 cursor-pointer"
+            >
+              Sign Out
+            </button>
+          </div>
         </header>
 
         <main className="max-w-xl mx-auto p-6 text-center">
@@ -94,7 +124,7 @@ export function App() {
   }
 
   // Routing Helper
-  const isCommandRoute = ['dashboard', 'owner-decisions', 'daily-brief', 'myday', 'bulletins'].includes(currentRoute);
+  const isCommandRoute = ['dashboard', 'owner-decisions', 'daily-brief', 'bulletins'].includes(currentRoute);
   const isSalesRoute = ['orders', 'order-create', 'dispatch', 'customers', 'pricing-catalog', 'point-of-sale'].includes(currentRoute);
   const isFlockRoute = ['daily-register', 'flocks', 'houses', 'weight-sampling', 'lighting-program', 'breed-benchmarks'].includes(currentRoute);
   const isEggRoute = ['eggs', 'egg-collections', 'egg-grading', 'egg-reconciliation'].includes(currentRoute);
@@ -104,16 +134,44 @@ export function App() {
   const isConstructionRoute = ['construction', 'boq', 'materials', 'equipment', 'fleet'].includes(currentRoute);
   const isGovernanceRoute = ['completion-center', 'audit', 'master-data', 'security', 'diagnostics', 'studio'].includes(currentRoute);
 
+  // Role-Aware Dedicated Home Workspace Renderer
+  const renderHomeForRole = () => {
+    switch (userRole) {
+      case 'manager':
+      case 'farm_manager':
+        return <FarmManagerHome onNavigate={(routeId) => setCurrentRoute(routeId)} />;
+      case 'finance':
+      case 'financial_controller':
+        return <FinanceHome onNavigate={(routeId) => setCurrentRoute(routeId)} />;
+      case 'veterinary_lead':
+      case 'vet':
+        return <VeterinaryHome onNavigate={(routeId) => setCurrentRoute(routeId)} />;
+      case 'operator':
+      case 'pen_attendant':
+        return <AttendantMyDayHome onNavigate={(routeId) => setCurrentRoute(routeId)} />;
+      case 'owner':
+      default:
+        return <SituationRoom onNavigate={(routeId) => setCurrentRoute(routeId)} />;
+    }
+  };
+
   return (
     <AppShell
       userRole={userRole}
       userName={userName}
       currentRoute={currentRoute}
       onNavigate={(routeId) => setCurrentRoute(routeId)}
+      onRoleChange={handleRoleChange}
       onSignOut={handleSignOut}
     >
-      {/* Dynamic Route Switching */}
-      {isCommandRoute && <SituationRoom onNavigate={(routeId) => setCurrentRoute(routeId)} />}
+      {/* Role-Specific Home Cockpit */}
+      {currentRoute === 'dashboard' && renderHomeForRole()}
+
+      {/* Attendant My Day Shift Desk Route */}
+      {currentRoute === 'myday' && <AttendantMyDayHome onNavigate={(routeId) => setCurrentRoute(routeId)} />}
+
+      {/* Executive Command Decisions */}
+      {currentRoute === 'owner-decisions' && <SituationRoom onNavigate={(routeId) => setCurrentRoute(routeId)} />}
       
       {/* Customer Orders & Wholesale Commerce */}
       {isSalesRoute && <CustomerOrdersWorkspace />}
@@ -152,7 +210,7 @@ export function App() {
       {/* Implementation Completion Center & Governance */}
       {isGovernanceRoute && <CompletionCenterWorkspace />}
 
-      {/* Fallback Scoped Module Workspace for unrouted leaves */}
+      {/* Fallback Scoped Module Workspace for other leaves */}
       {!isCommandRoute && 
        !isSalesRoute && 
        !isFlockRoute && 
@@ -162,6 +220,7 @@ export function App() {
        !isPayrollRoute && 
        !isConstructionRoute &&
        !isGovernanceRoute &&
+       currentRoute !== 'myday' &&
        currentRoute !== 'flock-add' && 
        currentRoute !== 'rbac' && (
         <div className="premium-card rounded-2xl p-8 max-w-4xl">
@@ -207,7 +266,7 @@ export function App() {
               onClick={() => setCurrentRoute('dashboard')}
               className="px-4 py-2 border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 cursor-pointer"
             >
-              Return to Situation Room
+              Return to Role Home
             </button>
           </div>
         </div>

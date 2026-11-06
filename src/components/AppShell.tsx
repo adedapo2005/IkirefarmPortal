@@ -15,6 +15,7 @@ interface AppShellProps {
   userName: string;
   currentRoute: string;
   onNavigate: (routeId: string) => void;
+  onRoleChange?: (newRole: string, newName: string) => void;
   onSignOut: () => void;
   children: React.ReactNode;
 }
@@ -24,6 +25,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   userName,
   currentRoute,
   onNavigate,
+  onRoleChange,
   onSignOut,
   children,
 }) => {
@@ -182,14 +184,38 @@ export const AppShell: React.FC<AppShellProps> = ({
               <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white"></span>
             </button>
 
-            {/* Active User Badge & Sign Out */}
+            {/* Active User Badge & Persona Switcher */}
             <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
               <div className="w-8 h-8 rounded-full bg-[#008751] text-white flex items-center justify-center text-xs font-bold shadow-xs">
                 {userName.charAt(0)}
               </div>
               <div className="hidden lg:block text-left">
                 <span className="text-xs font-bold text-slate-900 block leading-tight truncate max-w-[130px]">{userName}</span>
-                <span className="text-[10px] text-slate-500 capitalize block">{userRole}</span>
+                {onRoleChange ? (
+                  <select
+                    value={userRole}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === 'owner') onRoleChange('owner', 'Adedapo Daenem (Owner)');
+                      else if (val === 'manager') onRoleChange('manager', 'Glory Mercy (Farm Manager)');
+                      else if (val === 'finance') onRoleChange('finance', 'Folake Adeleke (Financial Controller)');
+                      else if (val === 'veterinary_lead') onRoleChange('veterinary_lead', 'Dr. Segun Adewale (Lead Vet)');
+                      else if (val === 'operator') onRoleChange('operator', 'Sunday Okafor (Pen Attendant)');
+                      else if (val === 'provisional') onRoleChange('provisional', 'Ibrahim Musa (Pending 48h)');
+                    }}
+                    className="text-[10px] text-slate-600 bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 outline-hidden cursor-pointer font-medium hover:border-[#008751]"
+                    title="Switch Active Persona Cockpit"
+                  >
+                    <option value="owner">Owner (Executive)</option>
+                    <option value="manager">Farm Manager</option>
+                    <option value="finance">Finance Controller</option>
+                    <option value="veterinary_lead">Veterinary Lead</option>
+                    <option value="operator">Pen Attendant</option>
+                    <option value="provisional">Provisional (48h)</option>
+                  </select>
+                ) : (
+                  <span className="text-[10px] text-slate-500 capitalize block">{userRole}</span>
+                )}
               </div>
               <button
                 type="button"
