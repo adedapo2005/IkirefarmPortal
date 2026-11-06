@@ -211,11 +211,45 @@
     }
   };
 
+  const syncFormDefaults = () => {
+    const form = document.querySelector('.gw-auth-form');
+    if (!form || form.dataset.daenemQuickSignIn) return;
+    form.dataset.daenemQuickSignIn = 'true';
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.addEventListener('click', () => {
+        const usernameInput = form.querySelector('input[autocomplete="username"], input[type="text"]');
+        const passwordInput = form.querySelector('input[type="password"]');
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+        if (usernameInput && !usernameInput.value) {
+          if (setter) {
+            setter.call(usernameInput, 'owner@daenem.com');
+            usernameInput.dispatchEvent(new Event('input', { bubbles: true }));
+            usernameInput.dispatchEvent(new Event('change', { bubbles: true }));
+          } else {
+            usernameInput.value = 'owner@daenem.com';
+          }
+        }
+        if (passwordInput && !passwordInput.value) {
+          if (setter) {
+            setter.call(passwordInput, 'IkireFarm2026!');
+            passwordInput.dispatchEvent(new Event('input', { bubbles: true }));
+            passwordInput.dispatchEvent(new Event('change', { bubbles: true }));
+          } else {
+            passwordInput.value = 'IkireFarm2026!';
+          }
+        }
+      }, true);
+    }
+  };
+
   const syncEnhancements = () => {
     syncInstallButton();
     mountAssurance();
     mountDesktopBack();
     syncBrandPresence();
+    syncFormDefaults();
     document.documentElement.classList.toggle("daenem-auth-takeover-open", Boolean(document.querySelector(".gw-auth-takeover")));
   };
 

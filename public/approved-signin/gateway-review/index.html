@@ -17,6 +17,7 @@
       window.fetch = async function(input, init) {
         const url = typeof input === 'string' ? input : (input?.url || '');
 
+        // Base44 Entities Mocks
         if (url.includes('GatewayGlobalLocation') || url.includes('GatewayHeroAsset')) {
           return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
         }
@@ -68,10 +69,16 @@
           }]), { status: 200, headers: { 'Content-Type': 'application/json' } });
         }
 
+        // Portal Health: All providers available
         if (url.includes('/api/portal/v69/health')) {
           return new Response(JSON.stringify({
             status: 'healthy',
-            providers: { google: true, microsoft: true, whatsapp: true, password: true }
+            providers: {
+              google: { available: true },
+              microsoft: { available: true },
+              whatsapp: { available: true },
+              password: { available: true }
+            }
           }), { status: 200, headers: { 'Content-Type': 'application/json' } });
         }
 
@@ -81,71 +88,192 @@
           });
         }
 
+        // Auth Login submission
         if (url.includes('/api/portal/v69/auth/login')) {
           try {
             if (window.parent && window.parent !== window) {
               window.parent.postMessage({ type: 'DAENEM_SIGNIN_SUCCESS', role: 'owner', name: 'Adedapo Daenem' }, '*');
             }
+            const target = window.top && window.top !== window ? window.top : window;
+            target.location.assign('/app.html');
           } catch (e) {}
           return new Response(JSON.stringify({
             status: 'success',
-            user: { id: 'usr-1', username: 'owner', role: 'owner', displayName: 'Adedapo Daenem' }
+            user: { id: 'usr-owner-1', username: 'owner', role: 'owner', displayName: 'Adedapo Daenem' }
           }), { status: 200, headers: { 'Content-Type': 'application/json' } });
         }
 
-        if (url.includes('/api/gateway/news')) {
+        // Live Weather Data (Farm Station + 6 World Cities)
+        if (url.includes('/api/gateway/weather')) {
+          const nowIso = new Date().toISOString();
           return new Response(JSON.stringify({
-            sources_online: 27,
-            total_sources: 27,
-            items: [
+            state: 'connected',
+            farm: {
+              state: 'connected',
+              provider: 'Connected Open-Meteo',
+              fetched_at: nowIso,
+              current: {
+                temp_f: 79,
+                feels_like_f: 87,
+                condition: 'Cloudy',
+                code: 'cloudy',
+                humidity: 78,
+                wind_mph: 8,
+                wind_dir: 'SW',
+                wind_dir_deg: 220,
+                gust_mph: 11,
+                precip_prob: 8,
+                precip_in: 0.03,
+                pressure_in: 29.89,
+                vis_mi: 9.8,
+                uv: 4
+              },
+              today: {
+                high_f: 89,
+                low_f: 75,
+                condition: 'Cloudy',
+                code: 'cloudy',
+                precip_in: 0.03
+              },
+              daily: [
+                { day: 'Today', high_f: 89, low_f: 75, condition: 'Cloudy', code: 'cloudy', precip_prob: 8, date: 'Nov 6' },
+                { day: 'Sat', high_f: 90, low_f: 76, condition: 'Scattered Showers', code: 'rain', precip_prob: 45, date: 'Nov 7' },
+                { day: 'Sun', high_f: 88, low_f: 75, condition: 'Thunderstorms', code: 'storm', precip_prob: 60, date: 'Nov 8' },
+                { day: 'Mon', high_f: 90, low_f: 74, condition: 'Thunderstorms', code: 'storm', precip_prob: 55, date: 'Nov 9' }
+              ],
+              sun: [{ sunrise: '6:31 AM', sunset: '6:21 PM' }]
+            },
+            cities: [
               {
-                id: 'n1',
-                source: 'Punch',
-                time: 'Just now',
-                title: 'Stay and build Nigeria, Mutfwang urges graduates',
-                category: 'LIVE WIRE',
-                imageUrl: 'https://media.base44.com/images/public/6ab5ccef159888436a51d726/ae2e1aee4_generated_662addb3.png'
+                id: 'toronto',
+                state: 'connected',
+                provider: 'Open-Meteo',
+                current: { temp_f: 55, feels_f: 51, condition: 'Cloudy', code: 'cloudy', humidity: 76, wind_mph: 7, wind_dir_deg: 245, gust_mph: 9 },
+                today: { high_f: 58, low_f: 47 }
               },
               {
-                id: 'n2',
-                source: 'BusinessDay',
-                time: '12m ago',
-                title: "Nigeria's Agricultural Sector Sees Opportunities for Growth",
-                category: 'AGRICULTURE',
-                imageUrl: 'https://media.base44.com/images/public/6ab5ccef159888436a51d726/a21c399bb_generated_79c77030.png'
+                id: 'london',
+                state: 'connected',
+                provider: 'Open-Meteo',
+                current: { temp_f: 50, feels_f: 49, condition: 'Partly Cloudy', code: 'partly_cloudy', humidity: 87, wind_mph: 1, wind_dir_deg: 25, gust_mph: 3 },
+                today: { high_f: 53, low_f: 46 }
+              },
+              {
+                id: 'newyork',
+                state: 'connected',
+                provider: 'Open-Meteo',
+                current: { temp_f: 60, feels_f: 59, condition: 'Cloudy', code: 'cloudy', humidity: 82, wind_mph: 5, wind_dir_deg: 290, gust_mph: 8 },
+                today: { high_f: 63, low_f: 52 }
+              },
+              {
+                id: 'moscow',
+                state: 'connected',
+                provider: 'Open-Meteo',
+                current: { temp_f: 33, feels_f: 26, condition: 'Cloudy', code: 'cloudy', humidity: 83, wind_mph: 6, wind_dir_deg: 340, gust_mph: 17 },
+                today: { high_f: 37, low_f: 30 }
+              },
+              {
+                id: 'tokyo',
+                state: 'connected',
+                provider: 'Open-Meteo',
+                current: { temp_f: 57, feels_f: 53, condition: 'Clear', code: 'clear', humidity: 55, wind_mph: 4, wind_dir_deg: 335, gust_mph: 20 },
+                today: { high_f: 62, low_f: 50 }
+              },
+              {
+                id: 'beijing',
+                state: 'connected',
+                provider: 'Open-Meteo',
+                current: { temp_f: 39, feels_f: 33, condition: 'Mostly Clear', code: 'clear', humidity: 61, wind_mph: 4, wind_dir_deg: 45, gust_mph: 9 },
+                today: { high_f: 46, low_f: 34 }
               }
             ]
           }), { status: 200, headers: { 'Content-Type': 'application/json' } });
         }
 
+        // Live News & Editorial
+        if (url.includes('/api/gateway/news')) {
+          const sourcesList = Array.from({ length: 27 }, (_, i) => ({
+            id: 'src-' + i,
+            name: ['Punch', 'BusinessDay', 'Vanguard', 'Guardian', 'TheCable', 'Premium Times', 'Tribune', 'Leadership', 'Nation', 'ThisDay', 'Daily Trust', 'Sun', 'Telegraph', 'Independent', 'Blueprint', 'Peoples Gazette', 'BusinessPost', 'Nairametrics', 'AgroNigeria', 'FarmingNews', 'PoultryWorld', 'Channels TV', 'Arise News', 'NTA', 'VON', 'NAN', 'DAENEM Dispatches'][i] || ('Source ' + i),
+            state: 'connected'
+          }));
+
+          return new Response(JSON.stringify({
+            state: 'connected',
+            sources: sourcesList,
+            latest: [
+              {
+                id: 'n1',
+                title: 'Stay and build Nigeria, Mutfwang urges graduates',
+                source: 'Punch',
+                published: new Date().toISOString(),
+                link: '#',
+                category: 'LIVE WIRE',
+                summary: 'Graduates are urged to embrace national development and food security.'
+              },
+              {
+                id: 'n2',
+                title: "10 key things to know about Justice Lifu's judgment affecting ADC, Atiku, Obi",
+                source: 'Premium Times',
+                published: new Date().toISOString(),
+                link: '#',
+                category: 'NATIONAL',
+                summary: 'Legal analysis on governance continuity and rule of law in Nigeria.'
+              }
+            ],
+            intelligence: {
+              macro: [{ id: 'm1' }],
+              poultry: [{ id: 'p1' }],
+              grain: [{ id: 'g1' }],
+              livestock: [{ id: 'l1' }],
+              energy: [{ id: 'e1' }],
+              policy: [{ id: 'po1' }]
+            }
+          }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
+
+        // Operations Insights
         if (url.includes('/api/gateway/operations-insights')) {
           return new Response(JSON.stringify({
-            domains_covered: 8,
-            total_domains: 8,
-            active_flocks: 16,
-            total_birds: 64200,
-            feed_inventory_tons: 84.5,
-            daily_egg_production_crates: 1850,
-            insights: [{ id: 'oi1', title: 'Flock Activity', value: '16 Active Flocks', status: 'optimal' }]
+            state: 'connected',
+            rotationSeconds: 20,
+            items: [
+              {
+                id: 'oi1',
+                label: 'FLOCK ACTIVITY',
+                value: '16 Active Flocks',
+                headline: '16 Active Flocks',
+                copy: 'All active flock record requirements published to public aggregates.',
+                summary: 'All active flock record requirements published to public aggregates.',
+                updatedAt: new Date().toISOString()
+              }
+            ]
           }), { status: 200, headers: { 'Content-Type': 'application/json' } });
         }
 
-        if (url.includes('/api/gateway/weather')) {
-          return new Response(JSON.stringify({
-            temp_f: 79,
-            temp_c: 26,
-            condition: 'Partly Cloudy',
-            humidity: 78,
-            rain_risk: 'Normal',
-            heat_condition: 'Monitor',
-            wind_condition: 'Normal',
-            uv: 'Moderate',
-            storm_risk: 'Normal'
-          }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        // Spotlight
+        if (url.includes('/api/gateway/spotlight')) {
+          return new Response(JSON.stringify([
+            {
+              id: 'sp1',
+              title: "Nigeria's Agricultural Sector Sees Opportunities for Growth",
+              body: 'Discover how innovations and mechanization are transforming the sector in Osun State and nationwide.',
+              category: 'OPPORTUNITY',
+              author: 'Owner-managed content'
+            }
+          ]), { status: 200, headers: { 'Content-Type': 'application/json' } });
         }
 
-        if (url.includes('/api/gateway/spotlight') || url.includes('/api/gateway/inspiration')) {
-          return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        // Inspiration
+        if (url.includes('/api/gateway/inspiration')) {
+          return new Response(JSON.stringify([
+            {
+              id: 'in1',
+              quote: 'Embracing innovation can lead to new income streams and improved agricultural practices.',
+              author: 'DAENEM FARMS',
+              tag: 'Agricultural Innovation'
+            }
+          ]), { status: 200, headers: { 'Content-Type': 'application/json' } });
         }
 
         return origFetch.apply(this, arguments);
@@ -155,38 +283,6 @@
     <script defer src="/approved-signin/stage05-enhancements.js"></script>
     <script type="module" crossorigin src="/approved-signin/assets/index-density-c40c8eabb802.js"></script>
     <link rel="stylesheet" crossorigin href="/approved-signin/assets/index-density-ce29569986b1.css">
-    <script type="module">
-if (window.self === window.top) {
-  let lastPath = "";
-  function getPageNameFromPath(path) {
-    const segments = path.split("/").filter(Boolean);
-    return segments[0] || null;
-  }
-  function trackPageView() {
-    const path = window.location.pathname;
-    if (path === lastPath) return;
-    lastPath = path;
-    const pageName = getPageNameFromPath(path) || "home";
-    const appId = "";
-    if (!appId) return;
-    fetch(`/api/app-logs/${appId}/log-user-in-app/${pageName}`, {
-      method: "POST",
-    }).catch(() => {});
-  }
-  const originalPushState = history.pushState.bind(history);
-  history.pushState = function (...args) {
-    originalPushState(...args);
-    trackPageView();
-  };
-  const originalReplaceState = history.replaceState.bind(history);
-  history.replaceState = function (...args) {
-    originalReplaceState(...args);
-    trackPageView();
-  };
-  window.addEventListener("popstate", trackPageView);
-  trackPageView();
-}
-</script>
   </head>
   <body>
     <div id="root"></div>
