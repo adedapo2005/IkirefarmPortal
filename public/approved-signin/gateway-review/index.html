@@ -11,6 +11,147 @@
     <link rel="manifest" href="/approved-signin/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/approved-signin/assets/pwa-icon-192.png" />
     <title>DAENEM Farms Employee Gateway</title>
+    <script>
+    (() => {
+      const origFetch = window.fetch;
+      window.fetch = async function(input, init) {
+        const url = typeof input === 'string' ? input : (input?.url || '');
+
+        if (url.includes('GatewayGlobalLocation') || url.includes('GatewayHeroAsset')) {
+          return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
+
+        if (url.includes('GatewaySettings')) {
+          return new Response(JSON.stringify([{
+            portal_theme: 'day',
+            primary_design_day: 'editorial',
+            front_page_style: 'standard',
+            clock_glow_day: true,
+            clock_glow_night: true,
+            clock_design_day: 'chronograph',
+            clock_design_night: 'carbon',
+            clock_case_day: 'brushed',
+            clock_case_night: 'stealth',
+            farm_surface_day: 'eggshell',
+            farm_surface_night: 'deep_slate',
+            signin_surface_day: 'eggshell',
+            signin_surface_night: 'deep_slate',
+            global_surface_day: 'eggshell',
+            global_surface_night: 'deep_slate',
+            status_surface_day: 'eggshell',
+            status_surface_night: 'deep_slate'
+          }]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
+
+        if (url.includes('GatewayAuthConfig')) {
+          return new Response(JSON.stringify([{
+            show_legal_consent: true,
+            signin_design: 'pavilion',
+            material: 'glass',
+            accent: 'jade',
+            button_style: 'solid',
+            animation_style: 'smooth',
+            animation_intensity: 'subtle',
+            density_desktop: 'comfortable',
+            density_tablet: 'comfortable',
+            presentation_desktop: 'standard',
+            presentation_tablet: 'standard'
+          }]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
+
+        if (url.includes('GatewayFarmWeatherConfig')) {
+          return new Response(JSON.stringify([{
+            location_name: 'Balogun-Ikire, Osun State, Nigeria',
+            timezone: 'Africa/Lagos',
+            latitude: 7.36,
+            longitude: 4.18
+          }]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
+
+        if (url.includes('/api/portal/v69/health')) {
+          return new Response(JSON.stringify({
+            status: 'healthy',
+            providers: { google: true, microsoft: true, whatsapp: true, password: true }
+          }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
+
+        if (url.includes('/api/portal/v69/me')) {
+          return new Response(JSON.stringify({ error: 'unauthenticated' }), {
+            status: 401, headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        if (url.includes('/api/portal/v69/auth/login')) {
+          try {
+            if (window.parent && window.parent !== window) {
+              window.parent.postMessage({ type: 'DAENEM_SIGNIN_SUCCESS', role: 'owner', name: 'Adedapo Daenem' }, '*');
+            }
+          } catch (e) {}
+          return new Response(JSON.stringify({
+            status: 'success',
+            user: { id: 'usr-1', username: 'owner', role: 'owner', displayName: 'Adedapo Daenem' }
+          }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
+
+        if (url.includes('/api/gateway/news')) {
+          return new Response(JSON.stringify({
+            sources_online: 27,
+            total_sources: 27,
+            items: [
+              {
+                id: 'n1',
+                source: 'Punch',
+                time: 'Just now',
+                title: 'Stay and build Nigeria, Mutfwang urges graduates',
+                category: 'LIVE WIRE',
+                imageUrl: 'https://media.base44.com/images/public/6ab5ccef159888436a51d726/ae2e1aee4_generated_662addb3.png'
+              },
+              {
+                id: 'n2',
+                source: 'BusinessDay',
+                time: '12m ago',
+                title: "Nigeria's Agricultural Sector Sees Opportunities for Growth",
+                category: 'AGRICULTURE',
+                imageUrl: 'https://media.base44.com/images/public/6ab5ccef159888436a51d726/a21c399bb_generated_79c77030.png'
+              }
+            ]
+          }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
+
+        if (url.includes('/api/gateway/operations-insights')) {
+          return new Response(JSON.stringify({
+            domains_covered: 8,
+            total_domains: 8,
+            active_flocks: 16,
+            total_birds: 64200,
+            feed_inventory_tons: 84.5,
+            daily_egg_production_crates: 1850,
+            insights: [{ id: 'oi1', title: 'Flock Activity', value: '16 Active Flocks', status: 'optimal' }]
+          }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
+
+        if (url.includes('/api/gateway/weather')) {
+          return new Response(JSON.stringify({
+            temp_f: 79,
+            temp_c: 26,
+            condition: 'Partly Cloudy',
+            humidity: 78,
+            rain_risk: 'Normal',
+            heat_condition: 'Monitor',
+            wind_condition: 'Normal',
+            uv: 'Moderate',
+            storm_risk: 'Normal'
+          }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
+
+        if (url.includes('/api/gateway/spotlight') || url.includes('/api/gateway/inspiration')) {
+          return new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        }
+
+        return origFetch.apply(this, arguments);
+      };
+    })();
+    </script>
     <script defer src="/approved-signin/stage05-enhancements.js"></script>
     <script type="module" crossorigin src="/approved-signin/assets/index-density-c40c8eabb802.js"></script>
     <link rel="stylesheet" crossorigin href="/approved-signin/assets/index-density-ce29569986b1.css">
