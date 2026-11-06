@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Building2, Phone, Lock, Globe, Shield, Clock, 
-  CheckCircle2, ArrowRight, UserPlus, KeyRound
+  CheckCircle2, ArrowRight, UserPlus, KeyRound, Sparkles, Monitor
 } from 'lucide-react';
 import { formatDualTime } from '../lib/temporal.ts';
 
@@ -10,6 +10,10 @@ interface SignInGatewayProps {
 }
 
 export const SignInGateway: React.FC<SignInGatewayProps> = ({ onSignInSuccess }) => {
+  // Gateway Mode: 'canonical' (the exact FarmPortal approved sign-in) or 'enhanced' (direct split view)
+  const [gatewayMode, setGatewayMode] = useState<'canonical' | 'enhanced'>('canonical');
+
+  // Enhanced form state
   const [authTab, setAuthTab] = useState<'whatsapp' | 'password' | 'sso' | 'provisional'>('whatsapp');
   const [phone, setPhone] = useState('+234 803 123 4567');
   const [otp, setOtp] = useState('');
@@ -63,6 +67,7 @@ export const SignInGateway: React.FC<SignInGatewayProps> = ({ onSignInSuccess })
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-between font-sans">
+      
       {/* Top Operations Ticker Bar */}
       <header className="bg-[#005A36] text-white text-[12px] px-4 py-2 border-b border-[#00472A] flex flex-wrap items-center justify-between gap-2 shadow-xs">
         <div className="flex items-center gap-3">
@@ -72,6 +77,31 @@ export const SignInGateway: React.FC<SignInGatewayProps> = ({ onSignInSuccess })
           </span>
           <span className="hidden md:inline text-emerald-100/90 text-[12px]">Facility Unit 1: Commercial Layers & Feed Mill</span>
         </div>
+
+        {/* Gateway Viewport Mode Switcher */}
+        <div className="flex items-center gap-1.5 bg-[#003822] p-1 rounded-lg text-xs font-semibold">
+          <button
+            type="button"
+            onClick={() => setGatewayMode('canonical')}
+            className={`px-2.5 py-1 rounded transition cursor-pointer flex items-center gap-1.5 ${
+              gatewayMode === 'canonical' ? 'bg-[#00A86B] text-white' : 'text-emerald-200 hover:text-white'
+            }`}
+          >
+            <Shield className="w-3.5 h-3.5" />
+            <span>FarmPortal Canonical</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setGatewayMode('enhanced')}
+            className={`px-2.5 py-1 rounded transition cursor-pointer flex items-center gap-1.5 ${
+              gatewayMode === 'enhanced' ? 'bg-[#00A86B] text-white' : 'text-emerald-200 hover:text-white'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Enhanced Split-View</span>
+          </button>
+        </div>
+
         <div className="flex items-center gap-4 text-emerald-100 font-mono-numbers text-[12px]">
           <span className="flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5 text-emerald-300" />
@@ -82,383 +112,360 @@ export const SignInGateway: React.FC<SignInGatewayProps> = ({ onSignInSuccess })
             <Globe className="w-3.5 h-3.5 text-emerald-400" />
             <strong className="text-white">New York:</strong> {dualTime.estTime}
           </span>
-          <span className="hidden lg:inline text-emerald-300/90 bg-[#00472A] px-2 py-0.5 rounded text-[11px]">
-            Weather: 28°C Scattered Clouds (Humidity: 74%)
-          </span>
         </div>
       </header>
 
-      {/* Main Split Gateway Viewport */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center">
-        <div className="w-full bg-white rounded-2xl shadow-xl border border-[#E2E8F0] overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[620px]">
-          
-          {/* Left Scenic & Editorial Showcase (5 Cols) */}
-          <div className="lg:col-span-5 bg-gradient-to-br from-[#008751] via-[#005A36] to-[#003822] p-8 text-white flex flex-col justify-between relative overflow-hidden">
-            {/* Background Decorative Pattern */}
-            <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#FFFFFF_1px,transparent_1px)] [background-size:16px_16px]"></div>
-            
-            <div className="relative z-10">
-              <div className="flex items-center gap-3.5 mb-6">
-                <img 
-                  src="/assets/daenem-farms-official-logo.png" 
-                  alt="DAENEM Farms Official Logo" 
-                  className="h-12 w-auto object-contain daenem-logo-glow"
-                />
-                <div>
-                  <h1 className="font-signin-hero text-[22px] font-bold tracking-tight text-white leading-tight">DAENEM FARMS</h1>
-                  <p className="text-[11px] text-emerald-200 uppercase tracking-widest font-semibold">Balogun-Ikire • Osun State</p>
-                </div>
+      {/* Mode A: FarmPortal Approved Canonical Sign-In Gateway */}
+      {gatewayMode === 'canonical' ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-4">
+          <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col min-h-[640px]">
+            <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-xs text-slate-500">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                <span className="font-semibold text-slate-700">Official FarmPortal Gateway (/approved-signin/)</span>
               </div>
-
-              {/* Exact 44px Space Grotesk Headline */}
-              <h2 className="font-signin-hero text-[34px] sm:text-[44px] font-[720] text-white tracking-tight leading-[1.1] mb-4">
-                Smarter Farming. Greater Results.
-              </h2>
-
-              <div className="bg-white/10 border border-white/20 rounded-xl p-4 mb-6 backdrop-blur-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-300 block mb-1">
-                  Enterprise Situation Brief
-                </span>
-                <p className="text-[13px] font-medium text-emerald-50 leading-relaxed">
-                  Precision poultry lifecycle tracking, least-cost feed formulation, automated egg collections, and dual-standard US-Nigerian executive governance.
-                </p>
-              </div>
-
-              {/* 3 Key Operational Pillars */}
-              <div className="space-y-3">
-                <div className="flex items-start gap-3 text-[13px] text-emerald-100">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <span><strong>Biological Conservation:</strong> Certified flock counts, HDEP laying efficiency, and feed intake tracking.</span>
-                </div>
-                <div className="flex items-start gap-3 text-[13px] text-emerald-100">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <span><strong>Zero Cash Exposure:</strong> Dedicated Providus & Zenith virtual collections with automated 3-way sales reconciliation.</span>
-                </div>
-                <div className="flex items-start gap-3 text-[13px] text-emerald-100">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <span><strong>Dual-Standard Time:</strong> Lagos WAT field coordination with New York executive reporting.</span>
-                </div>
-              </div>
+              <span>Fail-Closed Identity Boundary</span>
             </div>
 
-            {/* Bottom Security Assurance */}
-            <div className="relative z-10 pt-6 mt-6 border-t border-emerald-400/20 flex items-center justify-between text-[11px] text-emerald-200">
-              <span className="flex items-center gap-1.5">
-                <Shield className="w-3.5 h-3.5 text-emerald-300" />
-                Fail-Closed Zero-Leakage RBAC
-              </span>
-              <span>v4.0.0 Enterprise</span>
-            </div>
+            <iframe
+              src="/approved-signin/index.html"
+              title="DAENEM Farms Employee Gateway"
+              className="w-full flex-1 min-h-[580px] border-0"
+              allow="clipboard-write"
+            />
           </div>
-
-          {/* Right Authentication Pane (7 Cols) */}
-          <div className="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-between bg-white font-signin-input">
-            <div>
-              <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-4 mb-6">
-                <div>
-                  <h2 className="font-signin-hero text-[20px] font-[800] text-slate-900 tracking-tight">Welcome Back</h2>
-                  <p className="text-[12.5px] text-slate-500 mt-0.5 font-[400]">Select your authorized credential method to access your assigned station</p>
+        </div>
+      ) : (
+        /* Mode B: Enhanced Split-View Sign-In Gateway */
+        <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center">
+          <div className="w-full bg-white rounded-2xl shadow-xl border border-[#E2E8F0] overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[620px]">
+            
+            {/* Left Scenic & Editorial Showcase (5 Cols) */}
+            <div className="lg:col-span-5 bg-gradient-to-br from-[#008751] via-[#005A36] to-[#003822] p-8 text-white flex flex-col justify-between relative overflow-hidden">
+              <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#FFFFFF_1px,transparent_1px)] [background-size:16px_16px]"></div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-6">
+                  <img 
+                    src="/assets/daenem-farms-official-logo.png" 
+                    alt="DAENEM Farms" 
+                    className="h-10 w-auto object-contain daenem-logo-glow" 
+                  />
+                  <div>
+                    <h2 className="text-base font-bold tracking-tight text-white leading-tight">DAENEM FARMS</h2>
+                    <span className="text-[11px] text-emerald-300 tracking-wider uppercase font-semibold">Balogun-Ikire Facility</span>
+                  </div>
                 </div>
-                <span className="text-[11px] font-semibold px-2.5 py-1 rounded-md bg-emerald-50 text-[#008751] border border-emerald-200">
-                  Secure Gateway
-                </span>
+
+                <div className="space-y-4">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#00A86B] text-white">
+                    <Shield className="w-3.5 h-3.5" />
+                    Zero-Leakage Access
+                  </span>
+                  
+                  <h1 className="font-signin-hero text-3xl sm:text-4xl font-[720] leading-[1.15] text-white">
+                    Precision Poultry & Agribusiness Intelligence.
+                  </h1>
+                  
+                  <p className="text-xs text-emerald-100/90 leading-relaxed max-w-md">
+                    Centralized operational ledger governing commercial egg production, feed formulation, and cold-chain distribution.
+                  </p>
+                </div>
               </div>
 
-              {/* Tab Switcher */}
-              <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 rounded-lg mb-6 text-[12.5px] font-[600]">
-                <button
-                  type="button"
-                  onClick={() => { setAuthTab('whatsapp'); setNoticeMessage(null); }}
-                  className={`py-2 rounded-md transition-all ${
-                    authTab === 'whatsapp' 
-                      ? 'bg-white text-[#008751] shadow-xs' 
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  WhatsApp OTP
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setAuthTab('password'); setNoticeMessage(null); }}
-                  className={`py-2 rounded-md transition-all ${
-                    authTab === 'password' 
-                      ? 'bg-white text-[#008751] shadow-xs' 
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Password
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setAuthTab('sso'); setNoticeMessage(null); }}
-                  className={`py-2 rounded-md transition-all ${
-                    authTab === 'sso' 
-                      ? 'bg-white text-[#008751] shadow-xs' 
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Enterprise SSO
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setAuthTab('provisional'); setNoticeMessage(null); }}
-                  className={`py-2 rounded-md transition-all ${
-                    authTab === 'provisional' 
-                      ? 'bg-white text-[#008751] shadow-xs' 
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Register (48h)
-                </button>
-              </div>
-
-              {noticeMessage && (
-                <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-[#005A36] text-[12px] rounded-lg flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>{noticeMessage}</span>
-                </div>
-              )}
-
-              {/* Mode 1: WhatsApp OTP */}
-              {authTab === 'whatsapp' && (
+              {/* Station Metrics */}
+              <div className="relative z-10 grid grid-cols-3 gap-2 border-t border-emerald-700/60 pt-4 mt-6">
                 <div>
-                  {!otpSent ? (
-                    <form onSubmit={handleWhatsAppSend} className="space-y-4">
-                      <div>
-                        <label className="block text-[11px] font-[700] text-slate-700 uppercase tracking-wider mb-1.5">
-                          Verified Nigerian Phone Number
-                        </label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                            <Phone className="w-4 h-4" />
+                  <span className="text-[10px] text-emerald-300 block uppercase font-bold">Livestock</span>
+                  <span className="text-sm font-bold text-white font-mono-numbers">48,210 Birds</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-emerald-300 block uppercase font-bold">Cold Room</span>
+                  <span className="text-sm font-bold text-white font-mono-numbers">3,420 Crates</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-emerald-300 block uppercase font-bold">Feed Silos</span>
+                  <span className="text-sm font-bold text-white font-mono-numbers">9.7d Runway</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Interactive Authentication Panel (7 Cols) */}
+            <div className="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-between bg-white">
+              <div>
+                <div className="flex items-center justify-between mb-4 border-b border-slate-200 pb-3">
+                  <div>
+                    <h2 className="font-signin-hero text-xl font-[800] text-slate-900">Sign In to IkireFarmPortal</h2>
+                    <p className="text-xs text-slate-500 mt-0.5">Select your preferred verification method</p>
+                  </div>
+                  <span className="text-[11px] font-mono font-bold text-[#008751] bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-lg">
+                    WAT Lagos
+                  </span>
+                </div>
+
+                {noticeMessage && (
+                  <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-[#005A36] text-xs rounded-xl flex items-center gap-2 shadow-xs">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>{noticeMessage}</span>
+                  </div>
+                )}
+
+                {/* Auth Mode Tabs */}
+                <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 rounded-xl mb-5 text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => { setAuthTab('whatsapp'); setOtpSent(false); }}
+                    className={`py-2 rounded-lg transition cursor-pointer text-center ${
+                      authTab === 'whatsapp' ? 'bg-white text-[#008751] shadow-2xs font-bold' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    WhatsApp OTP
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAuthTab('password')}
+                    className={`py-2 rounded-lg transition cursor-pointer text-center ${
+                      authTab === 'password' ? 'bg-white text-[#008751] shadow-2xs font-bold' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Password
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAuthTab('sso')}
+                    className={`py-2 rounded-lg transition cursor-pointer text-center ${
+                      authTab === 'sso' ? 'bg-white text-[#008751] shadow-2xs font-bold' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Enterprise SSO
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAuthTab('provisional')}
+                    className={`py-2 rounded-lg transition cursor-pointer text-center ${
+                      authTab === 'provisional' ? 'bg-white text-amber-700 shadow-2xs font-bold' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    48h Signup
+                  </button>
+                </div>
+
+                {/* Mode 1: WhatsApp OTP */}
+                {authTab === 'whatsapp' && (
+                  <div>
+                    {!otpSent ? (
+                      <form onSubmit={handleWhatsAppSend} className="space-y-4">
+                        <div>
+                          <label className="block text-[11px] font-[700] text-slate-700 uppercase tracking-wider mb-1">
+                            Registered WhatsApp Number
+                          </label>
+                          <div className="relative">
+                            <Phone className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                              type="tel"
+                              value={phone}
+                              onChange={(e) => setPhone(e.target.value)}
+                              className="font-signin-input w-full pl-9 pr-3 py-2 text-[12.5px] font-[600] bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#008751] focus:border-[#008751] outline-hidden"
+                              required
+                            />
                           </div>
+                        </div>
+                        <button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="font-signin-hero w-full py-2.5 px-4 bg-[#008751] hover:bg-[#007043] text-white text-[13px] font-[790] rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <span>Send WhatsApp Verification Code</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </button>
+                      </form>
+                    ) : (
+                      <form onSubmit={handleWhatsAppVerify} className="space-y-4">
+                        <div>
+                          <label className="block text-[11px] font-[700] text-slate-700 uppercase tracking-wider mb-1">
+                            Enter 6-Digit WhatsApp Code
+                          </label>
                           <input
                             type="text"
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            className="w-full pl-9 pr-3 py-2.5 text-[12.5px] font-[600] bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#008751] focus:border-[#008751] outline-hidden font-mono-numbers"
-                            placeholder="+234 800 000 0000"
+                            maxLength={6}
+                            value={otp}
+                            onChange={(e) => setOtp(e.target.value)}
+                            placeholder="e.g. 492018"
+                            className="w-full text-center text-xl tracking-[0.4em] font-mono py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#008751] focus:border-[#008751] outline-hidden font-bold"
                             required
                           />
                         </div>
-                        <p className="text-[11px] text-slate-500 mt-1">A single-use 6-digit cryptographic passcode will be dispatched via Meta Cloud API.</p>
-                      </div>
-                      <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="font-signin-hero w-full py-2.5 px-4 bg-[#008751] hover:bg-[#007043] text-white text-[13px] font-[790] rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
-                      >
-                        {isSubmitting ? 'Dispatching WhatsApp OTP...' : 'Send WhatsApp Access Code'}
-                        <ArrowRight className="w-4 h-4" />
-                      </button>
-                    </form>
-                  ) : (
-                    <form onSubmit={handleWhatsAppVerify} className="space-y-4">
-                      <div>
-                        <label className="block text-[11px] font-[700] text-slate-700 uppercase tracking-wider mb-1.5">
-                          Enter 6-Digit Passcode
-                        </label>
-                        <input
-                          type="text"
-                          value={otp}
-                          onChange={(e) => setOtp(e.target.value)}
-                          className="w-full text-center tracking-[0.5em] text-lg font-bold py-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#008751] focus:border-[#008751] outline-hidden font-mono-numbers"
-                          placeholder="••••••"
-                          maxLength={6}
-                          required
-                        />
-                      </div>
-                      <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="font-signin-hero w-full py-2.5 px-4 bg-[#008751] hover:bg-[#007043] text-white text-[13px] font-[790] rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
-                      >
-                        {isSubmitting ? 'Verifying Credentials...' : 'Authenticate & Enter Situation Room'}
-                        <ArrowRight className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setOtpSent(false)}
-                        className="w-full text-center text-xs text-slate-500 hover:text-slate-800"
-                      >
-                        ← Change phone number
-                      </button>
-                    </form>
-                  )}
-                </div>
-              )}
-
-              {/* Mode 2: Password Login */}
-              {authTab === 'password' && (
-                <form onSubmit={handlePasswordSignIn} className="space-y-4">
-                  <div>
-                    <label className="block text-[11px] font-[700] text-slate-700 uppercase tracking-wider mb-1.5">Corporate Email Address</label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-3 py-2.5 text-[12.5px] font-[600] bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#008751] focus:border-[#008751] outline-hidden"
-                      required
-                    />
+                        <button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="font-signin-hero w-full py-2.5 px-4 bg-[#008751] hover:bg-[#007043] text-white text-[13px] font-[790] rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <Shield className="w-4 h-4" />
+                          <span>Verify & Enter IkireFarmPortal</span>
+                        </button>
+                      </form>
+                    )}
                   </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="block text-[11px] font-[700] text-slate-700 uppercase tracking-wider">Access Password</label>
-                      <a href="#recovery" onClick={() => setNoticeMessage('Password recovery request initiated. Contact the System Administrator or check registered email.')} className="text-xs text-[#008751] hover:underline">
-                        Forgot Password?
-                      </a>
+                )}
+
+                {/* Mode 2: Password */}
+                {authTab === 'password' && (
+                  <form onSubmit={handlePasswordSignIn} className="space-y-3">
+                    <div>
+                      <label className="block text-[11px] font-[700] text-slate-700 uppercase tracking-wider mb-1">Email Address</label>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="font-signin-input w-full px-3 py-2 text-[12.5px] font-[600] bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#008751] focus:border-[#008751] outline-hidden"
+                        required
+                      />
                     </div>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                        <Lock className="w-4 h-4" />
-                      </div>
+                    <div>
+                      <label className="block text-[11px] font-[700] text-slate-700 uppercase tracking-wider mb-1">Password</label>
                       <input
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full pl-9 pr-3 py-2.5 text-[12.5px] font-[600] bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#008751] focus:border-[#008751] outline-hidden"
+                        className="font-signin-input w-full px-3 py-2 text-[12.5px] font-[600] bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#008751] focus:border-[#008751] outline-hidden"
                         required
                       />
                     </div>
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="font-signin-hero w-full py-2.5 px-4 bg-[#008751] hover:bg-[#007043] text-white text-[13px] font-[790] rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    {isSubmitting ? 'Verifying PBKDF2 Hash...' : 'Sign In with Password'}
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </form>
-              )}
-
-              {/* Mode 3: Enterprise SSO */}
-              {authTab === 'sso' && (
-                <div className="space-y-3">
-                  <p className="text-[12px] text-slate-600 mb-2">Sign in using your enterprise directory credentials with pre-verified organizational claims.</p>
-                  <button
-                    type="button"
-                    onClick={() => onSignInSuccess('owner', 'Adedapo Daenem (Google Workspace)')}
-                    className="w-full py-2.5 px-4 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-[12.5px] font-[600] rounded-lg shadow-xs flex items-center justify-center gap-3 cursor-pointer"
-                  >
-                    <svg className="w-4 h-4" viewBox="0 0 24 24">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                    </svg>
-                    Continue with Google Workspace
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onSignInSuccess('owner', 'Adedapo Daenem (Microsoft 365)')}
-                    className="w-full py-2.5 px-4 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-[12.5px] font-[600] rounded-lg shadow-xs flex items-center justify-center gap-3 cursor-pointer"
-                  >
-                    <svg className="w-4 h-4" viewBox="0 0 23 23">
-                      <path fill="#f35325" d="M1 1h10v10H1z"/>
-                      <path fill="#81bc06" d="M12 1h10v10H12z"/>
-                      <path fill="#05a6f0" d="M1 12h10v10H1z"/>
-                      <path fill="#ffba08" d="M12 12h10v10H12z"/>
-                    </svg>
-                    Continue with Microsoft Entra ID
-                  </button>
-                </div>
-              )}
-
-              {/* Mode 4: 48h Provisional Registration */}
-              {authTab === 'provisional' && (
-                <form onSubmit={handleProvisionalSignup} className="space-y-3">
-                  <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-[11px]">
-                    <strong>48-Hour Provisional Lifecycle:</strong> Unverified signups expire automatically at 48 hours unless explicitly approved by the Farm Administrator.
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-[700] text-slate-700 uppercase tracking-wider mb-1">Full Legal Name</label>
-                    <input
-                      type="text"
-                      value={provisionalName}
-                      onChange={(e) => setProvisionalName(e.target.value)}
-                      placeholder="e.g. Babatunde Adeleke"
-                      className="w-full px-3 py-2 text-[12.5px] font-[600] bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#008751] focus:border-[#008751] outline-hidden"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-[700] text-slate-700 uppercase tracking-wider mb-1">Operational Station Request</label>
-                    <select
-                      value={provisionalRole}
-                      onChange={(e) => setProvisionalRole(e.target.value)}
-                      className="w-full px-3 py-2 text-[12.5px] font-[600] bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#008751] focus:border-[#008751] outline-hidden"
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="font-signin-hero w-full py-2.5 px-4 bg-[#008751] hover:bg-[#007043] text-white text-[13px] font-[790] rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      <option value="Farm Attendant">Farm Attendant (Egg Collection & Feeding)</option>
-                      <option value="Veterinary Intern">Veterinary Officer / Clinical Intern</option>
-                      <option value="Feed Mill Operator">Feed Mill Batching Technician</option>
-                      <option value="Driver / Logistics">Wholesale Dispatch Driver</option>
-                    </select>
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="font-signin-hero w-full py-2.5 px-4 bg-[#008751] hover:bg-[#007043] text-white text-[13px] font-[790] rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <UserPlus className="w-4 h-4" />
-                    Submit Provisional Registration
-                  </button>
-                </form>
-              )}
-            </div>
+                      <KeyRound className="w-4 h-4" />
+                      Sign In with Password
+                    </button>
+                  </form>
+                )}
 
-            {/* Switch Personas Shortcut for Verification */}
-            <div className="pt-6 mt-6 border-t border-slate-200">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
-                Rapid Verification Shortcuts (Role-Aware Personas)
-              </span>
-              <div className="flex flex-wrap gap-2 text-xs">
-                <button
-                  type="button"
-                  onClick={() => onSignInSuccess('owner', 'Adedapo Daenem (Owner)')}
-                  className="px-2.5 py-1 bg-slate-100 hover:bg-emerald-50 hover:text-[#008751] rounded text-slate-700 font-medium transition cursor-pointer"
-                >
-                  Owner (Situation Room)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onSignInSuccess('manager', 'Glory Mercy (Farm Manager)')}
-                  className="px-2.5 py-1 bg-slate-100 hover:bg-emerald-50 hover:text-[#008751] rounded text-slate-700 font-medium transition cursor-pointer"
-                >
-                  Farm Manager
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onSignInSuccess('finance', 'Folake Adeleke (Financial Controller)')}
-                  className="px-2.5 py-1 bg-slate-100 hover:bg-emerald-50 hover:text-[#008751] rounded text-slate-700 font-medium transition cursor-pointer"
-                >
-                  Finance / Banking
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onSignInSuccess('operator', 'Sunday Okafor (Pen Attendant)')}
-                  className="px-2.5 py-1 bg-slate-100 hover:bg-emerald-50 hover:text-[#008751] rounded text-slate-700 font-medium transition cursor-pointer"
-                >
-                  Operator (My Day)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onSignInSuccess('provisional', 'Ibrahim Musa (Pending 48h)')}
-                  className="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 rounded text-amber-900 font-medium transition cursor-pointer"
-                >
-                  Provisional (Unapproved)
-                </button>
+                {/* Mode 3: SSO */}
+                {authTab === 'sso' && (
+                  <div className="space-y-3">
+                    <button
+                      type="button"
+                      onClick={() => onSignInSuccess('owner', 'Adedapo Daenem (Google SSO)')}
+                      className="w-full py-2.5 px-4 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-[12.5px] font-[600] rounded-lg shadow-xs flex items-center justify-center gap-3 cursor-pointer"
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.14z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
+                        <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                      </svg>
+                      Continue with Google Workspace
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onSignInSuccess('owner', 'Adedapo Daenem (Microsoft 365)')}
+                      className="w-full py-2.5 px-4 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-[12.5px] font-[600] rounded-lg shadow-xs flex items-center justify-center gap-3 cursor-pointer"
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 23 23">
+                        <path fill="#f35325" d="M1 1h10v10H1z"/>
+                        <path fill="#81bc06" d="M12 1h10v10H12z"/>
+                        <path fill="#05a6f0" d="M1 12h10v10H1z"/>
+                        <path fill="#ffba08" d="M12 12h10v10H12z"/>
+                      </svg>
+                      Continue with Microsoft Entra ID
+                    </button>
+                  </div>
+                )}
+
+                {/* Mode 4: 48h Provisional Registration */}
+                {authTab === 'provisional' && (
+                  <form onSubmit={handleProvisionalSignup} className="space-y-3">
+                    <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-[11px]">
+                      <strong>48-Hour Provisional Lifecycle:</strong> Unverified signups expire automatically at 48 hours unless explicitly approved by the Farm Administrator.
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-[700] text-slate-700 uppercase tracking-wider mb-1">Full Legal Name</label>
+                      <input
+                        type="text"
+                        value={provisionalName}
+                        onChange={(e) => setProvisionalName(e.target.value)}
+                        placeholder="e.g. Babatunde Adeleke"
+                        className="w-full px-3 py-2 text-[12.5px] font-[600] bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#008751] focus:border-[#008751] outline-hidden"
+                        required
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="font-signin-hero w-full py-2.5 px-4 bg-[#008751] hover:bg-[#007043] text-white text-[13px] font-[790] rounded-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      Submit Provisional Registration
+                    </button>
+                  </form>
+                )}
               </div>
             </div>
 
           </div>
+        </main>
+      )}
+
+      {/* Floating Persona Quick-Login Testing Dock */}
+      <div className="p-3 bg-white border-t border-slate-200 shadow-sm">
+        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+          <span className="font-bold text-slate-500 uppercase text-[10px] tracking-wider">
+            Quick Persona Login (Local Test Fixture):
+          </span>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => onSignInSuccess('owner', 'Adedapo Daenem (Owner)')}
+              className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-[#005A36] border border-emerald-300 rounded-lg font-bold transition cursor-pointer"
+            >
+              Owner Cockpit
+            </button>
+            <button
+              type="button"
+              onClick={() => onSignInSuccess('manager', 'Glory Mercy (Farm Manager)')}
+              className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-semibold transition cursor-pointer"
+            >
+              Farm Manager
+            </button>
+            <button
+              type="button"
+              onClick={() => onSignInSuccess('finance', 'Folake Adeleke (Financial Controller)')}
+              className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-semibold transition cursor-pointer"
+            >
+              Finance Controller
+            </button>
+            <button
+              type="button"
+              onClick={() => onSignInSuccess('veterinary_lead', 'Dr. Segun Adewale (Lead Vet)')}
+              className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-semibold transition cursor-pointer"
+            >
+              Lead Veterinarian
+            </button>
+            <button
+              type="button"
+              onClick={() => onSignInSuccess('operator', 'Sunday Okafor (Pen Attendant)')}
+              className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-semibold transition cursor-pointer"
+            >
+              Pen Attendant (My Day)
+            </button>
+            <button
+              type="button"
+              onClick={() => onSignInSuccess('provisional', 'Ibrahim Musa (Pending 48h)')}
+              className="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-lg font-bold transition cursor-pointer"
+            >
+              Provisional (48h Lock)
+            </button>
+          </div>
         </div>
-      </main>
+      </div>
 
       {/* Persistent Footer */}
-      <footer className="text-center text-xs text-slate-400 py-4 border-t border-slate-200 bg-white">
-        © 2026 DAENEM Farms (Balogun-Ikire, Osun State). Fieldline V6 Standard. Zero-Glass Guarantee.
+      <footer className="text-center text-xs text-slate-400 py-3 border-t border-slate-200 bg-slate-50">
+        © 2026 DAENEM Farms Balogun-Ikire. Independent Repository & Infrastructure. Fail-Closed Zero-Leakage Architecture.
       </footer>
+
     </div>
   );
 };

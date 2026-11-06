@@ -1,0 +1,264 @@
+.gw-wa-signup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, .76);
+}
+.gw-wa-signup-dialog {
+  width: min(100%, 440px);
+  max-height: min(90vh, 760px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid rgba(210, 239, 224, .2);
+  border-radius: 22px;
+  padding: 24px;
+  color: #f8fbf9;
+  background: #07130f;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, .48), inset 0 1px rgba(255, 255, 255, .06);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+.gw-wa-signup-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.gw-wa-signup-eyebrow {
+  margin: 0;
+  color: rgba(248, 251, 249, .62);
+  font-size: 13px;
+  font-weight: 750;
+  letter-spacing: .15em;
+}
+.gw-wa-signup-title {
+  margin: 5px 0 0;
+  color: #f8fbf9;
+  font-size: 27px;
+  font-weight: 650;
+  line-height: 1.15;
+}
+.gw-wa-signup-close {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(255, 255, 255, .15);
+  border-radius: 12px;
+  color: #f8fbf9;
+  background: rgba(255, 255, 255, .06);
+  font-size: 25px;
+  line-height: 1;
+  cursor: pointer;
+}
+.gw-wa-signup-description {
+  margin: 10px 0 18px;
+  color: rgba(237, 246, 241, .76);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.gw-wa-signup-form {
+  display: grid;
+  gap: 13px;
+}
+.gw-wa-signup-label {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  color: #f4faf6;
+  font-size: 13px;
+  font-weight: 650;
+}
+.gw-wa-signup-field {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  box-sizing: border-box;
+  border: 1px solid rgba(221, 241, 230, .24);
+  border-radius: 11px;
+  padding: 11px 13px;
+  color: #f8fbf9 !important;
+  -webkit-text-fill-color: #f8fbf9 !important;
+  caret-color: #35d98a !important;
+  background: #10221b !important;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.35;
+  outline: none;
+  box-shadow: inset 0 1px rgba(255, 255, 255, .05);
+}
+.gw-wa-signup-field::placeholder {
+  color: rgba(226, 239, 231, .48) !important;
+  -webkit-text-fill-color: rgba(226, 239, 231, .48) !important;
+}
+.gw-wa-signup-field:focus-visible {
+  border-color: #35d98a !important;
+  outline: 2px solid rgba(53, 217, 138, .32);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(53, 217, 138, .12);
+}
+.gw-wa-signup-field:-webkit-autofill,
+.gw-wa-signup-field:-webkit-autofill:hover,
+.gw-wa-signup-field:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f8fbf9 !important;
+  caret-color: #35d98a !important;
+  box-shadow: 0 0 0 1000px #10221b inset !important;
+}
+.gw-wa-signup-code {
+  min-height: 54px;
+  text-align: center;
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: .42em;
+  padding-left: 18px;
+  color: #f8fbf9 !important;
+  -webkit-text-fill-color: #f8fbf9 !important;
+  caret-color: #35d98a !important;
+  background: #10221b !important;
+}
+.gw-wa-signup-hint {
+  margin: 0;
+  color: rgba(237, 246, 241, .76);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.gw-wa-signup-terms {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  color: rgba(237, 246, 241, .82);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.gw-wa-signup-checkbox {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  margin: 1px 0 0;
+  accent-color: #35d98a;
+}
+.gw-wa-signup-terms a {
+  color: #8de7b7;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.gw-wa-signup-submit {
+  display: flex;
+  width: 100%;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(125, 238, 178, .52);
+  border-radius: 12px;
+  padding: 11px 15px;
+  color: #062318;
+  background: linear-gradient(180deg, #62e5a7, #35d98a 58%, #25bd76);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .42), 0 12px 24px -16px rgba(53, 217, 138, .72);
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.gw-wa-signup-submit:disabled,
+.gw-wa-signup-secondary:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+.gw-wa-signup-secondary {
+  border: 1px solid rgba(221, 241, 230, .2);
+  border-radius: 10px;
+  padding: 9px 12px;
+  color: #dceee4;
+  background: rgba(255, 255, 255, .055);
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.gw-wa-signup-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.gw-wa-signup-status {
+  margin: 0 0 13px;
+  border: 1px solid rgba(53, 217, 138, .26);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: #dff7e9;
+  background: rgba(53, 217, 138, .08);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.gw-wa-signup-status[data-kind="error"] {
+  border-color: rgba(245, 120, 110, .42);
+  color: #ffe3df;
+  background: rgba(185, 50, 42, .16);
+}
+.gw-wa-signup-status[hidden] {
+  display: none;
+}
+.gw-auth-input[autocomplete="one-time-code"] {
+  color: #f8fbf9 !important;
+  -webkit-text-fill-color: #f8fbf9 !important;
+  caret-color: #35d98a !important;
+  background: #10221b !important;
+  border: 1px solid rgba(221, 241, 230, .24) !important;
+}
+.gw-auth-input[autocomplete="one-time-code"]::placeholder {
+  color: rgba(226, 239, 231, .48) !important;
+  -webkit-text-fill-color: rgba(226, 239, 231, .48) !important;
+}
+@media (max-width: 480px) {
+  .gw-wa-signup-dialog {
+    max-height: 92vh;
+    border-radius: 18px;
+    padding: 19px;
+  }
+  .gw-wa-signup-title { font-size: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gw-wa-signup-dialog *,
+  .gw-wa-signup-overlay * {
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+  }
+}
+
+/* Keep one-time codes legible in both the WhatsApp sign-up bridge and
+   the existing approved registration verification surface. */
+input[autocomplete="one-time-code"],
+input[autocomplete="one-time-code"]:focus,
+input[autocomplete="one-time-code"]:active {
+  color: #f8fbf9 !important;
+  -webkit-text-fill-color: #f8fbf9 !important;
+  caret-color: #35d98a !important;
+  background-color: #10221b !important;
+}
+input[autocomplete="one-time-code"]::placeholder {
+  color: rgba(226, 239, 231, .62) !important;
+  -webkit-text-fill-color: rgba(226, 239, 231, .62) !important;
+  opacity: 1 !important;
+}
+input[autocomplete="one-time-code"]:-webkit-autofill,
+input[autocomplete="one-time-code"]:-webkit-autofill:hover,
+input[autocomplete="one-time-code"]:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f8fbf9 !important;
+  caret-color: #35d98a !important;
+  box-shadow: 0 0 0 1000px #10221b inset !important;
+}
+
+/* The approved email-verification InputOTP renders visible digits in slot
+   elements beside its intentionally transparent native input. Style those
+   visible slots explicitly; styling the hidden input alone is insufficient. */
+[data-input-otp-container] > :first-child [class~="border-y"] {
+  color: #f8fbf9 !important;
+  -webkit-text-fill-color: #f8fbf9 !important;
+  background-color: #10221b !important;
+  border-color: rgba(221, 241, 230, .3) !important;
+}
+[data-input-otp-container] > :first-child [class~="border-y"] [class~="bg-foreground"] {
+  background-color: #35d98a !important;
+}

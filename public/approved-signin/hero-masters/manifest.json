@@ -1,0 +1,20 @@
+{
+  "contract": "DAENEM_FARMS_SIX_MATCHED_DAY_NIGHT_MASTER_PAIRS",
+  "ready": false,
+  "approved_pairs": 0,
+  "required_pairs": 6,
+  "missing": [
+    "scene-01-day.(png|jpg|jpeg|webp)",
+    "scene-01-night.(png|jpg|jpeg|webp)",
+    "scene-02-day.(png|jpg|jpeg|webp)",
+    "scene-02-night.(png|jpg|jpeg|webp)",
+    "scene-03-day.(png|jpg|jpeg|webp)",
+    "scene-03-night.(png|jpg|jpeg|webp)",
+    "scene-04-day.(png|jpg|jpeg|webp)",
+    "scene-04-night.(png|jpg|jpeg|webp)",
+    "scene-05-day.(png|jpg|jpeg|webp)",
+    "scene-05-night.(png|jpg|jpeg|webp)",
+    "scene-06-day.(png|jpg|jpeg|webp)",
+    "scene-06-night.(png|jpg|jpeg|webp)"
+  ]
+}
