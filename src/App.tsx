@@ -10,6 +10,8 @@ import { EggRoomWorkspace } from './components/EggRoomWorkspace.tsx';
 import { FeedMillWorkspace } from './components/FeedMillWorkspace.tsx';
 import { BankingTreasuryWorkspace } from './components/BankingTreasuryWorkspace.tsx';
 import { PayrollWorkspace } from './components/PayrollWorkspace.tsx';
+import { ConstructionWorkspace } from './components/ConstructionWorkspace.tsx';
+import { CompletionCenterWorkspace } from './components/CompletionCenterWorkspace.tsx';
 import { Shield, Clock, AlertTriangle, ArrowRight, UserCheck } from 'lucide-react';
 import { formatDualTime } from './lib/temporal.ts';
 
@@ -99,6 +101,8 @@ export function App() {
   const isFeedRoute = ['feed', 'feed-formulas', 'feed-silos', 'feed-quality', 'feed-consumption'].includes(currentRoute);
   const isTreasuryRoute = ['treasury', 'banking', 'collections', 'reconciliation', 'expenses', 'general-ledger'].includes(currentRoute);
   const isPayrollRoute = ['payroll', 'employees', 'attendance', 'leave', 'statutory', 'payslips'].includes(currentRoute);
+  const isConstructionRoute = ['construction', 'boq', 'materials', 'equipment', 'fleet'].includes(currentRoute);
+  const isGovernanceRoute = ['completion-center', 'audit', 'master-data', 'security', 'diagnostics', 'studio'].includes(currentRoute);
 
   return (
     <AppShell
@@ -139,10 +143,16 @@ export function App() {
       {/* Human Resources, Biometric Attendance & Payroll Platform */}
       {isPayrollRoute && <PayrollWorkspace />}
 
+      {/* Balogun-Ikire Capital Construction ERP & BOQ */}
+      {isConstructionRoute && <ConstructionWorkspace />}
+
       {/* Full Admin Dynamic Role & Permission Creation Studio */}
       {currentRoute === 'rbac' && <RoleManagementWorkspace />}
 
-      {/* Fallback Scoped Module Workspace for other leaves */}
+      {/* Implementation Completion Center & Governance */}
+      {isGovernanceRoute && <CompletionCenterWorkspace />}
+
+      {/* Fallback Scoped Module Workspace for unrouted leaves */}
       {!isCommandRoute && 
        !isSalesRoute && 
        !isFlockRoute && 
@@ -150,6 +160,8 @@ export function App() {
        !isFeedRoute && 
        !isTreasuryRoute && 
        !isPayrollRoute && 
+       !isConstructionRoute &&
+       !isGovernanceRoute &&
        currentRoute !== 'flock-add' && 
        currentRoute !== 'rbac' && (
         <div className="premium-card rounded-2xl p-8 max-w-4xl">
@@ -178,10 +190,17 @@ export function App() {
             </button>
             <button
               type="button"
-              onClick={() => setCurrentRoute('rbac')}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-lg shadow-sm cursor-pointer"
+              onClick={() => setCurrentRoute('construction')}
+              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg shadow-sm cursor-pointer"
             >
-              Open Dynamic Role Studio
+              Open Construction ERP
+            </button>
+            <button
+              type="button"
+              onClick={() => setCurrentRoute('completion-center')}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm cursor-pointer"
+            >
+              Open Completion Center
             </button>
             <button
               type="button"
