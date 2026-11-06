@@ -7,7 +7,7 @@ import {
   CheckCircle2, AlertTriangle, Info, Menu, X, Wheat, Syringe,
   PanelLeftClose, PanelLeft, ArrowUpRight
 } from 'lucide-react';
-import { NAV_DIVISIONS, NavDivision, NavModule, NavLeaf } from '../lib/navigation.ts';
+import { NAV_GROUPS, NavGroup, NavModule, NavLeaf } from '../lib/navigation.ts';
 import { formatDualTime } from '../lib/temporal.ts';
 
 interface AppShellProps {
@@ -27,8 +27,8 @@ export const AppShell: React.FC<AppShellProps> = ({
   onSignOut,
   children,
 }) => {
-  // Navigation State: Smart Accordion (one open division by default)
-  const [openDivision, setOpenDivision] = useState<string>('executive-command');
+  // Navigation State: Smart Accordion (one open group by default)
+  const [openGroup, setOpenGroup] = useState<string>('home');
   const [compactRailMode, setCompactRailMode] = useState<boolean>(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -59,18 +59,18 @@ export const AppShell: React.FC<AppShellProps> = ({
     }
   };
 
-  const toggleDivision = (divId: string) => {
-    setOpenDivision(openDivision === divId ? '' : divId);
+  const toggleGroup = (groupId: string) => {
+    setOpenGroup(openGroup === groupId ? '' : groupId);
   };
 
-  // Find active division & leaf for breadcrumbs
-  let activeDivisionTitle = 'Operations';
-  let activeLeafTitle = 'Workspace';
-  for (const div of NAV_DIVISIONS) {
-    for (const mod of div.modules) {
+  // Find active group & leaf for breadcrumbs
+  let activeGroupTitle = 'Home';
+  let activeLeafTitle = 'Situation Room';
+  for (const grp of NAV_GROUPS) {
+    for (const mod of grp.modules) {
       for (const leaf of mod.leaves) {
         if (leaf.id === currentRoute) {
-          activeDivisionTitle = div.title;
+          activeGroupTitle = grp.title;
           activeLeafTitle = leaf.title;
           break;
         }
@@ -79,7 +79,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans pb-16 lg:pb-0">
       
       {/* Top Header Rail: Dual-Time Operations & System Status */}
       <header className="bg-white border-b border-[#E2E8F0] sticky top-0 z-30 shadow-2xs">
@@ -119,9 +119,9 @@ export const AppShell: React.FC<AppShellProps> = ({
 
             {/* Contextual Breadcrumb Path */}
             <div className="hidden md:flex items-center gap-1.5 text-xs text-slate-400 pl-4 border-l border-slate-200">
-              <span className="truncate max-w-[160px] text-slate-500">{activeDivisionTitle}</span>
+              <span className="truncate max-w-[140px] text-slate-500">{activeGroupTitle}</span>
               <span>&gt;</span>
-              <span className="text-slate-900 font-semibold truncate max-w-[180px]">{activeLeafTitle}</span>
+              <span className="text-slate-900 font-semibold truncate max-w-[200px]">{activeLeafTitle}</span>
             </div>
           </div>
 
@@ -196,7 +196,7 @@ export const AppShell: React.FC<AppShellProps> = ({
         <aside className={`
           bg-[#008751] text-white flex flex-col shrink-0 border-r border-[#007043] 
           fixed lg:static inset-y-14 lg:inset-y-0 left-0 z-20 transition-all duration-200 ease-in-out
-          ${compactRailMode ? 'w-20' : 'w-80'}
+          ${compactRailMode ? 'w-20' : 'w-76'}
           ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
           
@@ -217,65 +217,65 @@ export const AppShell: React.FC<AppShellProps> = ({
             </div>
           )}
 
-          {/* Smart Accordion: The 10 Operational Divisions */}
+          {/* Smart Accordion: The Canonical 9 Operational Groups */}
           <nav className="flex-1 overflow-y-auto p-2 space-y-1 text-xs">
-            {NAV_DIVISIONS.map((division) => {
-              const isDivOpen = openDivision === division.id;
+            {NAV_GROUPS.map((group) => {
+              const isGroupOpen = openGroup === group.id;
               
               if (compactRailMode) {
                 // Compact Mode: Icon + Shortcode + Hover Flyout Context
                 return (
                   <button
-                    key={division.id}
+                    key={group.id}
                     type="button"
                     onClick={() => {
                       setCompactRailMode(false);
-                      setOpenDivision(division.id);
+                      setOpenGroup(group.id);
                     }}
-                    title={`${division.title} - ${division.description}`}
+                    title={`${group.title} - ${group.description}`}
                     className={`w-full py-3 px-1 rounded-xl flex flex-col items-center justify-center transition cursor-pointer ${
-                      isDivOpen 
+                      isGroupOpen 
                         ? 'bg-[#005A36] text-white ring-1 ring-[#00A86B]' 
                         : 'text-emerald-100 hover:bg-[#007043] hover:text-white'
                     }`}
                   >
                     <div className="mb-1 text-emerald-300">
-                      {getIcon(division.iconName)}
+                      {getIcon(group.iconName)}
                     </div>
-                    <span className="text-[9px] font-bold tracking-wider uppercase">{division.shortCode}</span>
+                    <span className="text-[9px] font-bold tracking-wider uppercase">{group.shortCode}</span>
                   </button>
                 );
               }
 
               // Expanded Full Hierarchy Mode
               return (
-                <div key={division.id} className="rounded-xl overflow-hidden mb-1.5 transition-all">
+                <div key={group.id} className="rounded-xl overflow-hidden mb-1.5 transition-all">
                   
-                  {/* Division Header Accordion Trigger */}
+                  {/* Group Header Accordion Trigger */}
                   <button
                     type="button"
-                    onClick={() => toggleDivision(division.id)}
+                    onClick={() => toggleGroup(group.id)}
                     className={`w-full px-3 py-2.5 flex items-center justify-between text-left font-bold tracking-wide transition cursor-pointer ${
-                      isDivOpen 
+                      isGroupOpen 
                         ? 'bg-[#005A36] text-white shadow-2xs' 
                         : 'text-emerald-100 hover:bg-[#007043] hover:text-white'
                     }`}
                   >
                     <div className="flex items-center gap-2.5 overflow-hidden">
                       <div className="text-emerald-300 shrink-0">
-                        {getIcon(division.iconName)}
+                        {getIcon(group.iconName)}
                       </div>
-                      <span className="text-[12px] font-bold tracking-tight truncate leading-tight">
-                        {division.title}
+                      <span className="text-[13px] font-bold tracking-tight truncate leading-tight">
+                        {group.title}
                       </span>
                     </div>
-                    <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 text-emerald-300 ${isDivOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 text-emerald-300 ${isGroupOpen ? 'rotate-180' : ''}`} />
                   </button>
 
-                  {/* Modules and Leaves inside Division */}
-                  {isDivOpen && (
+                  {/* Modules and Leaves inside Group */}
+                  {isGroupOpen && (
                     <div className="bg-[#00472A] p-2 space-y-2 border-t border-[#003822]">
-                      {division.modules.map((module) => (
+                      {group.modules.map((module) => (
                         <div key={module.id} className="space-y-0.5">
                           <div className="px-2 py-1 text-[10px] uppercase font-bold text-emerald-300/90 tracking-wider flex items-center gap-1.5">
                             <span>{module.title}</span>
@@ -354,6 +354,58 @@ export const AppShell: React.FC<AppShellProps> = ({
         </main>
 
       </div>
+
+      {/* Mobile-First Bottom App Dock (Inspired by MyPoultryHub & SmartFlok) */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 py-2 px-4 z-40 flex items-center justify-around shadow-lg">
+        <button
+          onClick={() => onNavigate('dashboard')}
+          className={`flex flex-col items-center text-[10px] font-medium transition cursor-pointer ${
+            currentRoute === 'dashboard' ? 'text-[#008751] font-bold' : 'text-slate-500'
+          }`}
+        >
+          <LayoutDashboard className="w-5 h-5 mb-0.5" />
+          <span>Home</span>
+        </button>
+
+        <button
+          onClick={() => onNavigate('daily-register')}
+          className={`flex flex-col items-center text-[10px] font-medium transition cursor-pointer ${
+            currentRoute === 'daily-register' ? 'text-[#008751] font-bold' : 'text-slate-500'
+          }`}
+        >
+          <Bird className="w-5 h-5 mb-0.5" />
+          <span>Register</span>
+        </button>
+
+        <button
+          onClick={() => onNavigate('eggs')}
+          className={`flex flex-col items-center text-[10px] font-medium transition cursor-pointer ${
+            currentRoute === 'eggs' ? 'text-[#008751] font-bold' : 'text-slate-500'
+          }`}
+        >
+          <Egg className="w-5 h-5 mb-0.5" />
+          <span>Eggs</span>
+        </button>
+
+        <button
+          onClick={() => onNavigate('orders')}
+          className={`flex flex-col items-center text-[10px] font-medium transition cursor-pointer ${
+            currentRoute === 'orders' ? 'text-[#008751] font-bold' : 'text-slate-500'
+          }`}
+        >
+          <BadgePercent className="w-5 h-5 mb-0.5" />
+          <span>Sales</span>
+        </button>
+
+        <button
+          onClick={() => setMobileMenuOpen(true)}
+          className="flex flex-col items-center text-[10px] font-medium text-slate-500 hover:text-slate-900 transition cursor-pointer"
+        >
+          <Menu className="w-5 h-5 mb-0.5" />
+          <span>Menu</span>
+        </button>
+      </div>
+
     </div>
   );
 };
