@@ -1,0 +1,74 @@
+{
+  "title": "DAENEM Farms Six Matched 4K Day/Night Hero Masters",
+  "status": "STAGED_LOCALLY_UNPUBLISHED",
+  "sceneCount": 6,
+  "imageCount": 12,
+  "pixelDimensions": [
+    3840,
+    2160
+  ],
+  "fullResolutionOriginalsPreserved": true,
+  "cloudflareStagingUnchanged": true,
+  "scenes": [
+    {
+      "scene": 1,
+      "label": "Executive DAENEM Farms Campus",
+      "day": "/assets/approved/farmportal-hero-masters/scene-01-day.webp",
+      "daySha256": "ba5b0aac3dde1f0548595fecf1e3b8828786029d5950efc66441ef4feb25cec1",
+      "dayBytes": 1256708,
+      "night": "/assets/approved/farmportal-hero-masters/scene-01-night.webp",
+      "nightSha256": "9b727a1b8243ced2f11a7560afbdf8e7550324b6de5f71f14041db3797aa4797",
+      "nightBytes": 966380
+    },
+    {
+      "scene": 2,
+      "label": "Poultry Operations",
+      "day": "/assets/approved/farmportal-hero-masters/scene-02-day.webp",
+      "daySha256": "506be6e3888d8fa3f4cb83b019c9ada8a26a84c047ea4510e0b984960e41ef43",
+      "dayBytes": 1052432,
+      "night": "/assets/approved/farmportal-hero-masters/scene-02-night.webp",
+      "nightSha256": "edad847432b541ccf74886ead69b48fb9e65935cdb0536b14ba1c9b5551ad9ed",
+      "nightBytes": 1051918
+    },
+    {
+      "scene": 3,
+      "label": "Fresh Egg Operations",
+      "day": "/assets/approved/farmportal-hero-masters/scene-03-day.webp",
+      "daySha256": "5679aedb24afce7882c1fe8adf2af88d05dedc39f31988cda300cc737a63f9a4",
+      "dayBytes": 855006,
+      "night": "/assets/approved/farmportal-hero-masters/scene-03-night.webp",
+      "nightSha256": "6b418c954bbf16d82833484f2c2ee938e72ffa5b730f546c999af719e9e889b7",
+      "nightBytes": 1059406
+    },
+    {
+      "scene": 4,
+      "label": "Chicken Feed Operations",
+      "day": "/assets/approved/farmportal-hero-masters/scene-04-day.webp",
+      "daySha256": "900ba17896b1617b36425235fe57fe3ca16b294dc4da2213251b34b65d7e22cf",
+      "dayBytes": 901878,
+      "night": "/assets/approved/farmportal-hero-masters/scene-04-night.webp",
+      "nightSha256": "4b47e9b590b3e0737a78b35c78bca722a0c6daa20dab07d7787675601d2f11f2",
+      "nightBytes": 463092
+    },
+    {
+      "scene": 5,
+      "label": "Livestock Operations",
+      "day": "/assets/approved/farmportal-hero-masters/scene-05-day.webp",
+      "daySha256": "af9926ed3d9b09bebe931d68e536861f1da90268c089e831750b92415668fa4e",
+      "dayBytes": 1375306,
+      "night": "/assets/approved/farmportal-hero-masters/scene-05-night.webp",
+      "nightSha256": "075330945445c6cb65d87e96d7837e27006b8a6b4e3b3cc96c22379873085cbe",
+      "nightBytes": 984488
+    },
+    {
+      "scene": 6,
+      "label": "Snail + Organic Operations",
+      "day": "/assets/approved/farmportal-hero-masters/scene-06-day.webp",
+      "daySha256": "137b292cb8ac253dc09320db6f86af58e8cad53b285028d479026f3c69e82d17",
+      "dayBytes": 1134138,
+      "night": "/assets/approved/farmportal-hero-masters/scene-06-night.webp",
+      "nightSha256": "bafb0be422688bee9283ee9ba422e6796ea62781d9ba60045109a79cbfad3bf4",
+      "nightBytes": 686968
+    }
+  ]
+}

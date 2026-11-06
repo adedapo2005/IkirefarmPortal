@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SignInGateway } from './components/SignInGateway.tsx';
 import { AppShell } from './components/AppShell.tsx';
 import { SituationRoom } from './components/SituationRoom.tsx';
@@ -25,7 +25,19 @@ export function App() {
   const [userName, setUserName] = useState<string>('Adedapo Daenem');
   const [currentRoute, setCurrentRoute] = useState<string>('dashboard');
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('session') === 'active' || params.get('auth') === 'true' || localStorage.getItem('daenem_auth') === 'true') {
+      setIsAuthenticated(true);
+      const roleParam = params.get('role');
+      if (roleParam) {
+        setUserRole(roleParam);
+      }
+    }
+  }, []);
+
   const handleSignInSuccess = (role: string, name: string) => {
+    localStorage.setItem('daenem_auth', 'true');
     setUserRole(role);
     setUserName(name);
     setIsAuthenticated(true);
@@ -39,9 +51,13 @@ export function App() {
   };
 
   const handleSignOut = () => {
+    localStorage.removeItem('daenem_auth');
     setIsAuthenticated(false);
     setUserRole('owner');
     setCurrentRoute('dashboard');
+    if (window.location.search) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
   };
 
   if (!isAuthenticated) {

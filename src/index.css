@@ -1,6 +1,35 @@
 @import "tailwindcss";
 @import "./daenem-farms-logo-live.css";
 
+/* Canonical FarmPortal Sign-In Frame Shell */
+html:has(.canonical-signin-frame-shell),
+body:has(.canonical-signin-frame-shell) {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #f6f8f2;
+}
+
+.canonical-signin-frame-shell {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #f6f8f2;
+}
+
+.canonical-signin-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #f6f8f2;
+}
+
 @layer base {
   :root {
     /* Exact Authoritative Typography Hierarchy */
