@@ -11,11 +11,15 @@ INSERT OR IGNORE INTO flocks (id, batch_code, breed, bird_count, placement_date,
 ('flk-3', 'FLK-2026-03', 'Novogen White', 12110, '2026-06-18', 38, 'House 3 (Battery Cages J-M)', 12110, 0.05, 93.1, 'Active'),
 ('flk-4', 'FLK-2026-04', 'ISA Brown Pullets', 12105, '2026-08-20', 29, 'House 4 (Battery Cages N-Q)', 12105, 0.03, 88.5, 'Active');
 
-INSERT OR IGNORE INTO daily_pen_logs (id, flock_id, pen_number, log_date, opening_birds, mortality_count, culls_count, transfers_out, closing_birds, eggs_collected_good, eggs_damaged, eggs_rejected, feed_consumed_kg, water_consumed_litres, ambient_temp_c, relative_humidity_pct, thi_heat_stress_index, recorded_by) VALUES
-('log-01', 'flk-1', 'House 1 (Battery Cages A-D)', '2026-11-06', 12201, 1, 0, 0, 12200, 11200, 24, 6, 1464.0, 2928.0, 28.5, 76.0, 70.8, 'Babatunde Alamu'),
-('log-02', 'flk-2', 'House 2 (Battery Cages E-H)', '2026-11-06', 12052, 2, 0, 0, 12050, 11134, 18, 4, 1446.0, 2892.0, 28.7, 75.5, 71.0, 'Babatunde Alamu'),
-('log-03', 'flk-3', 'House 3 (Battery Cages J-M)', '2026-11-06', 12111, 1, 0, 0, 12110, 11274, 21, 5, 1453.0, 2906.0, 28.4, 76.2, 70.6, 'Glory Mercy Adetokunbo'),
-('log-04', 'flk-4', 'House 4 (Battery Cages N-Q)', '2026-11-06', 12105, 0, 0, 0, 12105, 10713, 14, 3, 1331.0, 2662.0, 28.6, 75.8, 70.9, 'Dr. Segun Adewale');
+INSERT OR IGNORE INTO daily_pen_logs (
+  id, flock_id, pen_number, log_date, age_days, opening_birds, mortality_count, culls_count, transfers_out,
+  closing_birds, medication, vaccination, feed_consumed_kg, eggs_collected_good, eggs_damaged, eggs_rejected,
+  water_consumed_litres, ambient_temp_c, relative_humidity_pct, thi_heat_stress_index, idempotency_key, recorded_by
+) VALUES
+('log-01', 'flk-1', 'House 1 (Battery Cages A-D)', '2026-11-06', 336, 12201, 1, 0, 0, 12200, 'None', 'None Scheduled', 1464.0, 11200, 24, 6, 2928.0, 28.5, 76.0, 70.8, 'idem-flk-1-2026-11-06', 'Babatunde Alamu'),
+('log-02', 'flk-2', 'House 2 (Battery Cages E-H)', '2026-11-06', 315, 12052, 2, 0, 0, 12050, 'None', 'ND+IB Booster', 1446.0, 11134, 18, 4, 2892.0, 28.7, 75.5, 71.0, 'idem-flk-2-2026-11-06', 'Babatunde Alamu'),
+('log-03', 'flk-3', 'House 3 (Battery Cages J-M)', '2026-11-06', 266, 12111, 1, 0, 0, 12110, 'Vitalyte Electrovit', 'None Scheduled', 1453.0, 11274, 21, 5, 2906.0, 28.4, 76.2, 70.6, 'idem-flk-3-2026-11-06', 'Glory Mercy Adetokunbo'),
+('log-04', 'flk-4', 'House 4 (Battery Cages N-Q)', '2026-11-06', 203, 12105, 0, 0, 0, 12105, 'None', 'Deworming Piperazine', 1331.0, 10713, 14, 3, 2662.0, 28.6, 75.8, 70.9, 'idem-flk-4-2026-11-06', 'Dr. Segun Adewale');
 
 INSERT OR IGNORE INTO wholesale_orders (id, order_number, customer_name, customer_phone, crates_ordered, unit_price_ngn, total_amount_ngn, payment_status, payment_channel, dynamic_virtual_account, nip_session_id, sender_kyc_name, gate_pass_id, gate_pass_status, driver_name, vehicle_plate, dispatched_at_wat) VALUES
 ('ord-8821', 'DF-ORD-8821', 'Alhaji Rasheed Akanni', '0803 491 8294', 120, 4900, 588000, 'PAID_VERIFIED', 'Moniepoint MFB NIP', '8049882101', '999014261106093411000849201842', 'RASHEED AKANNI ENT', 'GP-8821', 'CLEARED_EXIT', 'Kabiru Sanusi', 'KTU-842-XB (Isuzu 5-Ton)', '06 Nov 2026, 09:42 AM WAT'),

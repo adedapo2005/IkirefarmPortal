@@ -106,22 +106,22 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const orderNum = `DF-ORD-${Math.floor(8830 + Math.random() * 890)}`;
     const totalNgn = Number(body.cratesOrdered) * Number(body.unitPriceNgn);
     const gatePass = `GP-${orderNum.replace(/\D/g, '')}`;
-    const dynamicVa = `8049${orderNum.replace(/\D/g, '').padEnd(6, '0')}`;
     const actor = body.creatorName || 'Sales Desk';
     const nowWat = new Date().toLocaleTimeString('en-NG') + ' WAT';
 
     // Atomic insert of order + audit ledger entry
+    // NOTE: dynamic_virtual_account is left NULL until provisioned by real banking integration
     await context.env.DB.batch([
       context.env.DB.prepare(`
         INSERT INTO wholesale_orders (
           id, order_number, customer_name, customer_phone, crates_ordered, unit_price_ngn,
           total_amount_ngn, payment_status, payment_channel, dynamic_virtual_account, gate_pass_id,
           gate_pass_status, driver_name, vehicle_plate
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDING_PAYMENT', ?, ?, ?, 'LOCKED', ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDING_PAYMENT', ?, NULL, ?, 'LOCKED', ?, ?)
       `).bind(
         orderId, orderNum, body.customerName, body.customerPhone || null,
         Number(body.cratesOrdered), Number(body.unitPriceNgn), totalNgn,
-        body.paymentChannel || 'Moniepoint MFB NIP', dynamicVa, gatePass,
+        body.paymentChannel || 'Moniepoint MFB NIP', gatePass,
         body.driverName || 'Awaiting Driver', body.vehiclePlate || 'Awaiting Vehicle'
       ),
       context.env.DB.prepare(`
@@ -145,7 +145,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       id: orderId,
       orderNumber: orderNum,
       totalAmountNgn: totalNgn,
-      dynamicVirtualAccount: dynamicVa,
+      dynamicVirtualAccount: null,
       gatePassId: gatePass,
       gatePassStatus: 'LOCKED',
     }), {

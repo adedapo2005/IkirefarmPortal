@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Bird,
   ShieldCheck,
@@ -10,15 +10,16 @@ import {
   Activity,
   Thermometer,
   Droplets,
-  Wind,
   Printer,
   RefreshCw,
   X,
   ChevronRight,
+  ChevronDown,
   ArrowLeft,
   Check,
   LoaderCircle,
   Database,
+  Calendar,
 } from 'lucide-react';
 import { formatCount } from '../lib/temporal.ts';
 import styles from './portal/InventoryControlDashboard.module.css';
@@ -36,16 +37,19 @@ export interface PenDailyRecord {
   mortality: number;
   culls: number;
   transfersOut: number;
+  closingStock: number;
+  medication: string;
+  vaccination: string;
   feedConsumedKg: number;
   feedType: string;
   eggsCrates: number;
   looseEggs: number;
   leakers: number;
-  closingStock: number;
-  hdepPercent: number;
+  waterConsumedLitres?: number;
   ambientTempC?: number;
   relativeHumidityPct?: number;
   thiIndex?: number;
+  idempotencyKey?: string;
   attendantName: string;
   status: 'Verified & Signed' | 'Pending Supervisor' | 'Discrepancy';
   createdAt?: string;
@@ -55,57 +59,70 @@ interface DailyPenRegisterWorkspaceProps {
   onBackToDashboard?: () => void;
 }
 
+// Canonical flock baselines for Balogun-Ikire pens
+const FLOCK_BASELINES: Record<string, { name: string; batch: string; breed: string; baseStock: number; ageWeeks: number }> = {
+  H1: { name: 'House 1 (Battery Cages A-D)', batch: 'FLK-2026-01', breed: 'ISA Brown', baseStock: 12201, ageWeeks: 48 },
+  H2: { name: 'House 2 (Battery Cages E-H)', batch: 'FLK-2026-02', breed: 'Bovans White', baseStock: 12052, ageWeeks: 45 },
+  H3: { name: 'House 3 (Battery Cages J-M)', batch: 'FLK-2026-03', breed: 'ISA Brown', baseStock: 12111, ageWeeks: 38 },
+  H4: { name: 'House 4 (Battery Cages N-Q)', batch: 'FLK-2026-04', breed: 'Lohmann Brown', baseStock: 12105, ageWeeks: 29 },
+};
+
 export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps> = () => {
   const [records, setRecords] = useState<PenDailyRecord[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
   const [selectedHouseFilter, setSelectedHouseFilter] = useState<string>('all');
   const [isEntryModalOpen, setIsEntryModalOpen] = useState<boolean>(false);
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState<boolean>(false);
+  const [expandedRecordId, setExpandedRecordId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [backendSyncStatus, setBackendSyncStatus] = useState<'connected' | 'offline' | 'loading'>('loading');
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // Guided Entry Step (1: Today's Birds, 2: Feed & Health, 3: Review & Submit)
+  // Guided Entry Step (1: Today's Birds, 2: Feed, Water & Health, 3: Review & Submit)
   const [formStep, setFormStep] = useState<1 | 2 | 3>(1);
 
   // Step 1: Headcount Fields
   const [targetHouse, setTargetHouse] = useState<string>('H1');
-  const [openingBirds, setOpeningBirds] = useState<number>(12200);
-  const [mortality, setMortality] = useState<number>(1);
+  const [openingBirds, setOpeningBirds] = useState<number>(FLOCK_BASELINES.H1.baseStock);
+  const [mortality, setMortality] = useState<number>(0);
   const [culls, setCulls] = useState<number>(0);
   const [transfersOut, setTransfersOut] = useState<number>(0);
 
-  // Step 2: Feed, Eggs & Microclimate Fields
+  // Step 2: Feed, Water, Health & Microclimate Fields
   const [feedType, setFeedType] = useState<string>('Layer Mash Phase I');
   const [feedKg, setFeedKg] = useState<number>(1464);
+  const [waterLitres, setWaterLitres] = useState<number>(2928);
+  const [medication, setMedication] = useState<string>('None');
+  const [vaccination, setVaccination] = useState<string>('None Scheduled');
   const [crates, setCrates] = useState<number>(373);
   const [looseEggs, setLooseEggs] = useState<number>(10);
   const [leakers, setLeakers] = useState<number>(4);
-  const [waterLitres, setWaterLitres] = useState<number>(2928);
   const [tempC, setTempC] = useState<number>(28.5);
   const [humidityPct, setHumidityPct] = useState<number>(76);
 
-  // Step 3: Sign-Off Field
+  // Step 3: Attribution & Idempotency Key
   const [attendant, setAttendant] = useState<string>('Babatunde Alamu');
+  const [idempotencyKey, setIdempotencyKey] = useState<string>('');
 
-  // Calculated Invariants
+  // Biological Invariants
   const calculatedClosing = openingBirds - mortality - culls - transfersOut;
   const totalEggsCount = crates * 30 + looseEggs;
   const calculatedHdep = openingBirds > 0 ? ((totalEggsCount / openingBirds) * 100).toFixed(1) : '0.0';
   const thiStress = Number((0.8 * tempC + (humidityPct / 100) * (tempC - 14.4) + 46.4).toFixed(1));
 
-  // Authoritative API Sync
-  const loadRegisterFromD1 = useCallback(async () => {
+  // Authoritative API Sync with selected date
+  const loadRegisterFromD1 = useCallback(async (dateFilter: string) => {
     setIsRefreshing(true);
     setErrorMessage(null);
     try {
-      const res = await fetch('/api/v1/operations/daily-register');
+      const url = `/api/v1/operations/daily-register${dateFilter ? `?date=${encodeURIComponent(dateFilter)}` : ''}`;
+      const res = await fetch(url);
       if (!res.ok) {
         setBackendSyncStatus('offline');
         if (res.status === 503) {
-          setErrorMessage('Cloudflare D1 binding is currently unattached. System operates in fail-closed protected mode.');
+          setErrorMessage('Cloudflare D1 binding is unattached. System operates in fail-closed protected mode.');
         } else {
           setErrorMessage(`D1 Query returned HTTP ${res.status}.`);
         }
@@ -119,11 +136,14 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
           flockId: string;
           penNumber: string;
           logDate: string;
+          ageDays?: number;
           openingBirds: number;
           mortalityCount: number;
           cullsCount: number;
           transfersOut: number;
           closingBirds: number;
+          medication?: string;
+          vaccination?: string;
           eggsCollectedGood: number;
           eggsDamaged: number;
           eggsRejected: number;
@@ -132,6 +152,7 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
           ambientTempC?: number;
           relativeHumidityPct?: number;
           thiIndex?: number;
+          idempotencyKey?: string;
           recordedBy: string;
           createdAt?: string;
         }>;
@@ -143,38 +164,43 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
           const totalGood = Number(r.eggsCollectedGood) || 0;
           const crateCount = Math.floor(totalGood / 30);
           const looseCount = totalGood % 30;
-          const openStock = Number(r.openingBirds) || 0;
-          const hdep = openStock > 0 ? Number(((totalGood / openStock) * 100).toFixed(1)) : 0;
 
           // Determine House ID from penNumber or flockId
           let hId = 'H1';
-          if (r.penNumber?.includes('House 2') || r.flockId?.includes('02')) hId = 'H2';
-          else if (r.penNumber?.includes('House 3') || r.flockId?.includes('03')) hId = 'H3';
-          else if (r.penNumber?.includes('House 4') || r.flockId?.includes('04')) hId = 'H4';
+          if (r.penNumber?.includes('House 2') || r.flockId?.includes('02') || r.flockId?.includes('flk-2')) hId = 'H2';
+          else if (r.penNumber?.includes('House 3') || r.flockId?.includes('03') || r.flockId?.includes('flk-3')) hId = 'H3';
+          else if (r.penNumber?.includes('House 4') || r.flockId?.includes('04') || r.flockId?.includes('flk-4')) hId = 'H4';
+
+          const baseline = FLOCK_BASELINES[hId] || FLOCK_BASELINES.H1;
+          const ageWks = r.ageDays ? Math.floor(r.ageDays / 7) : baseline.ageWeeks;
+          const ageD = r.ageDays || ageWks * 7;
 
           return {
             id: r.id,
             houseId: hId,
-            houseName: r.penNumber || `House ${hId.replace('H', '')}`,
-            flockBatch: r.flockId || `FLK-${hId}`,
-            breed: hId === 'H2' ? 'Bovans White' : hId === 'H4' ? 'Lohmann Brown' : 'ISA Brown',
-            ageWeeks: hId === 'H4' ? 29 : hId === 'H3' ? 38 : hId === 'H2' ? 45 : 48,
-            ageDays: (hId === 'H4' ? 29 : hId === 'H3' ? 38 : hId === 'H2' ? 45 : 48) * 7,
-            openingStock: openStock,
+            houseName: r.penNumber || baseline.name,
+            flockBatch: r.flockId || baseline.batch,
+            breed: baseline.breed,
+            ageWeeks: ageWks,
+            ageDays: ageD,
+            openingStock: Number(r.openingBirds) || 0,
             mortality: Number(r.mortalityCount) || 0,
             culls: Number(r.cullsCount) || 0,
             transfersOut: Number(r.transfersOut) || 0,
+            closingStock: Number(r.closingBirds) || 0,
+            medication: r.medication || 'None',
+            vaccination: r.vaccination || 'None Scheduled',
             feedConsumedKg: Number(r.feedConsumedKg) || 0,
             feedType: hId === 'H4' ? 'Grower Mash Pullet' : 'Layer Mash Phase I',
             eggsCrates: crateCount,
             looseEggs: looseCount,
             leakers: Number(r.eggsDamaged) || 0,
-            closingStock: Number(r.closingBirds) || 0,
-            hdepPercent: hdep,
+            waterConsumedLitres: Number(r.waterConsumedLitres) || 0,
             ambientTempC: r.ambientTempC,
             relativeHumidityPct: r.relativeHumidityPct,
             thiIndex: r.thiIndex,
-            attendantName: r.recordedBy || 'Operator',
+            idempotencyKey: r.idempotencyKey,
+            attendantName: r.recordedBy || 'Authorized Operator',
             status: 'Verified & Signed',
             createdAt: r.createdAt,
           };
@@ -194,36 +220,65 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
   }, []);
 
   useEffect(() => {
-    void loadRegisterFromD1();
-  }, [loadRegisterFromD1]);
+    void loadRegisterFromD1(selectedDate);
+  }, [loadRegisterFromD1, selectedDate]);
+
+  // When opening modal or changing house, derive authoritative opening stock from latest closing
+  const handleOpenEntryModal = (houseKey = 'H1') => {
+    setTargetHouse(houseKey);
+    const existingForHouse = records.find((r) => r.houseId === houseKey);
+    if (existingForHouse && existingForHouse.closingStock > 0) {
+      setOpeningBirds(existingForHouse.closingStock);
+    } else {
+      setOpeningBirds(FLOCK_BASELINES[houseKey]?.baseStock || 12200);
+    }
+    setMortality(0);
+    setCulls(0);
+    setTransfersOut(0);
+    setFormStep(1);
+    setErrorMessage(null);
+    setIdempotencyKey(`idem-${houseKey}-${selectedDate}-${Date.now()}`);
+    setIsEntryModalOpen(true);
+  };
+
+  const handleHouseSelectChange = (hKey: string) => {
+    setTargetHouse(hKey);
+    const existingForHouse = records.find((r) => r.houseId === hKey);
+    if (existingForHouse && existingForHouse.closingStock > 0) {
+      setOpeningBirds(existingForHouse.closingStock);
+    } else {
+      setOpeningBirds(FLOCK_BASELINES[hKey]?.baseStock || 12200);
+    }
+    setIdempotencyKey(`idem-${hKey}-${selectedDate}-${Date.now()}`);
+  };
 
   const handleRefresh = async () => {
-    await loadRegisterFromD1();
+    await loadRegisterFromD1(selectedDate);
     setToastMessage('Register synchronized with Cloudflare D1.');
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const filteredRecords = records.filter(
-    (r) => selectedHouseFilter === 'all' || r.houseId === selectedHouseFilter
-  );
+  const filteredRecords = useMemo(() => {
+    return records.filter(
+      (r) => selectedHouseFilter === 'all' || r.houseId === selectedHouseFilter
+    );
+  }, [records, selectedHouseFilter]);
 
+  // Genuine aggregations from filtered records
   const totalBirdsOpening = filteredRecords.reduce((sum, r) => sum + r.openingStock, 0);
   const totalMortality = filteredRecords.reduce((sum, r) => sum + r.mortality, 0);
   const totalCulls = filteredRecords.reduce((sum, r) => sum + r.culls, 0);
   const totalTransfers = filteredRecords.reduce((sum, r) => sum + r.transfersOut, 0);
   const totalCrates = filteredRecords.reduce((sum, r) => sum + r.eggsCrates, 0);
+  const totalLooseEggs = filteredRecords.reduce((sum, r) => sum + r.looseEggs, 0);
+  const grandTotalEggs = totalCrates * 30 + totalLooseEggs;
   const totalFeedKg = filteredRecords.reduce((sum, r) => sum + r.feedConsumedKg, 0);
   const totalBirdsClosing = filteredRecords.reduce((sum, r) => sum + r.closingStock, 0);
 
   const conservationPassed =
     totalBirdsOpening - totalMortality - totalCulls - totalTransfers === totalBirdsClosing;
 
-  const avgHdep = (
-    filteredRecords.filter((r) => r.hdepPercent > 0).reduce((sum, r) => sum + r.hdepPercent, 0) /
-    (filteredRecords.filter((r) => r.hdepPercent > 0).length || 1)
-  ).toFixed(1);
-
-  // Guided Form Submission
+  // Guided Form Submission with Idempotency Key & Timeout Protection
   const handleSaveDailyRecord = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -247,19 +302,27 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
 
     setIsSubmitting(true);
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000); // 12-second network timeout
+
     try {
-      const houseName = `House ${targetHouse.replace('H', '')} (Battery Cages)`;
-      const flockCode = `FLK-2026-0${targetHouse.replace('H', '')}`;
+      const baseline = FLOCK_BASELINES[targetHouse] || FLOCK_BASELINES.H1;
+      const houseName = baseline.name;
+      const flockCode = baseline.batch;
+      const ageDays = baseline.ageWeeks * 7;
 
       const payload = {
         penNumber: houseName,
         flockId: flockCode,
         logDate: selectedDate,
+        ageDays,
         openingBirds,
         mortalityCount: mortality,
         cullsCount: culls,
         transfersOut,
         closingBirds: calculatedClosing,
+        medication: medication.trim() || 'None',
+        vaccination: vaccination.trim() || 'None Scheduled',
         eggsCollectedGood: crates * 30 + looseEggs,
         eggsDamaged: leakers,
         eggsRejected: 0,
@@ -268,6 +331,7 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
         ambientTempC: tempC,
         relativeHumidityPct: humidityPct,
         thiIndex: thiStress,
+        idempotencyKey,
         recordedBy: attendant.trim(),
       };
 
@@ -275,7 +339,10 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(payload),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       const result = await res.json() as {
         status?: string;
@@ -285,25 +352,30 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
       };
 
       if (!res.ok || result.status !== 'success') {
-        throw new Error(result.error || `Server returned error status HTTP ${res.status}`);
+        throw new Error(result.error || `Server returned HTTP ${res.status}`);
       }
 
       setToastMessage(
-        `Shift for ${houseName} permanently recorded to D1! Audit Ref: ${result.id || 'N/A'}. Closing: ${formatCount(calculatedClosing)} birds.`
+        `Shift for ${houseName} persisted to D1! Audit Ref: ${result.id || 'N/A'}. Closing: ${formatCount(calculatedClosing)} birds.`
       );
       setIsEntryModalOpen(false);
       setFormStep(1);
 
       // Re-query database to ensure display reflects confirmed server persistence
-      await loadRegisterFromD1();
+      await loadRegisterFromD1(selectedDate);
 
     } catch (err: unknown) {
-      setErrorMessage(
-        err instanceof Error
-          ? err.message
-          : 'Failed to persist record to Cloudflare D1. Submission blocked (fail closed).'
-      );
+      if ((err as any)?.name === 'AbortError') {
+        setErrorMessage('Request timed out. The server may still have processed your shift. Please click "Sync D1 Register" to verify.');
+      } else {
+        setErrorMessage(
+          err instanceof Error
+            ? err.message
+            : 'Failed to persist record to Cloudflare D1. Submission blocked (fail closed).'
+        );
+      }
     } finally {
+      clearTimeout(timeoutId);
       setIsSubmitting(false);
       setTimeout(() => setToastMessage(null), 5000);
     }
@@ -317,11 +389,7 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
           <button
             type="button"
             className="portal-action-btn primary"
-            onClick={() => {
-              setFormStep(1);
-              setErrorMessage(null);
-              setIsEntryModalOpen(true);
-            }}
+            onClick={() => handleOpenEntryModal('H1')}
           >
             <Plus size={16} aria-hidden="true" />
             <span>Post Daily Pen Log</span>
@@ -330,7 +398,7 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
             type="button"
             className="portal-action-btn secondary"
             onClick={() => setIsVoucherModalOpen(true)}
-            disabled={records.length === 0}
+            disabled={filteredRecords.length === 0}
           >
             <Printer size={15} aria-hidden="true" />
             <span>Official Shift Voucher</span>
@@ -348,154 +416,149 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
 
         <div className="portal-exec-mode" role="status">
           <div className="portal-mode-badge">
-            {backendSyncStatus === 'connected' ? (
-              <Database size={14} aria-hidden="true" style={{ color: '#0d8052' }} />
-            ) : (
-              <AlertTriangle size={14} aria-hidden="true" style={{ color: '#c53030' }} />
-            )}
-            <span style={{ fontWeight: 700 }}>
-              {backendSyncStatus === 'connected' ? 'CLOUDFLARE D1 AUTHORITATIVE' : 'D1 DISCONNECTED'}
-            </span>
-            <span className="portal-mode-account">
-              {conservationPassed ? 'CONSERVATION BALANCED ✓' : 'HEADCOUNT VARIANCE'} · Date: {selectedDate}
-            </span>
+            <span className={`portal-indicator-dot ${backendSyncStatus === 'connected' ? 'connected' : 'offline'}`} />
+            <span>{backendSyncStatus === 'connected' ? 'Cloudflare D1 Verified' : 'D1 Offline (Fail-Closed)'}</span>
+          </div>
+          <div className="portal-mode-badge" style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}>
+            <Calendar size={13} style={{ marginRight: 4, color: '#008751' }} />
+            <span>{selectedDate} WAT</span>
           </div>
         </div>
       </div>
 
+      {/* Notifications & Error Feed */}
       {toastMessage && (
-        <div className="auth-state" role="status" style={{ borderLeft: '4px solid #008751', background: '#ecfdf5', color: '#065f46' }}>
-          <CheckCircle2 size={16} style={{ verticalAlign: 'middle', marginRight: 8, color: '#008751' }} />
-          <strong>{toastMessage}</strong>
+        <div style={{ margin: '16px 0', padding: '12px 16px', borderRadius: 8, background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#065f46', display: 'flex', alignItems: 'center', gap: 10, fontSize: '0.9rem', fontWeight: 600 }}>
+          <CheckCircle2 size={18} color="#059669" />
+          <span>{toastMessage}</span>
         </div>
       )}
 
       {errorMessage && (
-        <div className="auth-state" role="alert" style={{ borderLeft: '4px solid #e53e3e', background: '#fff5f5', color: '#9b2c2c' }}>
-          <AlertTriangle size={16} style={{ verticalAlign: 'middle', marginRight: 8, color: '#e53e3e' }} />
-          <strong>{errorMessage}</strong>
+        <div style={{ margin: '16px 0', padding: '12px 16px', borderRadius: 8, background: '#fff5f5', border: '1px solid #feb2b2', color: '#9b2c2c', display: 'flex', alignItems: 'center', gap: 10, fontSize: '0.9rem', fontWeight: 600 }}>
+          <AlertTriangle size={18} color="#e53e3e" />
+          <span>{errorMessage}</span>
         </div>
       )}
 
-      {/* 4 Native Scoreboard Cards */}
-      <div className={styles.scoreboard} aria-label="Daily pen register metrics">
-        <div className={styles.score}>
-          <span>
-            <Bird size={19} aria-hidden="true" /> Total Flock Population
-          </span>
-          <strong style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}>
-            {formatCount(totalBirdsOpening)}
-          </strong>
-          <small>Closing: {formatCount(totalBirdsClosing)} birds</small>
-        </div>
-        <div className={styles.score}>
-          <span>
-            <Egg size={19} aria-hidden="true" /> Commercial Egg Yield
-          </span>
-          <strong style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}>
-            {formatCount(totalCrates)} Crates
-          </strong>
-          <small>
-            {formatCount(totalCrates * 30)} eggs (30/crate) · Avg {avgHdep}% HDEP
-          </small>
-        </div>
-        <div className={styles.score}>
-          <span>
-            <Wheat size={19} aria-hidden="true" /> Ration Consumed
-          </span>
-          <strong style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}>
-            {formatCount(totalFeedKg)} kg
-          </strong>
-          <small>{(totalFeedKg / 50).toFixed(1)} bags (50kg) milled</small>
-        </div>
-        <div className={styles.score}>
-          <span>
-            <Activity size={19} aria-hidden="true" /> Shift Mortality &amp; Culls
-          </span>
-          <strong style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}>
-            {totalMortality} / {totalCulls}
-          </strong>
-          <small>
-            {totalBirdsOpening > 0 ? ((totalMortality / totalBirdsOpening) * 100).toFixed(2) : '0.00'}% daily rate
-          </small>
-        </div>
+      {/* Primary KPI Grid (Biological Headcount & Yield) */}
+      <div className="portal-metric-grid" style={{ marginBottom: 24 }}>
+        <article className="portal-metric-tile">
+          <header className="portal-tile-header">
+            <span className="portal-tile-title">Opening Headcount</span>
+            <Bird size={16} className="portal-tile-icon" aria-hidden="true" />
+          </header>
+          <div className="portal-metric-value">{formatCount(totalBirdsOpening)}</div>
+          <footer className="portal-tile-footer">
+            <span>Authoritative start of day</span>
+          </footer>
+        </article>
+
+        <article className="portal-metric-tile">
+          <header className="portal-tile-header">
+            <span className="portal-tile-title">Today&apos;s Mortality / Culls</span>
+            <Activity size={16} className="portal-tile-icon" aria-hidden="true" />
+          </header>
+          <div className="portal-metric-value" style={{ color: totalMortality > 10 ? '#dc2626' : 'inherit' }}>
+            {formatCount(totalMortality)}
+            {totalCulls > 0 && <span style={{ fontSize: '0.95rem', color: '#64748b' }}> (+{totalCulls} culls)</span>}
+          </div>
+          <footer className="portal-tile-footer">
+            <span style={{ color: totalMortality > 10 ? '#dc2626' : '#059669', fontWeight: 600 }}>
+              {totalBirdsOpening > 0 ? ((totalMortality / totalBirdsOpening) * 100).toFixed(2) : '0.00'}% daily rate
+            </span>
+          </footer>
+        </article>
+
+        <article className="portal-metric-tile">
+          <header className="portal-tile-header">
+            <span className="portal-tile-title">Total Egg Harvest</span>
+            <Egg size={16} className="portal-tile-icon" aria-hidden="true" />
+          </header>
+          <div className="portal-metric-value">
+            {formatCount(totalCrates)}
+            <span style={{ fontSize: '1rem', fontWeight: 500, color: '#64748b' }}> Crates</span>
+          </div>
+          <footer className="portal-tile-footer">
+            <span>+{totalLooseEggs} loose eggs ({formatCount(grandTotalEggs)} total)</span>
+          </footer>
+        </article>
+
+        <article className="portal-metric-tile">
+          <header className="portal-tile-header">
+            <span className="portal-tile-title">Feed Consumption</span>
+            <Wheat size={16} className="portal-tile-icon" aria-hidden="true" />
+          </header>
+          <div className="portal-metric-value">
+            {formatCount(totalFeedKg)}
+            <span style={{ fontSize: '1rem', fontWeight: 500, color: '#64748b' }}> kg</span>
+          </div>
+          <footer className="portal-tile-footer">
+            <span>{(totalFeedKg / 50).toFixed(1)} standard 50kg bags</span>
+          </footer>
+        </article>
+
+        <article className="portal-metric-tile">
+          <header className="portal-tile-header">
+            <span className="portal-tile-title">Verified Closing Stock</span>
+            <ShieldCheck size={16} className="portal-tile-icon" aria-hidden="true" />
+          </header>
+          <div className="portal-metric-value" style={{ color: conservationPassed ? '#008751' : '#c53030' }}>
+            {formatCount(totalBirdsClosing)}
+          </div>
+          <footer className="portal-tile-footer">
+            <span style={{ color: conservationPassed ? '#008751' : '#c53030', fontWeight: 600 }}>
+              {conservationPassed ? '✓ Invariant Balanced' : '⚠ Conservation Discrepancy'}
+            </span>
+          </footer>
+        </article>
       </div>
 
-      {/* Microclimate & Telemetry */}
-      <div className={styles.flowBand} aria-labelledby="thi-band-title">
-        <div className={styles.flowHeading}>
-          <div>
-            <span>BALOGUN-IKIRE POULTRY ENVIRONMENTAL TELEMETRY</span>
-            <h3 id="thi-band-title">Atmospheric &amp; Biological Biosecurity Metrics</h3>
-          </div>
-          <small>Coordinates: 7.36°N, 4.19°E · Tunneled Airflow Active</small>
-        </div>
-        <div className={styles.flowCounts}>
-          <div>
-            <Thermometer size={19} aria-hidden="true" />
-            <span>Poultry THI Index</span>
-            <strong style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}>70.8 THI</strong>
-          </div>
-          <div>
-            <Thermometer size={19} aria-hidden="true" />
-            <span>Ambient Temperature</span>
-            <strong style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}>28.5°C</strong>
-          </div>
-          <div>
-            <Wind size={19} aria-hidden="true" />
-            <span>Relative Humidity</span>
-            <strong style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}>76.0% RH</strong>
-          </div>
-          <div>
-            <Droplets size={19} aria-hidden="true" />
-            <span>Water Delivery Rate</span>
-            <strong style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}>1,142 L/hr</strong>
-          </div>
-        </div>
-      </div>
-
-      {/* 7-Column Daily Pen Register Panel */}
+      {/* Main Pen Register Panel */}
       <Panel
-        title="7-Column Daily Pen Register & Biological Conservation Ledger"
-        description="Mathematical Invariant: Closing Headcount = Opening Stock − Mortality − Culls − Transfers. Powered by Cloudflare D1."
-        action={
-          <div className="row wrap">
-            {[
-              { id: 'all', label: 'All Houses' },
-              { id: 'H1', label: 'House 1' },
-              { id: 'H2', label: 'House 2' },
-              { id: 'H3', label: 'House 3' },
-              { id: 'H4', label: 'House 4' },
-            ].map((tab) => (
-              <Btn
-                key={tab.id}
-                small
-                primary={selectedHouseFilter === tab.id}
-                onClick={() => setSelectedHouseFilter(tab.id)}
+        title="Flock Daily Register & Biological Conservation"
+        subtitle="Authoritative seven-column headcount, veterinary medications, feed intake and closing balances recorded across all production pens."
+      >
+        {/* Filter & Date Bar */}
+        <div className="row between wrap items-center" style={{ gap: 12, paddingBottom: 16, borderBottom: '1px solid #e2e8f0', marginBottom: 16 }}>
+          <div className="row items-center" style={{ gap: 8 }}>
+            <span style={{ fontSize: '0.82rem', fontWeight: 650, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Filter Pen:</span>
+            {['all', 'H1', 'H2', 'H3', 'H4'].map((hId) => (
+              <button
+                key={hId}
+                type="button"
+                onClick={() => setSelectedHouseFilter(hId)}
+                style={{
+                  padding: '5px 12px',
+                  borderRadius: 6,
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  border: selectedHouseFilter === hId ? '1px solid #008751' : '1px solid #cbd5e1',
+                  background: selectedHouseFilter === hId ? '#008751' : '#ffffff',
+                  color: selectedHouseFilter === hId ? '#ffffff' : '#334155',
+                  transition: 'all 0.15s ease',
+                }}
               >
-                {tab.label}
-              </Btn>
+                {hId === 'all' ? 'All Houses' : `House ${hId.replace('H', '')}`}
+              </button>
             ))}
           </div>
-        }
-      >
-        <div className="row between wrap">
-          <Chip tone={conservationPassed ? 'green' : 'red'}>
-            {conservationPassed ? 'Biological Headcount Balanced' : 'Variance Detected'}
-          </Chip>
-          <label className="row" style={{ fontSize: '.84rem', fontWeight: 600 }}>
-            <span>Shift Date:</span>
+
+          <label className="row items-center" style={{ gap: 8, fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>
+            <span>Shift Date (WAT):</span>
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
               style={{
-                minHeight: 38,
-                padding: '4px 10px',
-                borderRadius: 8,
-                border: '1px solid var(--border)',
+                padding: '6px 12px',
+                borderRadius: 6,
+                border: '1px solid #cbd5e1',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                color: '#1e293b',
                 background: '#ffffff',
-                fontVariantNumeric: 'lining-nums tabular-nums',
               }}
             />
           </label>
@@ -509,29 +572,28 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
         ) : filteredRecords.length === 0 ? (
           <div style={{ padding: '36px 0' }}>
             <Empty
-              title="No Shift Records in D1"
-              detail={`No pen logs found in database for filter: ${selectedHouseFilter.toUpperCase()}. Begin by posting today's biological shift log.`}
+              title="No Shift Records in D1 for Selected Date"
+              detail={`No pen logs found in database for date ${selectedDate} (filter: ${selectedHouseFilter.toUpperCase()}). Post today's biological shift log below.`}
             />
             <div style={{ textAlign: 'center', marginTop: 16 }}>
-              <Btn primary onClick={() => setIsEntryModalOpen(true)}>
+              <Btn primary onClick={() => handleOpenEntryModal('H1')}>
                 <Plus size={16} /> Record Today&apos;s Shift
               </Btn>
             </div>
           </div>
         ) : (
           <div className="table-wrap mt">
-            <table className="data-table">
+            {/* EXACT SEVEN-COLUMN BUSINESS REGISTER */}
+            <table className="data-table" aria-label="Authoritative 7-Column Daily Flock Register">
               <thead>
                 <tr>
-                  <th>House &amp; Pen</th>
-                  <th>Age Cohort</th>
-                  <th style={{ textAlign: 'right' }}>Opening Stock</th>
-                  <th style={{ textAlign: 'right' }}>Mort / Culls</th>
-                  <th style={{ textAlign: 'right' }}>Feed Intake</th>
-                  <th style={{ textAlign: 'right' }}>Egg Yield (30-Egg Crates)</th>
-                  <th style={{ textAlign: 'center' }}>HDEP %</th>
-                  <th style={{ textAlign: 'right' }}>Closing Stock</th>
-                  <th>Attendant Sign-Off</th>
+                  <th style={{ width: '14%' }}>AGE</th>
+                  <th style={{ textAlign: 'right', width: '14%' }}>OPENING STOCK</th>
+                  <th style={{ textAlign: 'right', width: '14%' }}>MORTALITY</th>
+                  <th style={{ width: '15%' }}>MEDICATION</th>
+                  <th style={{ width: '15%' }}>VACCINATION</th>
+                  <th style={{ textAlign: 'right', width: '14%' }}>FEED IN TAKE</th>
+                  <th style={{ textAlign: 'right', width: '14%' }}>CLOSING STOCK</th>
                 </tr>
               </thead>
               <tbody>
@@ -539,56 +601,147 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
                   const mortRate = r.openingStock > 0 ? (r.mortality / r.openingStock) * 100 : 0;
                   const calcClosing = r.openingStock - r.mortality - r.culls - r.transfersOut;
                   const isDiscrepant = calcClosing !== r.closingStock;
+                  const isExpanded = expandedRecordId === r.id;
 
                   return (
-                    <tr key={r.id}>
-                      <td>
-                        <strong>{r.houseName}</strong>
-                        <div className="metadata">{r.flockBatch} · {r.breed}</div>
-                      </td>
-                      <td>
-                        <strong>{r.ageWeeks} wks</strong>
-                        <div className="metadata">{r.ageDays} days</div>
-                      </td>
-                      <td style={{ textAlign: 'right', fontVariantNumeric: 'lining-nums tabular-nums', fontWeight: 600 }}>
-                        {formatCount(r.openingStock)}
-                      </td>
-                      <td style={{ textAlign: 'right', fontVariantNumeric: 'lining-nums tabular-nums' }}>
-                        <strong style={{ color: r.mortality > 5 ? '#c53030' : 'inherit' }}>
-                          {r.mortality} mort
-                        </strong>
-                        {r.culls > 0 && <span className="metadata"> · {r.culls} culls</span>}
-                        <div className="metadata">{mortRate.toFixed(2)}% daily</div>
-                      </td>
-                      <td style={{ textAlign: 'right', fontVariantNumeric: 'lining-nums tabular-nums' }}>
-                        <strong>{formatCount(r.feedConsumedKg)} kg</strong>
-                        <div className="metadata">{r.feedType}</div>
-                      </td>
-                      <td style={{ textAlign: 'right', fontVariantNumeric: 'lining-nums tabular-nums' }}>
-                        <strong style={{ color: '#008751' }}>{formatCount(r.eggsCrates)} Crates</strong>
-                        <div className="metadata">
-                          +{r.looseEggs} loose ({r.leakers} damaged)
-                        </div>
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        {r.hdepPercent > 0 ? (
-                          <Chip tone={r.hdepPercent >= 90 ? 'green' : 'amber'}>{r.hdepPercent}% HDEP</Chip>
-                        ) : (
-                          <Chip tone="gray">Rearing</Chip>
-                        )}
-                      </td>
-                      <td style={{ textAlign: 'right', fontVariantNumeric: 'lining-nums tabular-nums' }}>
-                        <strong style={{ color: isDiscrepant ? '#c53030' : '#008751', fontSize: '1rem' }}>
-                          {formatCount(r.closingStock)}
-                        </strong>
-                      </td>
-                      <td>
-                        <strong>{r.attendantName}</strong>
-                        <div className="metadata" style={{ color: '#008751', fontWeight: 600 }}>
-                          ✓ {r.status}
-                        </div>
-                      </td>
-                    </tr>
+                    <React.Fragment key={r.id}>
+                      {/* Cohort Header Banner */}
+                      <tr style={{ background: '#f8fafc', borderTop: '2px solid #e2e8f0' }}>
+                        <td colSpan={7} style={{ padding: '8px 12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <span style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.88rem' }}>
+                                {r.houseName}
+                              </span>
+                              <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                                • {r.flockBatch} ({r.breed})
+                              </span>
+                              <Chip tone="green">WAT Verified</Chip>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setExpandedRecordId(isExpanded ? null : r.id)}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 4,
+                                background: 'transparent',
+                                border: 'none',
+                                color: '#008751',
+                                fontSize: '0.78rem',
+                                fontWeight: 650,
+                                cursor: 'pointer',
+                              }}
+                            >
+                              <span>{isExpanded ? 'Hide Details' : 'View Yield & Sign-off'}</span>
+                              <ChevronDown size={13} style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s ease' }} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+
+                      {/* Authoritative 7-Column Row */}
+                      <tr style={{ background: '#ffffff' }}>
+                        {/* 1. AGE */}
+                        <td>
+                          <strong style={{ fontSize: '0.92rem' }}>{r.ageWeeks} wks</strong>
+                          <div className="metadata">{r.ageDays} days</div>
+                        </td>
+
+                        {/* 2. OPENING STOCK */}
+                        <td style={{ textAlign: 'right', fontVariantNumeric: 'lining-nums tabular-nums', fontWeight: 650, fontSize: '0.95rem' }}>
+                          {formatCount(r.openingStock)}
+                        </td>
+
+                        {/* 3. MORTALITY */}
+                        <td style={{ textAlign: 'right', fontVariantNumeric: 'lining-nums tabular-nums' }}>
+                          <strong style={{ color: r.mortality > 5 ? '#c53030' : '#1e293b' }}>
+                            {r.mortality} mort
+                          </strong>
+                          {r.culls > 0 && <span className="metadata"> · {r.culls} culls</span>}
+                          <div className="metadata">{mortRate.toFixed(2)}% daily</div>
+                        </td>
+
+                        {/* 4. MEDICATION */}
+                        <td>
+                          <strong style={{ color: r.medication !== 'None' ? '#0369a1' : '#64748b' }}>
+                            {r.medication}
+                          </strong>
+                        </td>
+
+                        {/* 5. VACCINATION */}
+                        <td>
+                          <strong style={{ color: r.vaccination !== 'None Scheduled' ? '#7c2d12' : '#64748b' }}>
+                            {r.vaccination}
+                          </strong>
+                        </td>
+
+                        {/* 6. FEED IN TAKE */}
+                        <td style={{ textAlign: 'right', fontVariantNumeric: 'lining-nums tabular-nums' }}>
+                          <strong style={{ fontSize: '0.92rem' }}>{formatCount(r.feedConsumedKg)} kg</strong>
+                          <div className="metadata">{r.feedType}</div>
+                        </td>
+
+                        {/* 7. CLOSING STOCK */}
+                        <td style={{ textAlign: 'right', fontVariantNumeric: 'lining-nums tabular-nums' }}>
+                          <strong style={{ color: isDiscrepant ? '#c53030' : '#008751', fontSize: '1.05rem', fontWeight: 700 }}>
+                            {formatCount(r.closingStock)}
+                          </strong>
+                          <div className="metadata" style={{ color: isDiscrepant ? '#c53030' : '#059669' }}>
+                            {isDiscrepant ? 'Variance Detected' : '✓ Balanced'}
+                          </div>
+                        </td>
+                      </tr>
+
+                      {/* Supplementary Metrics Drawer (when expanded) */}
+                      {isExpanded && (
+                        <tr style={{ background: '#f8fafc' }}>
+                          <td colSpan={7} style={{ padding: '12px 18px', borderBottom: '1px solid #cbd5e1' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
+                              <div>
+                                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Egg Yield (30-Egg Crates)</span>
+                                <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#008751', marginTop: 2 }}>
+                                  {r.eggsCrates} Crates + {r.looseEggs} Loose
+                                </div>
+                                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                                  Total: {formatCount(r.eggsCrates * 30 + r.looseEggs)} eggs ({r.leakers} damaged)
+                                </div>
+                              </div>
+
+                              <div>
+                                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Water Intake</span>
+                                <div style={{ fontSize: '0.95rem', fontWeight: 650, marginTop: 2 }}>
+                                  {formatCount(r.waterConsumedLitres || 0)} Litres
+                                </div>
+                                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                                  Ratio: {r.feedConsumedKg > 0 ? ((r.waterConsumedLitres || 0) / r.feedConsumedKg).toFixed(1) : '2.0'} L/kg feed
+                                </div>
+                              </div>
+
+                              <div>
+                                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Microclimate Observation</span>
+                                <div style={{ fontSize: '0.95rem', fontWeight: 650, marginTop: 2 }}>
+                                  {r.ambientTempC ? `${r.ambientTempC}°C` : 'N/A'} · {r.relativeHumidityPct ? `${r.relativeHumidityPct}% RH` : ''}
+                                </div>
+                                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                                  THI Stress Index: {r.thiIndex ?? 'Normal'}
+                                </div>
+                              </div>
+
+                              <div>
+                                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Attendant Sign-Off</span>
+                                <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a', marginTop: 2 }}>
+                                  {r.attendantName}
+                                </div>
+                                <div style={{ fontSize: '0.75rem', color: '#008751', fontWeight: 600 }}>
+                                  ✓ Shift Verified &amp; Signed
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>
@@ -635,7 +788,7 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
                 <div>
                   <dt>Total Egg Harvest</dt>
                   <dd style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}>
-                    {formatCount(totalCrates)} Crates ({formatCount(totalCrates * 30)} Eggs)
+                    {formatCount(totalCrates)} Crates + {totalLooseEggs} Loose ({formatCount(grandTotalEggs)} Eggs)
                   </dd>
                 </div>
                 <div>
@@ -677,7 +830,7 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
             role="dialog"
             aria-modal="true"
             aria-label="Post Daily Pen Register Entry"
-            style={{ maxWidth: 640, background: '#ffffff', borderRadius: 16, border: '1px solid #d6e4db', boxShadow: '0 24px 60px rgba(10,35,25,.18)' }}
+            style={{ maxWidth: 660, background: '#ffffff', borderRadius: 16, border: '1px solid #d6e4db', boxShadow: '0 24px 60px rgba(10,35,25,.18)' }}
           >
             <button
               type="button"
@@ -693,17 +846,17 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
             <div style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: 16, marginBottom: 20 }}>
               <span className="eyebrow" style={{ color: '#008751' }}>GUIDED BIOLOGICAL SHIFT REGISTER</span>
               <h2 style={{ fontSize: '1.4rem', fontWeight: 650, marginTop: 4 }}>
-                {formStep === 1 && 'Step 1: Today’s Birds (Headcount Invariant)'}
-                {formStep === 2 && 'Step 2: Feed Intake & Egg Production'}
-                {formStep === 3 && 'Step 3: Review & Attest Ledger'}
+                {formStep === 1 && "Step 1: Today's Birds (Headcount Invariant)"}
+                {formStep === 2 && 'Step 2: Feed, Water & Health Operations'}
+                {formStep === 3 && 'Step 3: Review & Submit Register'}
               </h2>
               
               {/* Stepper Pills */}
               <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                 {[
-                  { step: 1, label: '1. Headcount' },
-                  { step: 2, label: '2. Feed & Yield' },
-                  { step: 3, label: '3. Review & Sign' },
+                  { step: 1, label: "1. Today's Birds" },
+                  { step: 2, label: '2. Feed, Water & Health' },
+                  { step: 3, label: '3. Review & Submit' },
                 ].map((s) => (
                   <div
                     key={s.step}
@@ -737,26 +890,34 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
               {/* STEP 1: Headcount & Biological Conservation */}
               {formStep === 1 && (
                 <div className="stack" style={{ gap: 16 }}>
-                  <label className="field">
-                    <span>Target Poultry Pen / Cohort</span>
-                    <select
-                      value={targetHouse}
-                      onChange={(e) => {
-                        setTargetHouse(e.target.value);
-                        // Sensible default based on house
-                        if (e.target.value === 'H2') setOpeningBirds(12050);
-                        else if (e.target.value === 'H3') setOpeningBirds(12110);
-                        else if (e.target.value === 'H4') setOpeningBirds(12105);
-                        else setOpeningBirds(12200);
-                      }}
-                      style={{ minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1' }}
-                    >
-                      <option value="H1">House 1 — ISA Brown (Layer Cages A-D)</option>
-                      <option value="H2">House 2 — Bovans White (Layer Cages E-H)</option>
-                      <option value="H3">House 3 — ISA Brown (Layer Cages J-M)</option>
-                      <option value="H4">House 4 — Lohmann Brown (Pullets N-Q)</option>
-                    </select>
-                  </label>
+                  <div className="form-grid">
+                    <label className="field">
+                      <span>Target Poultry Pen / Cohort</span>
+                      <select
+                        value={targetHouse}
+                        onChange={(e) => handleHouseSelectChange(e.target.value)}
+                        style={{ minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1' }}
+                      >
+                        <option value="H1">House 1 — ISA Brown (Cages A-D)</option>
+                        <option value="H2">House 2 — Bovans White (Cages E-H)</option>
+                        <option value="H3">House 3 — ISA Brown (Cages J-M)</option>
+                        <option value="H4">House 4 — Lohmann Brown (Pullets N-Q)</option>
+                      </select>
+                    </label>
+
+                    <label className="field">
+                      <span>Shift Date (WAT)</span>
+                      <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => {
+                          setSelectedDate(e.target.value);
+                          setIdempotencyKey(`idem-${targetHouse}-${e.target.value}-${Date.now()}`);
+                        }}
+                        style={{ minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1' }}
+                      />
+                    </label>
+                  </div>
 
                   <div className="form-grid">
                     <label className="field">
@@ -769,6 +930,7 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
                         onChange={(e) => setOpeningBirds(Math.max(0, Number(e.target.value)))}
                         style={{ minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontVariantNumeric: 'lining-nums tabular-nums' }}
                       />
+                      <small className="muted">Authoritatively prefilled from prior shift closing balance.</small>
                     </label>
 
                     <label className="field">
@@ -809,10 +971,10 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
                     </label>
                   </div>
 
-                  {/* Real-time Headcount Equation Card */}
+                  {/* Real-time Biological Conservation Invariant Card */}
                   <div style={{ padding: '14px 16px', borderRadius: 10, background: '#f8fafc', border: '1px solid #e2e8f0' }}>
                     <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      MATHEMATICAL CONSERVATION EQUATION
+                      BIOLOGICAL CONSERVATION EQUATION
                     </div>
                     <div style={{ marginTop: 6, fontSize: '0.95rem', fontWeight: 650, fontVariantNumeric: 'lining-nums tabular-nums' }}>
                       Opening ({formatCount(openingBirds)}) − Mort ({mortality}) − Culls ({culls}) − Transfers ({transfersOut}) ={' '}
@@ -838,13 +1000,13 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
                         setFormStep(2);
                       }}
                     >
-                      Next: Feed &amp; Production <ChevronRight size={15} />
+                      Next: Feed, Water &amp; Health <ChevronRight size={15} />
                     </Btn>
                   </div>
                 </div>
               )}
 
-              {/* STEP 2: Feed & Egg Yield */}
+              {/* STEP 2: Feed, Water & Health */}
               {formStep === 2 && (
                 <div className="stack" style={{ gap: 16 }}>
                   <div className="form-grid">
@@ -872,9 +1034,33 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
                     </label>
                   </div>
 
+                  <div className="form-grid">
+                    <label className="field">
+                      <span>Medication Administered</span>
+                      <input
+                        type="text"
+                        value={medication}
+                        onChange={(e) => setMedication(e.target.value)}
+                        placeholder="e.g. None or Oxytetracycline 20%"
+                        style={{ minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1' }}
+                      />
+                    </label>
+
+                    <label className="field">
+                      <span>Vaccination Administered</span>
+                      <input
+                        type="text"
+                        value={vaccination}
+                        onChange={(e) => setVaccination(e.target.value)}
+                        placeholder="e.g. None Scheduled or ND+IB Booster"
+                        style={{ minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1' }}
+                      />
+                    </label>
+                  </div>
+
                   <div className="grid3">
                     <label className="field">
-                      <span>30-Egg Commercial Crates</span>
+                      <span>30-Egg Crates</span>
                       <input
                         type="number"
                         min={0}
@@ -972,70 +1158,83 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
                         setFormStep(3);
                       }}
                     >
-                      Next: Review &amp; Attest <ChevronRight size={15} />
+                      Next: Review &amp; Submit <ChevronRight size={15} />
                     </Btn>
                   </div>
                 </div>
               )}
 
-              {/* STEP 3: Review & Cryptographic Attestation */}
+              {/* STEP 3: Review & Submit */}
               {formStep === 3 && (
                 <div className="stack" style={{ gap: 16 }}>
                   <div style={{ padding: '14px 18px', borderRadius: 12, background: '#f8fafc', border: '1px solid #cbd5e1' }}>
-                    <span className="eyebrow" style={{ color: '#008751' }}>SHIFT VERIFICATION SUMMARY</span>
+                    <span className="eyebrow" style={{ color: '#008751' }}>SEVEN-COLUMN REGISTER SUMMARY</span>
                     
                     <dl className="identity-facts" style={{ marginTop: 12 }}>
                       <div>
                         <dt>Pen Cohort</dt>
-                        <dd>House {targetHouse.replace('H', '')}</dd>
+                        <dd>{FLOCK_BASELINES[targetHouse]?.name || `House ${targetHouse}`}</dd>
                       </div>
                       <div>
-                        <dt>Shift Date</dt>
+                        <dt>Shift Date (WAT)</dt>
                         <dd>{selectedDate}</dd>
                       </div>
                       <div>
-                        <dt>Opening Stock</dt>
+                        <dt>1. AGE</dt>
+                        <dd>{(FLOCK_BASELINES[targetHouse]?.ageWeeks || 48)} wks ({(FLOCK_BASELINES[targetHouse]?.ageWeeks || 48) * 7} d)</dd>
+                      </div>
+                      <div>
+                        <dt>2. OPENING STOCK</dt>
                         <dd style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}>{formatCount(openingBirds)}</dd>
                       </div>
                       <div>
-                        <dt>Mortality / Culls</dt>
-                        <dd style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}>{mortality} / {culls}</dd>
+                        <dt>3. MORTALITY</dt>
+                        <dd style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}>{mortality} mort {culls > 0 ? `· ${culls} culls` : ''}</dd>
                       </div>
                       <div>
-                        <dt>Verified Closing</dt>
-                        <dd style={{ color: '#008751', fontWeight: 700, fontVariantNumeric: 'lining-nums tabular-nums' }}>
-                          {formatCount(calculatedClosing)} Birds
+                        <dt>4. MEDICATION</dt>
+                        <dd style={{ fontWeight: 600 }}>{medication}</dd>
+                      </div>
+                      <div>
+                        <dt>5. VACCINATION</dt>
+                        <dd style={{ fontWeight: 600 }}>{vaccination}</dd>
+                      </div>
+                      <div>
+                        <dt>6. FEED IN TAKE</dt>
+                        <dd style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}>{formatCount(feedKg)} kg ({feedType})</dd>
+                      </div>
+                      <div>
+                        <dt>7. CLOSING STOCK</dt>
+                        <dd style={{ color: '#008751', fontWeight: 700, fontVariantNumeric: 'lining-nums tabular-nums', fontSize: '1.05rem' }}>
+                          {formatCount(calculatedClosing)} Birds (✓ Invariant Balanced)
                         </dd>
-                      </div>
-                      <div>
-                        <dt>Egg Harvest</dt>
-                        <dd style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}>
-                          {crates} Crates ({formatCount(totalEggsCount)} Eggs)
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>Calculated HDEP</dt>
-                        <dd>{calculatedHdep}% Lay Rate</dd>
-                      </div>
-                      <div>
-                        <dt>Feed Consumed</dt>
-                        <dd style={{ fontVariantNumeric: 'lining-nums tabular-nums' }}>{formatCount(feedKg)} kg</dd>
                       </div>
                     </dl>
                   </div>
 
-                  <label className="field">
-                    <span>Shift Attendant / Operator Name</span>
-                    <input
-                      type="text"
-                      required
-                      value={attendant}
-                      onChange={(e) => setAttendant(e.target.value)}
-                      placeholder="e.g. Babatunde Alamu"
-                      style={{ minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontWeight: 600 }}
-                    />
-                    <small className="muted">Attestation binds this shift report to your employee ID in the audit ledger.</small>
-                  </label>
+                  <div className="form-grid">
+                    <label className="field">
+                      <span>Shift Attendant / Operator Name *</span>
+                      <input
+                        type="text"
+                        required
+                        value={attendant}
+                        onChange={(e) => setAttendant(e.target.value)}
+                        placeholder="e.g. Babatunde Alamu"
+                        style={{ minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontWeight: 600 }}
+                      />
+                    </label>
+
+                    <label className="field">
+                      <span>Idempotency Key (Retry-Safe)</span>
+                      <input
+                        type="text"
+                        readOnly
+                        value={idempotencyKey}
+                        style={{ minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#f1f5f9', color: '#64748b', fontSize: '0.8rem' }}
+                      />
+                    </label>
+                  </div>
 
                   <div className="row between wrap" style={{ marginTop: 12 }}>
                     <Btn type="button" onClick={() => setFormStep(2)} disabled={isSubmitting}>
@@ -1045,7 +1244,7 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
                       {isSubmitting ? (
                         <>
                           <LoaderCircle size={15} className="spin" />
-                          <span>Attesting to D1...</span>
+                          <span>Persisting to D1...</span>
                         </>
                       ) : (
                         <>

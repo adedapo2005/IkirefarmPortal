@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node tests/test_pkg02_real.cjs",
+    "test:pkg02": "node tests/test_pkg02_real.cjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

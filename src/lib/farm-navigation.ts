@@ -60,7 +60,7 @@ const primarySections: readonly SectionSpec[] = [
         id: "cohorts-housing",
         label: "Cohorts & Housing",
         landingRoute: "flocks",
-        routes: ["flocks", "daily-register", "houses", "breed-management", "flock-transfers", "weight-sampling", "lighting-program", "breed-benchmarks"],
+        routes: ["flocks", "daily-register", "houses", "breed-management", "flock-transfers", "weight-sampling", "lighting-program", "breed-benchmarks", "brooding-units"],
       },
     ],
   },
@@ -97,18 +97,6 @@ const primarySections: readonly SectionSpec[] = [
         label: "Clinical Care & Biosecurity",
         landingRoute: "medication",
         routes: ["medication", "medication-stock", "mortality", "water-management", "biosecurity", "vaccinations", "health"],
-      },
-    ],
-  },
-  {
-    id: "hatchery-incubation",
-    label: "Hatchery & Brooding",
-    modules: [
-      {
-        id: "incubation-hatching",
-        label: "Incubation & Hatching",
-        landingRoute: "hatchery-setters",
-        routes: ["hatchery-setters", "hatchery-candling", "hatchery-takeoff", "brooding-units"],
       },
     ],
   },

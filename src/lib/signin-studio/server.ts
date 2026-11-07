@@ -27,7 +27,7 @@ export async function studioAPI(request:Request,path:string[]){
   const d=await publishedDesign();
   const allowed=!!d?.nodes.some((n:any)=>/Weather|Global Operations/.test(n.kind)&&n.data?.inputs?.designMode==='LIVE');
   if(!allowed)return new Response('Not Found',{status:404,headers:{'Cache-Control':'no-store'}});
-  const ids=(new URL(request.url).searchParams.get('locations')||'farm').split(',').map(x=>x.trim()).filter(x=>WEATHER_LOCATIONS.some(l=>l.id===x)).slice(0,8);
+  const ids=(new URL(request.url).searchParams.get('locations')||'farm').split(',').map((x:any)=>x.trim()).filter((x:any)=>WEATHER_LOCATIONS.some((l:any)=>l.id===x)).slice(0,8);
   return json({records:await weather(database(),ids.length?ids:GLOBAL_LOCATION_IDS,'current')});
  }
  if(!user)return new Response('Not Found',{status:404,headers:{'Cache-Control':'no-store'}});
@@ -36,7 +36,7 @@ export async function studioAPI(request:Request,path:string[]){
  if(request.method==='GET'){
   if(action==='state'){const fallbackProviders={providers:[] as any[]},providerRead=typeof providerState==='function'?providerState(db):Promise.resolve(fallbackProviders);const [drafts,versions,assets,pointer,library,providers]=await Promise.all([db.prepare('SELECT id,name,revision,updated FROM signin_studio_drafts WHERE owner = ? ORDER BY updated DESC').bind(owner).all(),db.prepare('SELECT id,name,status,base,created FROM signin_studio_versions WHERE owner = ? ORDER BY created DESC').bind(owner).all(),db.prepare('SELECT id,name,mime FROM signin_studio_assets WHERE owner = ? ORDER BY created DESC').bind(owner).all(),livePointer(),db.prepare('SELECT id,name,created FROM signin_studio_library WHERE owner=? ORDER BY created DESC').bind(owner).all(),providerRead]);return json({library:library.results,drafts:drafts.results,versions:versions.results,assets:assets.results,live:pointer?.current||'V52',previous:pointer?.previous||'V52',baseline:BASELINE,storage:'Sites-managed D1 + R2',providers,ai:providers.providers.find((x:any)=>x.id==='ai')?.status||'PROVIDER REQUIRED'});}
   if(action==='providers')return json(await providerState(db));
-  if(action==='weather'){const ids=(new URL(request.url).searchParams.get('locations')||'farm').split(',').map(x=>x.trim()).filter(x=>WEATHER_LOCATIONS.some(l=>l.id===x)).slice(0,8);return json({records:await weather(db,ids.length?ids:GLOBAL_LOCATION_IDS,'current')});}
+  if(action==='weather'){const ids=(new URL(request.url).searchParams.get('locations')||'farm').split(',').map((x:any)=>x.trim()).filter((x:any)=>WEATHER_LOCATIONS.some((l:any)=>l.id===x)).slice(0,8);return json({records:await weather(db,ids.length?ids:GLOBAL_LOCATION_IDS,'current')});}
   if(action==='library'){const row=await db.prepare('SELECT document FROM signin_studio_library WHERE id=? AND owner=?').bind(id,owner).first<{document:string}>();return row?json({document:JSON.parse(row.document)}):json({error:'Not Found'},404);}
   if(action==='draft'){const row=await db.prepare('SELECT * FROM signin_studio_drafts WHERE id = ? AND owner = ?').bind(id,owner).first<{document:string}>();return row?json({...row,document:JSON.parse(row.document)}):json({error:'Not Found'},404);}
   if(action==='version'){const row=await versionForOwner(id,owner);return row?json({...row,document:JSON.parse(row.document)}):json({error:'Not Found'},404);}

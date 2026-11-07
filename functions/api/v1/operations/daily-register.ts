@@ -13,11 +13,14 @@ interface DailyPenRecordPayload {
   penNumber: string;
   flockId?: string;
   logDate?: string;
+  ageDays?: number;
   openingBirds: number;
   mortalityCount?: number;
   cullsCount?: number;
   transfersOut?: number;
   closingBirds: number;
+  medication?: string;
+  vaccination?: string;
   eggsCollectedGood?: number;
   eggsDamaged?: number;
   eggsRejected?: number;
@@ -26,6 +29,7 @@ interface DailyPenRecordPayload {
   ambientTempC?: number;
   relativeHumidityPct?: number;
   thiIndex?: number;
+  idempotencyKey?: string;
   recordedBy: string;
 }
 
@@ -47,17 +51,24 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   }
 
   try {
-    const { results } = await context.env.DB.prepare(`
+    const url = new URL(context.request.url);
+    const dateParam = url.searchParams.get('date');
+    const flockParam = url.searchParams.get('flock_id');
+
+    let query = `
       SELECT 
         id,
         flock_id AS flockId,
         pen_number AS penNumber,
         log_date AS logDate,
+        age_days AS ageDays,
         opening_birds AS openingBirds,
         mortality_count AS mortalityCount,
         culls_count AS cullsCount,
         transfers_out AS transfersOut,
         closing_birds AS closingBirds,
+        medication,
+        vaccination,
         eggs_collected_good AS eggsCollectedGood,
         eggs_damaged AS eggsDamaged,
         eggs_rejected AS eggsRejected,
@@ -66,16 +77,38 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         ambient_temp_c AS ambientTempC,
         relative_humidity_pct AS relativeHumidityPct,
         thi_heat_stress_index AS thiIndex,
+        idempotency_key AS idempotencyKey,
         recorded_by AS recordedBy,
         created_at AS createdAt
-      FROM daily_pen_logs 
-      ORDER BY log_date DESC, created_at DESC 
-      LIMIT 100
-    `).all();
+      FROM daily_pen_logs
+    `;
 
+    const conditions: string[] = [];
+    const params: string[] = [];
+
+    if (dateParam) {
+      conditions.push('log_date = ?');
+      params.push(dateParam);
+    }
+    if (flockParam) {
+      conditions.push('flock_id = ?');
+      params.push(flockParam);
+    }
+
+    if (conditions.length > 0) {
+      query += ` WHERE ${conditions.join(' AND ')}`;
+    }
+
+    query += ` ORDER BY log_date DESC, created_at DESC LIMIT 100`;
+
+    const stmt = params.length > 0
+      ? context.env.DB.prepare(query).bind(...params)
+      : context.env.DB.prepare(query);
+
+    const { results } = await stmt.all();
     const records = results || [];
 
-    // Calculate genuine aggregates from actual records
+    // Calculate genuine aggregates from actual retrieved records
     const totalFlockSize = records.reduce((sum, r) => sum + (Number((r as any).closingBirds) || 0), 0);
     const totalEggsToday = records.reduce((sum, r) => sum + (Number((r as any).eggsCollectedGood) || 0), 0);
     const totalMortalityToday = records.reduce((sum, r) => sum + (Number((r as any).mortalityCount) || 0), 0);
@@ -133,10 +166,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const closing = Number(body.closingBirds);
 
     // Negative counts check
-    if (opening < 0 || mortality < 0 || culls < 0 || transfers < 0 || closing < 0) {
+    if (opening <= 0 || mortality < 0 || culls < 0 || transfers < 0 || closing < 0) {
       return new Response(JSON.stringify({
         status: 'error',
-        error: 'Biological counts must be non-negative numbers.',
+        error: 'Biological counts must be non-negative numbers and opening stock must be greater than zero.',
       }), {
         status: 422,
         headers: { 'content-type': 'application/json' },
@@ -156,9 +189,34 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       });
     }
 
+    // Idempotency check: if client sent an idempotency key and it already exists, return existing record
+    if (body.idempotencyKey) {
+      const existing = await context.env.DB.prepare(
+        'SELECT id, closing_birds FROM daily_pen_logs WHERE idempotency_key = ? LIMIT 1'
+      ).bind(body.idempotencyKey).first<{ id: string; closing_birds: number }>();
+
+      if (existing) {
+        return new Response(JSON.stringify({
+          status: 'success',
+          id: existing.id,
+          message: 'Pen shift record verified and permanently persisted (idempotent replay).',
+          persisted: true,
+          balanced: true,
+          closingBirds: existing.closing_birds,
+        }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
+    }
+
     const logId = `log-${Date.now()}`;
     const logDate = body.logDate || new Date().toISOString().split('T')[0];
     const flockId = body.flockId || 'flk-1';
+    const medication = body.medication || 'None';
+    const vaccination = body.vaccination || 'None';
+    const ageDays = body.ageDays ?? null;
+    const idempotencyKey = body.idempotencyKey || `idem-${flockId}-${logDate}-${Date.now()}`;
     const recordedBy = body.recordedBy || 'Authorized Operator';
     const nowWat = new Date().toLocaleTimeString('en-NG') + ' WAT';
 
@@ -166,16 +224,17 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     await context.env.DB.batch([
       context.env.DB.prepare(`
         INSERT INTO daily_pen_logs (
-          id, flock_id, pen_number, log_date, opening_birds, mortality_count, culls_count, transfers_out, closing_birds,
-          eggs_collected_good, eggs_damaged, eggs_rejected, feed_consumed_kg, water_consumed_litres,
-          ambient_temp_c, relative_humidity_pct, thi_heat_stress_index, recorded_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          id, flock_id, pen_number, log_date, age_days, opening_birds, mortality_count, culls_count, transfers_out, closing_birds,
+          medication, vaccination, feed_consumed_kg, eggs_collected_good, eggs_damaged, eggs_rejected,
+          water_consumed_litres, ambient_temp_c, relative_humidity_pct, thi_heat_stress_index, idempotency_key, recorded_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).bind(
-        logId, flockId, body.penNumber, logDate, opening, mortality,
-        culls, transfers, closing, Number(body.eggsCollectedGood) || 0, Number(body.eggsDamaged) || 0,
-        Number(body.eggsRejected) || 0, Number(body.feedConsumedKg) || 0, Number(body.waterConsumedLitres) || 0,
+        logId, flockId, body.penNumber, logDate, ageDays, opening, mortality,
+        culls, transfers, closing, medication, vaccination,
+        Number(body.feedConsumedKg) || 0, Number(body.eggsCollectedGood) || 0, Number(body.eggsDamaged) || 0,
+        Number(body.eggsRejected) || 0, Number(body.waterConsumedLitres) || 0,
         body.ambientTempC ?? null, body.relativeHumidityPct ?? null,
-        body.thiIndex ?? null, recordedBy
+        body.thiIndex ?? null, idempotencyKey, recordedBy
       ),
       context.env.DB.prepare(`
         INSERT INTO audit_ledger (id, actor_name, actor_role, action_type, entity_affected, entity_id, change_summary, created_at_wat)
@@ -187,7 +246,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         'PEN_RECORD_CREATE',
         'daily_pen_logs',
         logId,
-        `Logged shift for ${body.penNumber}: Opening ${opening}, Mortality ${mortality}, Culls ${culls}, Closing ${closing}`,
+        `Logged shift for ${body.penNumber}: Opening ${opening}, Mortality ${mortality}, Culls ${culls}, Meds: ${medication}, Vax: ${vaccination}, Closing ${closing}`,
         nowWat
       ),
     ]);
@@ -199,6 +258,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       persisted: true,
       balanced: true,
       closingBirds: closing,
+      idempotencyKey,
     }), {
       status: 201,
       headers: { 'content-type': 'application/json' },

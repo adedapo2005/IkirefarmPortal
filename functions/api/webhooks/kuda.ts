@@ -3,6 +3,7 @@
  * Route: POST /api/webhooks/kuda
  * Security: Strict HMAC-SHA512 verification (fail closed)
  * Mutation: Validates order existence, unlocks Gate Pass, and logs immutable audit trail
+ * Invariant: Does NOT set dispatched_at (physical gate exit is separate event)
  */
 
 interface Env {
@@ -65,7 +66,32 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     }
 
     const payload = JSON.parse(rawBody);
-    const amount = Number(payload.amount || payload.Amount || 0);
+
+    // Verify successful payment status
+    const status = String(payload.status || payload.Status || payload.transactionStatus || '').toUpperCase();
+    const isSuccess = ['SUCCESS', 'COMPLETED', 'PAID', 'SUCCESSFUL'].includes(status);
+    if (!isSuccess) {
+      return new Response(JSON.stringify({
+        status: 'ignored_unsuccessful',
+        error: `Payment status '${status || 'UNKNOWN'}' is not successful. Gate pass remains locked.`,
+      }), {
+        status: 422,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+
+    // Verify currency
+    const currency = String(payload.currency || payload.Currency || 'NGN').toUpperCase();
+    if (currency !== 'NGN') {
+      return new Response(JSON.stringify({
+        status: 'invalid_currency',
+        error: `Unsupported currency '${currency}'. Only NGN settlement accepted.`,
+      }), {
+        status: 422,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+
     const reference = String(payload.transactionReference || payload.reference || '');
     const accountNumber = String(payload.accountNumber || payload.virtualAccount || '');
     const sender = String(payload.senderName || payload.SenderName || 'WHOLESALE DISTRIBUTOR');
@@ -74,9 +100,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     // Query matching order by virtual account or order reference
     const order = await context.env.DB.prepare(`
-      SELECT id, order_number, total_amount_ngn, payment_status, gate_pass_id 
+      SELECT id, order_number, total_amount_ngn, payment_status, gate_pass_id, gate_pass_status 
       FROM wholesale_orders 
-      WHERE dynamic_virtual_account = ? OR order_number = ?
+      WHERE (dynamic_virtual_account IS NOT NULL AND dynamic_virtual_account = ?) 
+         OR order_number = ?
       LIMIT 1
     `).bind(accountNumber, reference).first<{
       id: string;
@@ -84,6 +111,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       total_amount_ngn: number;
       payment_status: string;
       gate_pass_id: string;
+      gate_pass_status: string;
     }>();
 
     if (!order) {
@@ -96,17 +124,46 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       });
     }
 
-    // Execute atomic update: Order marked PAID_VERIFIED, Gate Pass unlocked CLEARED_EXIT, and Audit Log appended
+    // Replay / Duplicate event protection
+    if (order.payment_status === 'PAID_VERIFIED') {
+      return new Response(JSON.stringify({
+        status: 'duplicate_event',
+        message: `Order ${order.order_number} has already been verified and reconciled. Replay ignored.`,
+        reconciled: true,
+        orderNumber: order.order_number,
+        gatePassId: order.gate_pass_id,
+        gatePassStatus: order.gate_pass_status,
+      }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+
+    // Verify Amount (supports amount in Naira or Kobo)
+    const rawAmount = Number(payload.amount || payload.Amount || 0);
+    const amountNgn = (rawAmount > 0 && rawAmount === order.total_amount_ngn * 100) ? rawAmount / 100 : rawAmount;
+
+    if (amountNgn <= 0 || amountNgn < order.total_amount_ngn) {
+      return new Response(JSON.stringify({
+        status: 'underpaid',
+        error: `Payment amount ₦${amountNgn.toLocaleString()} is less than order total ₦${order.total_amount_ngn.toLocaleString()}. Gate pass remains locked.`,
+      }), {
+        status: 422,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+
+    // Execute atomic update: Order marked PAID_VERIFIED, Gate Pass unlocked CLEARED_EXIT, and Audit Log appended.
+    // NOTE: dispatched_at_wat is NOT set here; physical truck dispatch occurs at gate exit.
     await context.env.DB.batch([
       context.env.DB.prepare(`
         UPDATE wholesale_orders 
         SET payment_status = 'PAID_VERIFIED',
             gate_pass_status = 'CLEARED_EXIT',
             nip_session_id = ?,
-            sender_kyc_name = ?,
-            dispatched_at_wat = ?
+            sender_kyc_name = ?
         WHERE id = ?
-      `).bind(sessionId, sender, nowWat, order.id),
+      `).bind(sessionId, sender, order.id),
       context.env.DB.prepare(`
         INSERT INTO audit_ledger (id, actor_name, actor_role, action_type, entity_affected, entity_id, change_summary, created_at_wat)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -117,7 +174,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         'PAYMENT_WEBHOOK',
         'wholesale_orders',
         order.id,
-        `Verified inbound payment of ₦${(amount / 100).toLocaleString()} for ${order.order_number} (${sender}). Gate Pass ${order.gate_pass_id} CLEARED FOR EXIT.`,
+        `Verified inbound payment of ₦${amountNgn.toLocaleString()} for ${order.order_number} (${sender}). Gate Pass ${order.gate_pass_id} CLEARED FOR EXIT.`,
         nowWat
       ),
     ]);
@@ -128,6 +185,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       orderNumber: order.order_number,
       gatePassId: order.gate_pass_id,
       gatePassStatus: 'CLEARED_EXIT',
+      amountReconciledNgn: amountNgn,
       timestampWat: nowWat,
     }), {
       status: 200,

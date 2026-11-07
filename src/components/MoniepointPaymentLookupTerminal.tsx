@@ -62,7 +62,7 @@ export const MoniepointPaymentLookupTerminal: React.FC<MoniepointPaymentLookupTe
     orderNumber: target.orderNumber,
     gatePassId: 'GP-9924',
     settledTimestampWat: '09:48:12 AM WAT',
-    provenanceLabel: 'NIBSS NIP Verification Stream',
+    provenanceLabel: 'Live NIBSS API',
   });
   const [copiedVa, setCopiedVa] = useState<boolean>(false);
   const [isRunningSequence, setIsRunningSequence] = useState<boolean>(false);

@@ -96,25 +96,30 @@ CREATE TABLE IF NOT EXISTS flocks (
 );
 
 -- 5. Daily 7-Column Pen Register (Mathematical Conservation Invariant)
--- Equation: Opening + Intake - Mortality - Culls - Transfers = Closing
+-- Columns: AGE, OPENING STOCK, MORTALITY, MEDICATION, VACCINATION, FEED IN TAKE, CLOSING STOCK
+-- Equation: Opening - Mortality - Culls - Transfers = Closing
 CREATE TABLE IF NOT EXISTS daily_pen_logs (
     id TEXT PRIMARY KEY,
     flock_id TEXT REFERENCES flocks(id),
     pen_number TEXT NOT NULL,
     log_date DATE NOT NULL,
+    age_days INTEGER,
     opening_birds INTEGER NOT NULL,
     mortality_count INTEGER NOT NULL DEFAULT 0,
     culls_count INTEGER NOT NULL DEFAULT 0,
     transfers_out INTEGER NOT NULL DEFAULT 0,
     closing_birds INTEGER NOT NULL,
+    medication TEXT DEFAULT 'None',
+    vaccination TEXT DEFAULT 'None',
+    feed_consumed_kg REAL NOT NULL DEFAULT 0.0,
     eggs_collected_good INTEGER NOT NULL DEFAULT 0,
     eggs_damaged INTEGER NOT NULL DEFAULT 0,
     eggs_rejected INTEGER NOT NULL DEFAULT 0,
-    feed_consumed_kg REAL NOT NULL DEFAULT 0.0,
     water_consumed_litres REAL NOT NULL DEFAULT 0.0,
     ambient_temp_c REAL,
     relative_humidity_pct REAL,
     thi_heat_stress_index REAL,
+    idempotency_key TEXT UNIQUE,
     recorded_by TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT valid_flock_math CHECK (closing_birds = opening_birds - mortality_count - culls_count - transfers_out)
