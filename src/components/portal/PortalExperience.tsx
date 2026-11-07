@@ -640,6 +640,7 @@ function Navigation({
                           const moduleActive = module.pages.some((page) => page.id === route);
                           return (
                             <section className="nav-module" key={module.id} data-active={moduleActive || undefined}>
+                              {section.modules.length > 1 && (
                               <div className="nav-module-head">
                                 <Tooltip>
                                   <TooltipTrigger asChild>
@@ -683,7 +684,8 @@ function Navigation({
                                   </button>
                                 )}
                               </div>
-                              {state !== "collapsed" && moduleOpen && (
+                              )}
+                              {state !== "collapsed" && (section.modules.length === 1 || moduleOpen) && (
                                 <SidebarMenu className="nav-submenu">
                                   {module.pages.map((page) => (
                                     <SidebarMenuItem key={page.id}>

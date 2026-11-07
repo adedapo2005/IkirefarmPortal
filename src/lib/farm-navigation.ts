@@ -26,107 +26,143 @@ type SectionSpec = {
   modules: readonly ModuleSpec[];
 };
 
-// Stage 22 Navigation Contract: 9 Plain-Language Core Sections with Merged Modules
+// 14 Professional, Concise Commercial Poultry ERP Navigation Sections (Daenem Farms Ikire)
 const primarySections: readonly SectionSpec[] = [
   {
-    id: "home",
-    label: "Home",
+    id: "command-center",
+    label: "Command Center",
     modules: [
       {
         id: "executive-oversight",
         label: "Executive Oversight",
         landingRoute: "dashboard",
-        routes: ["dashboard", "daily-brief", "myday", "notifications", "profile"],
+        routes: ["dashboard", "daily-brief", "myday", "notifications", "bulletins", "profile"],
       },
     ],
   },
   {
-    id: "farm-work",
-    label: "Farm Work",
+    id: "sales-orders",
+    label: "Sales & Orders",
     modules: [
       {
-        id: "flocks-housing",
-        label: "Flocks & Housing",
+        id: "customer-orders-sales",
+        label: "Customer Orders & Sales",
+        landingRoute: "orders",
+        routes: ["orders", "order-create", "dispatch", "customers", "pricing-catalog", "point-of-sale", "communication"],
+      },
+    ],
+  },
+  {
+    id: "flocks-housing",
+    label: "Flocks & Housing",
+    modules: [
+      {
+        id: "cohorts-housing",
+        label: "Cohorts & Housing",
         landingRoute: "flocks",
         routes: ["flocks", "daily-register", "houses", "breed-management", "flock-transfers", "weight-sampling", "lighting-program", "breed-benchmarks"],
       },
+    ],
+  },
+  {
+    id: "egg-production",
+    label: "Egg Production",
+    modules: [
       {
-        id: "egg-production",
-        label: "Egg Production",
+        id: "collections-cold-room",
+        label: "Collections & Cold Room",
         landingRoute: "eggs",
         routes: ["eggs", "egg-collections", "egg-grading", "egg-reconciliation"],
       },
+    ],
+  },
+  {
+    id: "feed-milling",
+    label: "Feed & Milling",
+    modules: [
       {
-        id: "feed-milling",
+        id: "feed-mill-silos",
         label: "Feed Mill & Silos",
         landingRoute: "feed",
         routes: ["feed", "feed-stock", "feed-formulas", "feed-silos", "feed-quality", "feed-consumption"],
       },
+    ],
+  },
+  {
+    id: "health-veterinary",
+    label: "Health & Veterinary",
+    modules: [
       {
-        id: "health-veterinary",
-        label: "Health & Biosecurity",
+        id: "clinical-care-biosecurity",
+        label: "Clinical Care & Biosecurity",
         landingRoute: "medication",
         routes: ["medication", "medication-stock", "mortality", "water-management", "biosecurity", "vaccinations", "health"],
       },
+    ],
+  },
+  {
+    id: "hatchery-incubation",
+    label: "Hatchery & Brooding",
+    modules: [
       {
-        id: "hatchery-incubation",
-        label: "Hatchery & Brooding",
+        id: "incubation-hatching",
+        label: "Incubation & Hatching",
         landingRoute: "hatchery-setters",
         routes: ["hatchery-setters", "hatchery-candling", "hatchery-takeoff", "brooding-units"],
       },
     ],
   },
   {
-    id: "stock-purchases",
-    label: "Stock & Purchases",
+    id: "inventory-stores",
+    label: "Inventory & Stores",
     modules: [
       {
-        id: "inventory-stores",
-        label: "Inventory & Stores",
+        id: "warehouse-materials",
+        label: "Warehouse & Materials",
         landingRoute: "inventory",
         routes: ["inventory", "equipment", "stock-movements", "diesel-fuel", "cycle-counts"],
       },
+    ],
+  },
+  {
+    id: "purchasing-vendors",
+    label: "Purchasing & Vendors",
+    modules: [
       {
-        id: "purchasing-vendors",
-        label: "Procurement & Suppliers",
+        id: "purchasing-pipeline",
+        label: "Purchasing Pipeline",
         landingRoute: "procurement",
         routes: ["procurement", "purchase-orders", "goods-receipts", "suppliers"],
       },
     ],
   },
   {
-    id: "sales-payments",
-    label: "Sales & Payments",
+    id: "finance-banking",
+    label: "Finance & Banking",
     modules: [
       {
-        id: "customer-orders-sales",
-        label: "Wholesale & Gate Passes",
-        landingRoute: "orders",
-        routes: ["orders", "order-create", "dispatch", "customers", "pricing-catalog", "point-of-sale"],
-      },
-      {
-        id: "finance-banking",
-        label: "Finance & Treasury",
+        id: "banking-cash-flow",
+        label: "Banking & Cash Flow",
         landingRoute: "finance",
         routes: ["finance", "expenses", "revenue", "profit", "treasury", "collections", "reconciliation", "general-ledger", "financial-reports"],
       },
     ],
   },
   {
-    id: "people-payroll",
-    label: "People & Payroll",
+    id: "human-resources",
+    label: "Human Resources & Payroll",
     modules: [
       {
         id: "workforce-payroll",
-        label: "Workforce & Compensation",
+        label: "Workforce & Payroll",
         landingRoute: "payroll",
-        routes: ["payroll", "people-overview", "employees", "roles", "performance-management", "payroll-admin", "attendance", "leave", "statutory", "payslips", "recruitment"],
+        routes: ["payroll", "payroll-admin", "people-overview", "employees", "roles", "performance-management", "attendance", "leave", "payslips"],
       },
     ],
   },
   {
-    id: "projects-equipment",
-    label: "Projects & Equipment",
+    id: "projects-assets",
+    label: "Projects & Assets",
     modules: [
       {
         id: "construction-fleet",
@@ -137,36 +173,24 @@ const primarySections: readonly SectionSpec[] = [
     ],
   },
   {
-    id: "reports-insights",
-    label: "Reports & Insights",
+    id: "reports-analytics",
+    label: "Reports & Analytics",
     modules: [
       {
         id: "intelligence-audits",
-        label: "Operational Analytics",
+        label: "Intelligence & Audits",
         landingRoute: "reports-overview",
         routes: ["reports-overview", "operational-reports", "production-reports", "production-analytics", "flock-performance", "fcr-analytics", "mortality-reports"],
       },
     ],
   },
   {
-    id: "communication",
-    label: "Communication",
-    modules: [
-      {
-        id: "internal-comms",
-        label: "Notices & Messaging",
-        landingRoute: "bulletins",
-        routes: ["bulletins", "communication"],
-      },
-    ],
-  },
-  {
     id: "admin-governance",
-    label: "Administration",
+    label: "Admin & Governance",
     modules: [
       {
         id: "security-control",
-        label: "Governance & Audit",
+        label: "Security & Control",
         landingRoute: "administration-overview",
         routes: ["administration-overview", "farm-settings", "audit", "permissions", "signup-admin", "master-data", "security", "diagnostics", "completion-center", "studio", "ai-management"],
       },

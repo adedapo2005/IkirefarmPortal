@@ -1043,7 +1043,7 @@ export const pages: Page[] = [
   p(
     "payroll",
     "Payroll Updates",
-    "People & Payroll",
+    "Human Resources & Payroll",
     "Banknote",
     ["payroll.view"],
     "/api/v1/transfers/nip",
@@ -1053,7 +1053,7 @@ export const pages: Page[] = [
   p(
     "daily-register",
     "Daily Pen Register",
-    "Farm Work",
+    "Flocks & Housing",
     "Egg",
     ["farm.view"],
     "/api/v1/operations/daily-register",
@@ -1063,7 +1063,7 @@ export const pages: Page[] = [
   p(
     "orders",
     "Wholesale Customer Orders",
-    "Sales & Payments",
+    "Sales & Orders",
     "Receipt",
     ["commercial.view", "finance.view"],
     "/api/v1/orders",
