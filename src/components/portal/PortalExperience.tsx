@@ -87,6 +87,10 @@ import {
   Pause,
   Play,
   Menu,
+  Crown,
+  Building2,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -359,9 +363,30 @@ const weatherConditions = [
   "thunderstorm-with-hail",
   "severe-thunderstorm-with-hail",
 ];
+function getPicTheme(iconName: string, pageId: string) {
+  const s = (pageId + " " + iconName).toLowerCase();
+  if (s.includes("egg")) return "pic-theme-egg";
+  if (s.includes("flock") || s.includes("pen") || s.includes("brood") || s.includes("housing")) return "pic-theme-flock";
+  if (s.includes("feed") || s.includes("milling") || s.includes("silo") || s.includes("wheat")) return "pic-theme-feed";
+  if (s.includes("health") || s.includes("vet") || s.includes("vacc") || s.includes("medical")) return "pic-theme-health";
+  if (s.includes("sale") || s.includes("order") || s.includes("pos") || s.includes("cart")) return "pic-theme-sales";
+  if (s.includes("pay") || s.includes("staff") || s.includes("hr") || s.includes("people") || s.includes("roster")) return "pic-theme-people";
+  if (s.includes("bank") || s.includes("moniepoint") || s.includes("treasury") || s.includes("finance") || s.includes("dollar")) return "pic-theme-treasury";
+  if (s.includes("report") || s.includes("analytic") || s.includes("fcr") || s.includes("chart")) return "pic-theme-reports";
+  if (s.includes("admin") || s.includes("governance") || s.includes("security") || s.includes("setting")) return "pic-theme-admin";
+  if (s.includes("kpi") || s.includes("metric") || s.includes("gauge")) return "pic-theme-kpi";
+  if (s.includes("store") || s.includes("inventory") || s.includes("stock") || s.includes("box") || s.includes("package")) return "pic-theme-stores";
+  return "pic-theme-command";
+}
+
 function PageIcon({ page }: { page: Page }) {
   const Icon = icons[page.icon] || Leaf;
-  return <Icon size={19} />;
+  const themeClass = getPicTheme(page.icon || "", page.id || "");
+  return (
+    <span className={"modern-nav-pic-plate " + themeClass}>
+      <Icon size={17} />
+    </span>
+  );
 }
 
 function WorkspaceBreadcrumb({
@@ -474,20 +499,77 @@ function WorkspaceToolbar({
   );
 }
 
+const WORK_GROUPS = [
+  { id: "overview", label: "Overview" },
+  { id: "farm-operations", label: "Farm Operations" },
+  { id: "stock-logistics", label: "Stock & Logistics" },
+  { id: "finance", label: "Finance" },
+  { id: "people", label: "People" },
+  { id: "reports", label: "Reports" },
+  { id: "administration", label: "Administration" },
+] as const;
+
+const SECTION_WORK_GROUP: Record<string, string> = {
+  "command-center": "overview",
+  "flocks-housing": "farm-operations",
+  "egg-production": "farm-operations",
+  "feed-milling": "farm-operations",
+  "health-veterinary": "farm-operations",
+  "hatchery-incubation": "farm-operations",
+  "inventory-stores": "stock-logistics",
+  "purchasing-vendors": "stock-logistics",
+  "projects-assets": "stock-logistics",
+  "sales-orders": "finance",
+  "finance-banking": "finance",
+  "human-resources": "people",
+  "reports-analytics": "reports",
+  "admin-governance": "administration",
+  "operations-additional": "administration",
+};
+
+const SECTION_PICTURE: Record<string, { icon: React.ComponentType<{ size?: number }>; tone: string }> = {
+  "command-center": { icon: LayoutDashboard, tone: "pic-theme-command" },
+  "flocks-housing": { icon: Bird, tone: "pic-theme-flock" },
+  "egg-production": { icon: Egg, tone: "pic-theme-egg" },
+  "feed-milling": { icon: Wheat, tone: "pic-theme-feed" },
+  "health-veterinary": { icon: HeartPulse, tone: "pic-theme-health" },
+  "hatchery-incubation": { icon: Shell, tone: "pic-theme-kpi" },
+  "inventory-stores": { icon: Package, tone: "pic-theme-stores" },
+  "purchasing-vendors": { icon: Truck, tone: "pic-theme-stores" },
+  "projects-assets": { icon: HardHat, tone: "pic-theme-treasury" },
+  "sales-orders": { icon: Receipt, tone: "pic-theme-sales" },
+  "finance-banking": { icon: Landmark, tone: "pic-theme-treasury" },
+  "human-resources": { icon: UsersRound, tone: "pic-theme-people" },
+  "reports-analytics": { icon: ChartNoAxesCombined, tone: "pic-theme-reports" },
+  "admin-governance": { icon: ShieldCheck, tone: "pic-theme-admin" },
+};
+
+function SectionIcon({ sectionId, page }: { sectionId: string; page?: Page }) {
+  const picture = SECTION_PICTURE[sectionId];
+  const Icon = picture?.icon || (page ? icons[page.icon] : undefined) || Leaf;
+  return (
+    <span className={"modern-nav-pic-plate ws-pic " + (picture?.tone || "pic-theme-command")} aria-hidden="true">
+      <Icon size={20} />
+    </span>
+  );
+}
+
 function Navigation({
   person,
   route,
   go,
   logout,
   roleRevision,
+  onHelp,
 }: {
   person: Persona;
   route: string;
   go: (s: string) => void;
   logout: () => void;
   roleRevision: number;
+  onHelp?: () => void;
 }) {
-  const { setOpenMobile, state: desktopState, isMobile } = useSidebar();
+  const { setOpenMobile, state: desktopState, isMobile, toggleSidebar } = useSidebar();
   const sidebarContentRef = useRef<HTMLDivElement | null>(null);
   const state = isMobile ? "expanded" : desktopState;
   const allowed = useMemo(() => {
@@ -601,148 +683,198 @@ function Navigation({
     setOpenMobile(false);
   };
 
+  const collapsed = state === "collapsed";
+  const workGroups = WORK_GROUPS.map((group) => ({
+    ...group,
+    sections: sections.filter((section) => (SECTION_WORK_GROUP[section.id] || "administration") === group.id),
+  })).filter((group) => group.sections.length > 0);
+  const settingsRoute = ["settings", "farm-settings"].find((id) => canPage(person, id));
+  const isOwner = person.id === "owner";
+
   return (
-    <Sidebar collapsible="icon" className={`portal-sidebar ${shellStyles.sidebar}`}>
-      <SidebarHeader>
-        <Brand />
+    <Sidebar collapsible="icon" className={`portal-sidebar ws-sidebar ${shellStyles.sidebar}`}>
+      <SidebarHeader className="ws-head">
+        <button
+          type="button"
+          className="ws-brand"
+          onClick={() => navigate("dashboard")}
+          aria-label={`${farmConfiguration.name} Home`}
+        >
+          <Brand />
+        </button>
+        {/* Only one authorised location exists today, so the selector is replaced by a read-only context label. */}
+        <div className="ws-site" aria-label="Current farm context">
+          <span className="ws-site-dot" aria-hidden="true" />
+          {!collapsed && (
+            <span className="ws-site-copy">
+              <small>Current Farm</small>
+              <strong>{farmConfiguration.name}</strong>
+            </span>
+          )}
+        </div>
       </SidebarHeader>
-      <SidebarContent ref={sidebarContentRef}>
-        <NavigationShortcuts person={person} route={route} pages={allowed} go={navigate} collapsed={state === "collapsed"} roleRevision={roleRevision} />
-        <nav aria-label="Primary Navigation">
-          {sections.map((section) => {
-            return (
-              <SidebarGroup
-                key={section.id}
-                data-active={section.id === (activeSectionId || "workspace") || undefined}
-              >
-                <Collapsible
-                  open={state === "collapsed" || visibleOpenSections.includes(section.id)}
-                  onOpenChange={(open) => {
-                    setOpenSections(open ? [section.id] : []);
-                    setOpenModules([]);
-                  }}
-                >
-                  <CollapsibleTrigger
-                    className="nav-group-trigger"
-                    aria-label={`${section.label} navigation`}
-                  >
-                    <span>{section.label}</span>
-                    <span className="nav-group-meta">
-                      <ChevronDown size={14} />
-                    </span>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarGroupContent>
-                      <div className="nav-module-stack">
-                        {section.modules.map((module) => {
-                          const landingPage = module.pages.find((page) => page.id === module.landingRoute) || module.pages[0];
-                          const moduleOpen = state === "collapsed" || visibleOpenModules.includes(module.id);
-                          const moduleActive = module.pages.some((page) => page.id === route);
-                          return (
-                            <section className="nav-module" key={module.id} data-active={moduleActive || undefined}>
-                              {section.modules.length > 1 && (
-                              <div className="nav-module-head">
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <button
-                                      type="button"
-                                      className="nav-module-link"
-                                      onClick={() => navigate(landingPage.id)}
-                                      aria-label={state === "collapsed" ? module.label : undefined}
-                                      aria-current={route === landingPage.id ? "page" : undefined}
-                                    >
-                                      <PageIcon page={landingPage} />
-                                      <span>{module.label}</span>
-                                    </button>
-                                  </TooltipTrigger>
-                                  <TooltipContent
-                                    side="right"
-                                    sideOffset={10}
-                                    className={shellStyles.navTooltip}
-                                    hidden={state !== "collapsed"}
-                                  >
-                                    <span className={shellStyles.navTooltipCopy}>
-                                      <strong>{module.label}</strong>
-                                      <small>{section.label}</small>
-                                    </span>
-                                  </TooltipContent>
-                                </Tooltip>
-                                {state !== "collapsed" && module.pages.length > 1 && (
-                                  <button
-                                    type="button"
-                                    className="nav-module-toggle"
-                                    onClick={() => {
-                                      setOpenSections([section.id]);
-                                      setOpenModules((previous) =>
-                                        previous.includes(module.id) ? [] : [module.id],
-                                      );
-                                    }}
-                                    aria-label={`${moduleOpen ? "Collapse" : "Expand"} ${module.label}`}
-                                    aria-expanded={moduleOpen}
-                                  >
-                                    <ChevronDown size={14} />
-                                  </button>
-                                )}
-                              </div>
-                              )}
-                              {state !== "collapsed" && (section.modules.length === 1 || moduleOpen) && (
-                                <SidebarMenu className="nav-submenu">
-                                  {module.pages.map((page) => (
-                                    <SidebarMenuItem key={page.id}>
-                                      <SidebarMenuButton
-                                        tooltip={{
-                                          sideOffset: 10,
-                                          className: shellStyles.navTooltip,
-                                          children: (
-                                            <span className={shellStyles.navTooltipCopy}>
-                                              <strong>{page.title}</strong>
-                                              <small>{section.label} / {module.label}</small>
-                                            </span>
-                                          ),
-                                        }}
-                                        isActive={route === page.id}
-                                        onClick={() => navigate(page.id)}
-                                        aria-current={route === page.id ? "page" : undefined}
-                                      >
-                                        <PageIcon page={page} />
-                                        <span>{page.title}</span>
-                                      </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                  ))}
-                                </SidebarMenu>
-                              )}
-                            </section>
-                          );
-                        })}
-                      </div>
-                    </SidebarGroupContent>
-                  </CollapsibleContent>
-                </Collapsible>
-              </SidebarGroup>
-            );
-          })}
+      <SidebarContent ref={sidebarContentRef} className="ws-content">
+        <NavigationShortcuts person={person} route={route} pages={allowed} go={navigate} collapsed={collapsed} roleRevision={roleRevision} />
+        <nav aria-label="Primary Navigation" className="ws-nav">
+          {workGroups.map((group) => (
+            <SidebarGroup key={group.id} className="ws-group">
+              {!collapsed && <h2 className="ws-group-title">{group.label}</h2>}
+              <ul className="ws-list">
+                {group.sections.map((section) => {
+                  const pages = section.modules.flatMap((module) => module.pages);
+                  if (!pages.length) return null;
+                  const sectionActive = pages.some((page) => page.id === route);
+                  const sectionOpen = visibleOpenSections.includes(section.id);
+                  const iconPage = section.modules[0]?.pages.find((page) => page.id === section.modules[0]?.landingRoute) || pages[0];
+                  if (collapsed) {
+                    return (
+                      <li key={section.id} className="ws-item">
+                        <DropdownMenu>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <DropdownMenuTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="ws-rail-btn"
+                                  data-active={sectionActive || undefined}
+                                  aria-label={`${section.label} destinations`}
+                                >
+                                  <SectionIcon sectionId={section.id} page={iconPage} />
+                                </button>
+                              </DropdownMenuTrigger>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" sideOffset={10} className={shellStyles.navTooltip}>
+                              <span className={shellStyles.navTooltipCopy}>
+                                <strong>{section.label}</strong>
+                                <small>{group.label}</small>
+                              </span>
+                            </TooltipContent>
+                          </Tooltip>
+                          <DropdownMenuContent side="right" align="start" sideOffset={12} className="ws-flyout">
+                            <p className="ws-flyout-title">{section.label}</p>
+                            {pages.map((page) => (
+                              <DropdownMenuItem
+                                key={page.id}
+                                onSelect={() => navigate(page.id)}
+                                aria-current={route === page.id ? "page" : undefined}
+                                className="ws-flyout-item"
+                              >
+                                {page.title}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </li>
+                    );
+                  }
+                  return (
+                    <li key={section.id} className="ws-item" data-open={sectionOpen || undefined}>
+                      <button
+                        type="button"
+                        className="ws-parent"
+                        data-active={sectionActive || undefined}
+                        aria-expanded={sectionOpen}
+                        aria-controls={`ws-sub-${section.id}`}
+                        onClick={() => {
+                          setOpenSections((previous) => (previous.includes(section.id) ? [] : [section.id]));
+                          setOpenModules([]);
+                        }}
+                      >
+                        <SectionIcon sectionId={section.id} page={iconPage} />
+                        <span className="ws-label">{section.label}</span>
+                        <ChevronRight className="ws-chevron" size={17} aria-hidden="true" />
+                      </button>
+                      {sectionOpen && (
+                        <ul className="ws-sub" id={`ws-sub-${section.id}`}>
+                          {pages.map((page) => (
+                            <li key={page.id}>
+                              <a
+                                href={`#/${page.id}`}
+                                className="ws-leaf"
+                                data-slot="sidebar-menu-button"
+                                data-active={route === page.id || undefined}
+                                aria-current={route === page.id ? "page" : undefined}
+                                onClick={(event) => {
+                                  event.preventDefault();
+                                  navigate(page.id);
+                                }}
+                              >
+                                <span className="ws-leaf-mark" aria-hidden="true" />
+                                <span>{page.title}</span>
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </SidebarGroup>
+          ))}
         </nav>
       </SidebarContent>
-      <SidebarFooter>
-        {canPage(person, "profile") && (
+      <SidebarFooter className="ws-foot">
+        <div className="ws-exec">
           <button
-            className="row sidebar-profile"
-            onClick={() => navigate("profile")}
-            aria-label="Open My Profile"
+            type="button"
+            className="ws-exec-id"
+            onClick={() => canPage(person, "profile") && navigate("profile")}
+            aria-label={`Open profile for ${person.name}`}
           >
-            <span className="avatar">{person.initials}</span>
-            {state === "expanded" && (
-              <span className="grow">
-                <strong>{person.name}</strong>
-                <small style={{ display: "block", fontSize: ".75rem" }}>{person.job}</small>
+            <span className="ws-avatar">
+              {person.initials}
+              <span className="ws-avatar-status" aria-label="Online" />
+            </span>
+            {!collapsed && (
+              <span className="ws-exec-copy">
+                <strong>
+                  {person.name}
+                  {isOwner && <Crown size={14} className="ws-crown" aria-label="Verified executive" />}
+                </strong>
+                <small>{person.job}</small>
               </span>
             )}
           </button>
-        )}
-        <SidebarMenuButton onClick={logout} tooltip="Sign Out">
-          <LogOut size={18} />
-          <span>Sign Out</span>
-        </SidebarMenuButton>
+          {!collapsed && (
+            <div className="ws-quick">
+              <button
+                type="button"
+                disabled
+                title={`${farmConfiguration.name} is your only authorised farm unit`}
+                aria-label="Switch farm unit (only one authorised unit)"
+              >
+                <Building2 size={15} aria-hidden="true" />
+                <span>Switch Unit</span>
+              </button>
+              <button
+                type="button"
+                disabled={!settingsRoute}
+                onClick={() => settingsRoute && navigate(settingsRoute)}
+                aria-label="System settings"
+              >
+                <Settings2 size={15} aria-hidden="true" />
+                <span>Settings</span>
+              </button>
+              <button type="button" onClick={logout} aria-label="Secure sign-out">
+                <LogOut size={15} aria-hidden="true" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="ws-foot-bar">
+          <button type="button" onClick={toggleSidebar} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
+            {collapsed ? <PanelLeftOpen size={17} aria-hidden="true" /> : <PanelLeftClose size={17} aria-hidden="true" />}
+            {!collapsed && <span>Collapse</span>}
+          </button>
+          {onHelp && !collapsed && (
+            <button type="button" onClick={onHelp} aria-label="Help">
+              <HelpCircle size={17} aria-hidden="true" />
+              <span>Help</span>
+            </button>
+          )}
+        </div>
       </SidebarFooter>
     </Sidebar>
   );
@@ -937,6 +1069,26 @@ const closedPersona: Persona = {
   restriction: "disabled",
 };
 
+function readSidebarOpen(key: string) {
+  if (typeof window === "undefined") return true;
+  try {
+    const saved = window.localStorage.getItem(key);
+    if (saved === "true" || saved === "false") return saved === "true";
+  } catch {
+    // Storage unavailable: fall back to the viewport default.
+  }
+  // Standard desktop and 4K open expanded; tablets start on the compact rail.
+  return window.innerWidth >= 1100;
+}
+
+function writeSidebarOpen(key: string, open: boolean) {
+  try {
+    window.localStorage.setItem(key, String(open));
+  } catch {
+    // Preference persistence is optional.
+  }
+}
+
 export default function PortalExperience({
   initialRoute,
   principal,
@@ -1052,6 +1204,13 @@ export default function PortalExperience({
   const resolvedRoute = isConstructionRoute ? constructionPrimaryRoute(route) : route;
   const current = allowed.find((p) => p.id === resolvedRoute);
   const farmScopeLabel = person.farm ? "Authorized Farm Scope" : "Personal Workspace";
+  // Width is a per-user display preference only; it never affects permissions.
+  const sidebarWidthKey = `farmportal.sidebar-open.${person.authenticatedAccountId || person.id}`;
+  const [sidebarOpen, setSidebarOpen] = useState(() => readSidebarOpen(sidebarWidthKey));
+  useEffect(() => {
+    // Account switch: load that user's own width preference.
+    setSidebarOpen(readSidebarOpen(sidebarWidthKey));
+  }, [sidebarWidthKey]);
   // Sample notifications belong to Owner review fixtures only. A real
   // authenticated session must never interpret fixture alerts as live work.
   const notificationsUnavailable = !reviewMode && canPage(person, "notifications");
@@ -2166,18 +2325,20 @@ export default function PortalExperience({
         </>
       ) : (
         <SidebarProvider
-          defaultOpen={
-            typeof window === "undefined" || window.innerWidth >= 1100
-          }
+          open={sidebarOpen}
+          onOpenChange={(open) => {
+            setSidebarOpen(open);
+            writeSidebarOpen(sidebarWidthKey, open);
+          }}
           style={
             {
-              "--sidebar-width": "16rem",
-              "--sidebar-width-icon": "4rem",
+              "--sidebar-width": "280px",
+              "--sidebar-width-icon": "78px",
             } as React.CSSProperties
           }
         >
           <div className={`shell ${shellStyles.premiumShell} ${routeStyles.routeSurfaces}`} data-experience="post-login-premium">
-            <Navigation person={person} route={route} go={go} logout={logout} roleRevision={roleRevision} />
+            <Navigation person={person} route={route} go={go} logout={logout} roleRevision={roleRevision} onHelp={has(person, "help.view") ? openHelp : undefined} />
             <div className={`workspace ${shellStyles.workspace}`}>
               <header className={`topbar ${shellStyles.topbar}`}>
                 <div className="row">

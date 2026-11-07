@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FarmPortal — Ultra-Premium Sidebar Design Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ==========================================================================
+       THEME PALETTES & TOKENS
+       ========================================================================== */
+    
+    /* 1. Obsidian Emerald (Deep Tech Sovereign) */
+    .theme-obsidian {
+      --canvas-bg: #030d0a;
+      --sidebar-bg: rgba(7, 24, 19, 0.88);
+      --sidebar-border: rgba(16, 185, 129, 0.18);
+      --card-bg: rgba(16, 44, 35, 0.6);
+      --card-hover: rgba(22, 60, 48, 0.85);
+      --accent-primary: #10b981;
+      --accent-secondary: #059669;
+      --accent-glow: rgba(16, 185, 129, 0.35);
+      --accent-gold: #f59e0b;
+      --text-head: #ffffff;
+      --text-body: #e2e8f0;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --icon-box-bg: linear-gradient(135deg, #104835 0%, #08281d 100%);
+      --icon-active-bg: linear-gradient(135deg, #10b981 0%, #047857 100%);
+      --leaf-active-bg: linear-gradient(90deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.03) 100%);
+      --leaf-active-color: #34d399;
+      --leaf-active-bar: #10b981;
+      --banner-overlay: linear-gradient(180deg, rgba(5, 20, 15, 0.2) 0%, rgba(5, 20, 15, 0.95) 100%);
+      --banner-bottom: rgba(8, 28, 22, 0.95);
+      --box-shadow: 0 24px 60px -15px rgba(0, 0, 0, 0.8), 0 0 25px rgba(16, 185, 129, 0.12);
+    }
+
+    /* 2. Royal Champagne & Jade (Heritage Luxury Executive) */
+    .theme-royal {
+      --canvas-bg: #06110d;
+      --sidebar-bg: rgba(10, 24, 20, 0.92);
+      --sidebar-border: rgba(212, 175, 55, 0.3);
+      --card-bg: rgba(21, 38, 32, 0.7);
+      --card-hover: rgba(30, 54, 45, 0.9);
+      --accent-primary: #d4af37;
+      --accent-secondary: #10b981;
+      --accent-glow: rgba(212, 175, 55, 0.35);
+      --accent-gold: #e5c158;
+      --text-head: #fffdf7;
+      --text-body: #f1f5f3;
+      --text-muted: #b8c4bd;
+      --text-dim: #7d8e85;
+      --icon-box-bg: linear-gradient(135deg, #2a2c1f 0%, #161e19 100%);
+      --icon-active-bg: linear-gradient(135deg, #d4af37 0%, #997d25 100%);
+      --leaf-active-bg: linear-gradient(90deg, rgba(212, 175, 55, 0.2) 0%, rgba(212, 175, 55, 0.03) 100%);
+      --leaf-active-color: #f7df8d;
+      --leaf-active-bar: #d4af37;
+      --banner-overlay: linear-gradient(180deg, rgba(12, 24, 20, 0.2) 0%, rgba(12, 24, 20, 0.95) 100%);
+      --banner-bottom: rgba(14, 28, 23, 0.95);
+      --box-shadow: 0 24px 60px -15px rgba(0, 0, 0, 0.85), 0 0 30px rgba(212, 175, 55, 0.15);
+    }
+
+    /* 3. Alpine Mineral Day (Clean Light Mode & High-Clarity Daylight) */
+    .theme-alpine {
+      --canvas-bg: #edf2ef;
+      --sidebar-bg: rgba(255, 255, 255, 0.96);
+      --sidebar-border: rgba(14, 66, 51, 0.14);
+      --card-bg: #f4f8f5;
+      --card-hover: #eaf1ed;
+      --accent-primary: #047857;
+      --accent-secondary: #059669;
+      --accent-glow: rgba(4, 120, 87, 0.2);
+      --accent-gold: #d97706;
+      --text-head: #0b2e23;
+      --text-body: #1e293b;
+      --text-muted: #475569;
+      --text-dim: #94a3b8;
+      --icon-box-bg: linear-gradient(135deg, #e6f4ed 0%, #d8ece0 100%);
+      --icon-active-bg: linear-gradient(135deg, #059669 0%, #064e3b 100%);
+      --leaf-active-bg: linear-gradient(90deg, rgba(16, 185, 129, 0.16) 0%, rgba(16, 185, 129, 0.03) 100%);
+      --leaf-active-color: #065f46;
+      --leaf-active-bar: #059669;
+      --banner-overlay: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(240, 246, 242, 0.95) 100%);
+      --banner-bottom: #ffffff;
+      --box-shadow: 0 20px 50px -12px rgba(10, 40, 30, 0.12), 0 0 1px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 4. Cyber-Agri Titanium (Midnight Cyan & Precision IoT Telemetry) */
+    .theme-cyber {
+      --canvas-bg: #070d13;
+      --sidebar-bg: rgba(11, 20, 28, 0.9);
+      --sidebar-border: rgba(6, 182, 212, 0.25);
+      --card-bg: rgba(15, 29, 41, 0.65);
+      --card-hover: rgba(22, 42, 60, 0.85);
+      --accent-primary: #06b6d4;
+      --accent-secondary: #0284c7;
+      --accent-glow: rgba(6, 182, 212, 0.35);
+      --accent-gold: #f59e0b;
+      --text-head: #ffffff;
+      --text-body: #e2e8f0;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --icon-box-bg: linear-gradient(135deg, #0c2d3a 0%, #081b24 100%);
+      --icon-active-bg: linear-gradient(135deg, #06b6d4 0%, #0369a1 100%);
+      --leaf-active-bg: linear-gradient(90deg, rgba(6, 182, 212, 0.2) 0%, rgba(6, 182, 212, 0.03) 100%);
+      --leaf-active-color: #38bdf8;
+      --leaf-active-bar: #06b6d4;
+      --banner-overlay: linear-gradient(180deg, rgba(7, 18, 27, 0.2) 0%, rgba(7, 18, 27, 0.95) 100%);
+      --banner-bottom: rgba(11, 23, 33, 0.95);
+      --box-shadow: 0 24px 60px -15px rgba(0, 0, 0, 0.85), 0 0 25px rgba(6, 182, 212, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, sans-serif;
+    }
+
+    body {
+      background: #040907;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: auto;
+    }
+
+    /* Top Studio Switcher Header */
+    .studio-header {
+      background: rgba(10, 25, 20, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .studio-brand-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .studio-badge {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+    }
+
+    .studio-title-h1 {
+      font-family: 'Manrope', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .studio-nav-pills {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .theme-pill-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .theme-pill-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .theme-pill-btn.active {
+      background: #10b981;
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4);
+    }
+
+    .color-swatch-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /* Main Showcase Stage */
+    .showcase-stage {
+      flex: 1;
+      padding: 32px 24px;
+      display: flex;
+      gap: 28px;
+      justify-content: center;
+      align-items: flex-start;
+      overflow-x: auto;
+    }
+
+    /* View Mode: Single vs Multi Comparison */
+    .view-mode-all .sidebar-column-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .column-theme-card-tag {
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 750;
+      letter-spacing: 0.02em;
+      padding: 6px 14px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    /* ==========================================================================
+       SIDEBAR CONTAINER
+       ========================================================================== */
+    .preview-sidebar {
+      width: 320px;
+      height: 920px;
+      background: var(--sidebar-bg);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid var(--sidebar-border);
+      border-radius: 20px;
+      box-shadow: var(--box-shadow);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Top Brand + Search */
+    .top-box {
+      padding: 16px 16px 10px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--sidebar-border);
+      border-radius: 12px;
+    }
+
+    .brand-id {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .logo-img {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 10px var(--accent-glow));
+    }
+
+    .brand-title {
+      font-family: 'Manrope', sans-serif;
+      font-size: 0.96rem;
+      font-weight: 800;
+      color: var(--text-head);
+    }
+
+    .brand-sub {
+      font-size: 0.7rem;
+      color: var(--accent-primary);
+      font-weight: 600;
+    }
+
+    /* Search Input */
+    .search-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--sidebar-border);
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .search-box:hover {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 14px var(--accent-glow);
+      color: var(--text-head);
+    }
+
+    .search-kbd {
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+    }
+
+    /* Farm Banner Card */
+    .banner-card {
+      margin: 0 14px 10px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--sidebar-border);
+      overflow: hidden;
+      box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.5);
+    }
+
+    .banner-media {
+      height: 80px;
+      position: relative;
+      background: #082119;
+    }
+
+    .banner-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.75;
+    }
+
+    .banner-overlay {
+      position: absolute;
+      inset: 0;
+      background: var(--banner-overlay);
+    }
+
+    .banner-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(8px);
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .dot-pulse {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-primary);
+      box-shadow: 0 0 8px var(--accent-primary);
+    }
+
+    .banner-meta {
+      padding: 10px 12px;
+      background: var(--banner-bottom);
+    }
+
+    .banner-title {
+      font-family: 'Manrope', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 750;
+      color: var(--text-head);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .banner-location {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Scroll Area */
+    .scroll-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 12px 14px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* AI Button */
+    .ai-btn {
+      padding: 9px 12px;
+      border-radius: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--accent-primary);
+      color: var(--text-head);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      box-shadow: 0 4px 14px var(--accent-glow);
+      transition: all 0.2s ease;
+    }
+
+    .ai-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px var(--accent-glow);
+    }
+
+    .ai-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ai-icon-chip {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: var(--icon-active-bg);
+      display: grid;
+      place-items: center;
+      color: #ffffff;
+    }
+
+    /* Quick Hubs */
+    .hub-title {
+      font-size: 0.68rem;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      padding: 0 6px;
+      margin-top: 4px;
+    }
+
+    .hub-pill {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .hub-pill:hover {
+      background: var(--card-hover);
+      color: var(--text-head);
+    }
+
+    .hub-pill.active {
+      background: var(--leaf-active-bg);
+      color: var(--leaf-active-color);
+      font-weight: 600;
+    }
+
+    /* Navigation Sections */
+    .nav-section {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .nav-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .nav-trigger:hover {
+      background: var(--card-hover);
+      color: var(--text-head);
+    }
+
+    .nav-section.open .nav-trigger {
+      background: var(--card-bg);
+      border-color: var(--sidebar-border);
+      color: var(--text-head);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-box {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--icon-box-bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: grid;
+      place-items: center;
+      color: var(--accent-primary);
+      transition: all 0.2s ease;
+    }
+
+    .nav-section.open .icon-box,
+    .nav-trigger:hover .icon-box {
+      background: var(--icon-active-bg);
+      color: #ffffff;
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+
+    .count-chip {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-dim);
+    }
+
+    .count-chip.alert {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+    }
+
+    /* Leaves */
+    .leaf-list {
+      display: none;
+      flex-direction: column;
+      padding-left: 20px;
+      margin-left: 14px;
+      border-left: 1px solid var(--sidebar-border);
+      gap: 2px;
+      margin-top: 4px;
+    }
+
+    .nav-section.open .leaf-list {
+      display: flex;
+    }
+
+    .leaf-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .leaf-link:hover {
+      color: var(--text-head);
+      background: var(--card-hover);
+    }
+
+    .leaf-link.active {
+      color: var(--leaf-active-color);
+      background: var(--leaf-active-bg);
+      font-weight: 600;
+    }
+
+    .leaf-link.active::before {
+      content: '';
+      position: absolute;
+      left: -21px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 2.5px;
+      height: 16px;
+      background: var(--leaf-active-bar);
+      border-radius: 0 3px 3px 0;
+      box-shadow: 0 0 8px var(--leaf-active-bar);
+    }
+
+    /* Bottom Profile Card */
+    .bottom-box {
+      padding: 12px 14px;
+      border-top: 1px solid var(--sidebar-border);
+      background: var(--banner-bottom);
+    }
+
+    .profile-tile {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--sidebar-border);
+    }
+
+    .profile-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar-circ {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: var(--icon-active-bg);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.82rem;
+      display: grid;
+      place-items: center;
+    }
+
+    .profile-txt {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .profile-name {
+      font-size: 0.82rem;
+      font-weight: 750;
+      color: var(--text-head);
+    }
+
+    .profile-role {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Studio Control Bar -->
+  <header class="studio-header">
+    <div class="studio-brand-left">
+      <span class="studio-badge">FARMPORTAL STUDIO</span>
+      <h1 class="studio-title-h1">Ultra-Premium Sidebar Selection Deck</h1>
+    </div>
+
+    <!-- Theme Switcher Controls -->
+    <div class="studio-nav-pills">
+      <button class="theme-pill-btn active" id="btn-theme-a" onclick="setStudioView('obsidian', this)">
+        <span class="color-swatch-dot" style="background: #10b981;"></span>
+        <span>A: Obsidian Emerald</span>
+      </button>
+      <button class="theme-pill-btn" id="btn-theme-b" onclick="setStudioView('royal', this)">
+        <span class="color-swatch-dot" style="background: #d4af37;"></span>
+        <span>B: Royal Champagne &amp; Jade</span>
+      </button>
+      <button class="theme-pill-btn" id="btn-theme-c" onclick="setStudioView('alpine', this)">
+        <span class="color-swatch-dot" style="background: #f8faf9; border: 1px solid #059669;"></span>
+        <span>C: Alpine Mineral Day</span>
+      </button>
+      <button class="theme-pill-btn" id="btn-theme-d" onclick="setStudioView('cyber', this)">
+        <span class="color-swatch-dot" style="background: #06b6d4;"></span>
+        <span>D: Cyber-Agri Titanium</span>
+      </button>
+      <button class="theme-pill-btn" id="btn-theme-all" onclick="setStudioView('all', this)" style="border-left: 1px solid rgba(255,255,255,0.15); margin-left: 4px;">
+        <span>🔍 Side-by-Side Comparison</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Showcase Stage with All 4 Sidebar Designs -->
+  <main class="showcase-stage" id="showcaseStage">
+
+    <!-- 1. Obsidian Emerald Column -->
+    <div class="sidebar-column-wrapper theme-obsidian" id="col-obsidian">
+      <div class="column-theme-card-tag" style="border-color: rgba(16, 185, 129, 0.4); color: #34d399;">
+        OPTION A · OBSIDIAN EMERALD (Deep Tech Sovereign)
+      </div>
+      <aside class="preview-sidebar">
+        <div class="top-box">
+          <div class="brand-wrap">
+            <div class="brand-id">
+              <img src="/daenem-farms-official-logo.png" class="logo-img" alt="Daenem Farms" onerror="this.src='/assets/daenem-farms-official-logo.png'">
+              <div>
+                <div class="brand-title">DAENEM <span style="font-size: 0.65rem; background: #059669; padding: 1px 4px; border-radius: 4px; color: #fff;">PRO</span></div>
+                <div class="brand-sub">Balogun-Ikire AgTech</div>
+              </div>
+            </div>
+          </div>
+          <div class="search-box">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <span>Search modules...</span>
+            </div>
+            <span class="search-kbd">⌘K</span>
+          </div>
+        </div>
+
+        <div class="banner-card">
+          <div class="banner-media">
+            <img src="/assets/home/farmportal-command-hero-v2.webp" class="banner-img" alt="Farm Panorama">
+            <div class="banner-overlay"></div>
+            <div class="banner-badge">
+              <span class="dot-pulse"></span>
+              <span>D1 LIVE</span>
+            </div>
+          </div>
+          <div class="banner-meta">
+            <div class="banner-title">
+              <span>Balogun-Ikire Facility</span>
+              <span style="font-size: 0.72rem; color: #10b981;">29°C</span>
+            </div>
+            <div class="banner-location">
+              <span>Osun State · 7.36°N, 4.19°E</span>
+              <span style="color: #34d399; font-weight: 600;">98.8% Health</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="scroll-body">
+          <div class="ai-btn">
+            <div class="ai-left">
+              <div class="ai-icon-chip">⚡</div>
+              <div style="text-align:left;">
+                <div style="font-size: 0.82rem; font-weight: 700;">Farm AI Copilot</div>
+                <div style="font-size: 0.68rem; color: #a7f3d0;">Predict feed &amp; yield</div>
+              </div>
+            </div>
+            <span style="font-size: 0.65rem; background: rgba(255,255,255,0.15); padding: 2px 6px; border-radius: 4px;">ACTIVE</span>
+          </div>
+
+          <div class="hub-title">⭐ Favorites</div>
+          <div class="hub-pill active">
+            <span>Egg Collections (1,134 Crt)</span>
+            <span style="font-size: 0.7rem; color: #34d399;">Active</span>
+          </div>
+          <div class="hub-pill">
+            <span>NIP Interbank Payroll</span>
+            <span style="font-size: 0.7rem;">₦1.40M</span>
+          </div>
+          <div class="hub-pill">
+            <span>Gate Release Passes</span>
+            <span style="font-size: 0.7rem;">6 Trucks</span>
+          </div>
+
+          <div class="hub-title">Enterprise Divisions</div>
+          <div class="nav-section open">
+            <div class="nav-trigger" onclick="toggleNav(this)">
+              <div class="nav-left">
+                <div class="icon-box">📊</div>
+                <span>Command Center</span>
+              </div>
+              <span class="count-chip">Live</span>
+            </div>
+            <div class="leaf-list">
+              <div class="leaf-link active"><span>Situation Room</span></div>
+              <div class="leaf-link"><span>Daily Shift Briefing</span></div>
+              <div class="leaf-link"><span>My Working Day</span></div>
+            </div>
+          </div>
+
+          <div class="nav-section">
+            <div class="nav-trigger" onclick="toggleNav(this)">
+              <div class="nav-left">
+                <div class="icon-box">🐓</div>
+                <span>Flocks &amp; Housing</span>
+              </div>
+              <span class="count-chip">48.5k</span>
+            </div>
+            <div class="leaf-list">
+              <div class="leaf-link"><span>Active Flock Registry</span></div>
+              <div class="leaf-link"><span>Daily 7-Col Pen Register</span></div>
+              <div class="leaf-link"><span>Houses (1 to 4)</span></div>
+            </div>
+          </div>
+
+          <div class="nav-section">
+            <div class="nav-trigger" onclick="toggleNav(this)">
+              <div class="nav-left">
+                <div class="icon-box">🥚</div>
+                <span>Egg Production</span>
+              </div>
+              <span class="count-chip">1,134</span>
+            </div>
+            <div class="leaf-list">
+              <div class="leaf-link"><span>Shift Collections</span></div>
+              <div class="leaf-link"><span>Sorting &amp; Grading</span></div>
+              <div class="leaf-link"><span>Cold Room Storage</span></div>
+            </div>
+          </div>
+
+          <div class="nav-section">
+            <div class="nav-trigger" onclick="toggleNav(this)">
+              <div class="nav-left">
+                <div class="icon-box">📦</div>
+                <span>Sales &amp; Orders</span>
+              </div>
+              <span class="count-chip alert">4 New</span>
+            </div>
+            <div class="leaf-list">
+              <div class="leaf-link"><span>Wholesale Order Bay</span></div>
+              <div class="leaf-link"><span>Loading Bay Gate Passes</span></div>
+              <div class="leaf-link"><span>Customer Directory</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom-box">
+          <div class="profile-tile">
+            <div class="profile-left">
+              <div class="avatar-circ">AD</div>
+              <div class="profile-txt">
+                <span class="profile-name">Adedapo Daenem 👑</span>
+                <span class="profile-role">Owner &amp; Chief Executive</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- 2. Royal Champagne & Jade Column -->
+    <div class="sidebar-column-wrapper theme-royal" id="col-royal">
+      <div class="column-theme-card-tag" style="border-color: rgba(212, 175, 55, 0.4); color: #f7df8d;">
+        OPTION B · ROYAL CHAMPAGNE &amp; JADE (Heritage Luxury Executive)
+      </div>
+      <aside class="preview-sidebar">
+        <div class="top-box">
+          <div class="brand-wrap">
+            <div class="brand-id">
+              <img src="/daenem-farms-official-logo.png" class="logo-img" alt="Daenem Farms" onerror="this.src='/assets/daenem-farms-official-logo.png'">
+              <div>
+                <div class="brand-title">DAENEM <span style="font-size: 0.65rem; background: linear-gradient(135deg, #d4af37, #997d25); padding: 1px 4px; border-radius: 4px; color: #fff;">ROYAL</span></div>
+                <div class="brand-sub" style="color: #d4af37;">Heritage Agribusiness</div>
+              </div>
+            </div>
+          </div>
+          <div class="search-box">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <span>Search executive records...</span>
+            </div>
+            <span class="search-kbd" style="color: #d4af37; border-color: rgba(212,175,55,0.3);">⌘K</span>
+          </div>
+        </div>
+
+        <div class="banner-card" style="border-color: rgba(212, 175, 55, 0.25);">
+          <div class="banner-media">
+            <img src="/assets/home/farmportal-command-hero-v2.webp" class="banner-img" alt="Farm Panorama">
+            <div class="banner-overlay"></div>
+            <div class="banner-badge" style="border-color: rgba(212, 175, 55, 0.4);">
+              <span class="dot-pulse" style="background: #d4af37; box-shadow: 0 0 8px #d4af37;"></span>
+              <span>ESTATE VERIFIED</span>
+            </div>
+          </div>
+          <div class="banner-meta">
+            <div class="banner-title">
+              <span>Balogun-Ikire Estate</span>
+              <span style="font-size: 0.72rem; color: #d4af37;">29°C · Fair</span>
+            </div>
+            <div class="banner-location">
+              <span>Osun State · Sovereign Scope</span>
+              <span style="color: #f7df8d; font-weight: 600;">₦8.5M Treasury</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="scroll-body">
+          <div class="ai-btn" style="border-color: #d4af37; box-shadow: 0 4px 14px rgba(212,175,55,0.25);">
+            <div class="ai-left">
+              <div class="ai-icon-chip" style="background: linear-gradient(135deg, #d4af37, #997d25);">⚜️</div>
+              <div style="text-align:left;">
+                <div style="font-size: 0.82rem; font-weight: 700; color: #fffdf7;">Executive Copilot</div>
+                <div style="font-size: 0.68rem; color: #f7df8d;">Audit cash &amp; laying rates</div>
+              </div>
+            </div>
+            <span style="font-size: 0.65rem; background: rgba(212,175,55,0.25); color: #fffdf7; padding: 2px 6px; border-radius: 4px;">GOLD</span>
+          </div>
+
+          <div class="hub-title" style="color: #d4af37;">⚜️ Pinned Priority Portfolios</div>
+          <div class="hub-pill active">
+            <span>Treasury &amp; NIP Payroll</span>
+            <span style="font-size: 0.7rem; color: #f7df8d;">₦1.40M</span>
+          </div>
+          <div class="hub-pill">
+            <span>Wholesale Crate Orders</span>
+            <span style="font-size: 0.7rem;">₦5.91M</span>
+          </div>
+          <div class="hub-pill">
+            <span>Silo Grain Procurement</span>
+            <span style="font-size: 0.7rem;">18.4 T</span>
+          </div>
+
+          <div class="hub-title">Estate Divisions</div>
+          <div class="nav-section open">
+            <div class="nav-trigger" onclick="toggleNav(this)">
+              <div class="nav-left">
+                <div class="icon-box" style="color: #d4af37;">🏛️</div>
+                <span>Executive Command</span>
+              </div>
+              <span class="count-chip" style="color: #d4af37;">Audit</span>
+            </div>
+            <div class="leaf-list">
+              <div class="leaf-link active"><span>Situation Room</span></div>
+              <div class="leaf-link"><span>Treasury Cash Bridge</span></div>
+              <div class="leaf-link"><span>Statutory Deductions</span></div>
+            </div>
+          </div>
+
+          <div class="nav-section">
+            <div class="nav-trigger" onclick="toggleNav(this)">
+              <div class="nav-left">
+                <div class="icon-box" style="color: #d4af37;">🐓</div>
+                <span>Flocks &amp; Biologicals</span>
+              </div>
+              <span class="count-chip">48,500</span>
+            </div>
+            <div class="leaf-list">
+              <div class="leaf-link"><span>Headcount Conservation</span></div>
+              <div class="leaf-link"><span>Daily Pen Shift Logs</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom-box">
+          <div class="profile-tile" style="border-color: rgba(212, 175, 55, 0.3);">
+            <div class="profile-left">
+              <div class="avatar-circ" style="background: linear-gradient(135deg, #d4af37, #997d25);">AD</div>
+              <div class="profile-txt">
+                <span class="profile-name">Adeleke Daenem ⚜️</span>
+                <span class="profile-role" style="color: #d4af37;">Managing Principal</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- 3. Alpine Mineral Day Column -->
+    <div class="sidebar-column-wrapper theme-alpine" id="col-alpine">
+      <div class="column-theme-card-tag" style="border-color: rgba(4, 120, 87, 0.3); color: #047857; background: #ffffff;">
+        OPTION C · ALPINE MINERAL DAY (High-Clarity Daylight Fieldline)
+      </div>
+      <aside class="preview-sidebar">
+        <div class="top-box">
+          <div class="brand-wrap">
+            <div class="brand-id">
+              <img src="/daenem-farms-official-logo.png" class="logo-img" alt="Daenem Farms" onerror="this.src='/assets/daenem-farms-official-logo.png'">
+              <div>
+                <div class="brand-title">DAENEM <span style="font-size: 0.65rem; background: #059669; padding: 1px 4px; border-radius: 4px; color: #fff;">DAY</span></div>
+                <div class="brand-sub">Fieldline Daylight V6</div>
+              </div>
+            </div>
+          </div>
+          <div class="search-box">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <span>Quick jump to module...</span>
+            </div>
+            <span class="search-kbd" style="background:#e2e8e5; color:#0f172a;">⌘K</span>
+          </div>
+        </div>
+
+        <div class="banner-card">
+          <div class="banner-media">
+            <img src="/assets/home/farmportal-command-hero-v2.webp" class="banner-img" alt="Farm Panorama">
+            <div class="banner-overlay"></div>
+            <div class="banner-badge" style="background: rgba(255,255,255,0.85); color: #064e3b; border-color: rgba(4,120,87,0.3);">
+              <span class="dot-pulse" style="background:#059669; box-shadow: 0 0 8px #059669;"></span>
+              <span>SUNLIGHT OK</span>
+            </div>
+          </div>
+          <div class="banner-meta">
+            <div class="banner-title">
+              <span>Balogun-Ikire Facility</span>
+              <span style="font-size: 0.72rem; color: #047857; font-weight:700;">29°C Fair</span>
+            </div>
+            <div class="banner-location">
+              <span>Osun State · Farm Compound</span>
+              <span style="color: #059669; font-weight: 700;">98.8% Yield</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="scroll-body">
+          <div class="ai-btn" style="background:#ffffff; border-color: #10b981;">
+            <div class="ai-left">
+              <div class="ai-icon-chip" style="background:#059669;">🌱</div>
+              <div style="text-align:left;">
+                <div style="font-size: 0.82rem; font-weight: 700; color: #0b2e23;">Farm Assistant</div>
+                <div style="font-size: 0.68rem; color: #059669;">Predict feed &amp; harvests</div>
+              </div>
+            </div>
+            <span style="font-size: 0.65rem; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; padding: 2px 6px; border-radius: 4px;">FAST</span>
+          </div>
+
+          <div class="hub-title" style="color: #64748b;">⭐ Pinned Shortcuts</div>
+          <div class="hub-pill active">
+            <span>Egg Collections (1,134 Crt)</span>
+            <span style="font-size: 0.7rem; color: #065f46; font-weight:700;">HDEP 91%</span>
+          </div>
+          <div class="hub-pill">
+            <span>Daily Pen Register</span>
+            <span style="font-size: 0.7rem;">48,500</span>
+          </div>
+
+          <div class="hub-title" style="color: #64748b;">Operations Directory</div>
+          <div class="nav-section open">
+            <div class="nav-trigger" onclick="toggleNav(this)">
+              <div class="nav-left">
+                <div class="icon-box" style="color: #047857;">📈</div>
+                <span>Command Center</span>
+              </div>
+              <span class="count-chip" style="background:#e2e8e5; color:#0f172a;">Active</span>
+            </div>
+            <div class="leaf-list">
+              <div class="leaf-link active"><span>Situation Room</span></div>
+              <div class="leaf-link"><span>Daily Briefing</span></div>
+            </div>
+          </div>
+
+          <div class="nav-section">
+            <div class="nav-trigger" onclick="toggleNav(this)">
+              <div class="nav-left">
+                <div class="icon-box" style="color: #047857;">🐔</div>
+                <span>Flocks &amp; Housing</span>
+              </div>
+              <span class="count-chip">4 Pens</span>
+            </div>
+            <div class="leaf-list">
+              <div class="leaf-link"><span>Flock Roster</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom-box" style="background: #f8faf9;">
+          <div class="profile-tile" style="background: #ffffff;">
+            <div class="profile-left">
+              <div class="avatar-circ" style="background: #059669;">AD</div>
+              <div class="profile-txt">
+                <span class="profile-name">Adedapo Daenem</span>
+                <span class="profile-role">Executive Supervisor</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- 4. Cyber-Agri Titanium Column -->
+    <div class="sidebar-column-wrapper theme-cyber" id="col-cyber">
+      <div class="column-theme-card-tag" style="border-color: rgba(6, 182, 212, 0.4); color: #38bdf8;">
+        OPTION D · CYBER-AGRI TITANIUM (Precision IoT &amp; Telemetry)
+      </div>
+      <aside class="preview-sidebar">
+        <div class="top-box">
+          <div class="brand-wrap">
+            <div class="brand-id">
+              <img src="/daenem-farms-official-logo.png" class="logo-img" alt="Daenem Farms" onerror="this.src='/assets/daenem-farms-official-logo.png'">
+              <div>
+                <div class="brand-title">DAENEM <span style="font-size: 0.65rem; background: #0284c7; padding: 1px 4px; border-radius: 4px; color: #fff;">TITANIUM</span></div>
+                <div class="brand-sub" style="color: #06b6d4;">Autonomous IoT Matrix</div>
+              </div>
+            </div>
+          </div>
+          <div class="search-box">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <span>Query telemetry nodes...</span>
+            </div>
+            <span class="search-kbd" style="color:#06b6d4; border-color: rgba(6,182,212,0.3);">⌘K</span>
+          </div>
+        </div>
+
+        <div class="banner-card">
+          <div class="banner-media">
+            <img src="/assets/home/farmportal-command-hero-v2.webp" class="banner-img" alt="Farm Panorama">
+            <div class="banner-overlay"></div>
+            <div class="banner-badge" style="border-color: rgba(6,182,212,0.4);">
+              <span class="dot-pulse" style="background:#06b6d4; box-shadow: 0 0 8px #06b6d4;"></span>
+              <span>MESH ONLINE</span>
+            </div>
+          </div>
+          <div class="banner-meta">
+            <div class="banner-title">
+              <span>Sensor Mesh Alpha</span>
+              <span style="font-size: 0.72rem; color: #06b6d4;">28.5°C · 76% RH</span>
+            </div>
+            <div class="banner-location">
+              <span>Telemetry: 2.4 m/s Airflow</span>
+              <span style="color: #38bdf8; font-weight: 600;">1,142 L/hr H2O</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="scroll-body">
+          <div class="ai-btn" style="border-color: #06b6d4; box-shadow: 0 4px 14px rgba(6,182,212,0.25);">
+            <div class="ai-left">
+              <div class="ai-icon-chip" style="background: linear-gradient(135deg, #06b6d4, #0284c7);">⚡</div>
+              <div style="text-align:left;">
+                <div style="font-size: 0.82rem; font-weight: 700;">Neural Farm AI</div>
+                <div style="font-size: 0.68rem; color: #7dd3fc;">Real-time anomaly detector</div>
+              </div>
+            </div>
+            <span style="font-size: 0.65rem; background: rgba(6,182,212,0.2); color: #38bdf8; padding: 2px 6px; border-radius: 4px;">NEURAL</span>
+          </div>
+
+          <div class="hub-title" style="color: #06b6d4;">🛰️ Pinned Telemetry Streams</div>
+          <div class="hub-pill active">
+            <span>House 2 Heat Index (THI 70.8)</span>
+            <span style="font-size: 0.7rem; color: #38bdf8;">Optimal</span>
+          </div>
+          <div class="hub-pill">
+            <span>Silo 2 Ultrasonic Level</span>
+            <span style="font-size: 0.7rem;">18.4 T</span>
+          </div>
+          <div class="hub-pill">
+            <span>NIP Settlement Stream</span>
+            <span style="font-size: 0.7rem;">Verified</span>
+          </div>
+
+          <div class="hub-title">Telemetry Workspaces</div>
+          <div class="nav-section open">
+            <div class="nav-trigger" onclick="toggleNav(this)">
+              <div class="nav-left">
+                <div class="icon-box" style="color: #06b6d4;">📡</div>
+                <span>Sensor Situation Room</span>
+              </div>
+              <span class="count-chip" style="color: #38bdf8;">Live</span>
+            </div>
+            <div class="leaf-list">
+              <div class="leaf-link active"><span>Microclimate Matrix</span></div>
+              <div class="leaf-link"><span>Fan Stage Controllers</span></div>
+              <div class="leaf-link"><span>Nipple Line Water Flow</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom-box">
+          <div class="profile-tile" style="border-color: rgba(6,182,212,0.3);">
+            <div class="profile-left">
+              <div class="avatar-circ" style="background: linear-gradient(135deg, #06b6d4, #0369a1);">AD</div>
+              <div class="profile-txt">
+                <span class="profile-name">Adedapo Daenem ⚡</span>
+                <span class="profile-role" style="color: #06b6d4;">System Principal</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+  </main>
+
+  <script>
+    function toggleNav(el) {
+      const section = el.closest('.nav-section');
+      section.classList.toggle('open');
+    }
+
+    function setStudioView(view, btn) {
+      const buttons = document.querySelectorAll('.theme-pill-btn');
+      buttons.forEach(b => b.classList.remove('active'));
+      
+      if (btn) {
+        btn.classList.add('active');
+      } else {
+        const key = (view === 'obsidian' ? 'a' : view === 'royal' ? 'b' : view === 'alpine' ? 'c' : view === 'cyber' ? 'd' : 'all');
+        const target = document.getElementById('btn-theme-' + key);
+        if (target) target.classList.add('active');
+      }
+
+      const colObsidian = document.getElementById('col-obsidian');
+      const colRoyal = document.getElementById('col-royal');
+      const colAlpine = document.getElementById('col-alpine');
+      const colCyber = document.getElementById('col-cyber');
+      const stage = document.getElementById('showcaseStage');
+
+      if (view === 'all') {
+        colObsidian.style.display = 'flex';
+        colRoyal.style.display = 'flex';
+        colAlpine.style.display = 'flex';
+        colCyber.style.display = 'flex';
+        stage.className = 'showcase-stage view-mode-all';
+      } else {
+        colObsidian.style.display = (view === 'obsidian') ? 'flex' : 'none';
+        colRoyal.style.display = (view === 'royal') ? 'flex' : 'none';
+        colAlpine.style.display = (view === 'alpine') ? 'flex' : 'none';
+        colCyber.style.display = (view === 'cyber') ? 'flex' : 'none';
+        stage.className = 'showcase-stage';
+      }
+    }
+  </script>
+</body>
+</html>
