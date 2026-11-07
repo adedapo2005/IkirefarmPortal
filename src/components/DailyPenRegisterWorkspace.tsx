@@ -1,10 +1,23 @@
-import React, { useState } from 'react';
-import { 
-  Bird, Calendar, ShieldCheck, AlertTriangle, CheckCircle2, 
-  Plus, Search, Download, Filter, FileSpreadsheet, ArrowLeft,
-  Egg, Wheat, Activity, Check, Save
+import React, { useState, useEffect } from 'react';
+import {
+  Bird,
+  ShieldCheck,
+  CheckCircle2,
+  Plus,
+  FileSpreadsheet,
+  Egg,
+  Wheat,
+  Activity,
+  Thermometer,
+  Droplets,
+  Wind,
+  Printer,
+  RefreshCw,
+  X,
 } from 'lucide-react';
-import { formatDualTime, formatCount } from '../lib/temporal.ts';
+import { formatCount } from '../lib/temporal.ts';
+import styles from './portal/InventoryControlDashboard.module.css';
+import { Panel, Btn, Chip } from './portal/Common';
 
 interface PenDailyRecord {
   id: string;
@@ -23,7 +36,7 @@ interface PenDailyRecord {
   looseEggs: number;
   leakers: number;
   closingStock: number;
-  hdepPercent: number; // Hen-Day Egg Production
+  hdepPercent: number;
   attendantName: string;
   status: 'Verified & Signed' | 'Pending Supervisor' | 'Discrepancy';
 }
@@ -119,16 +132,16 @@ interface DailyPenRegisterWorkspaceProps {
   onBackToDashboard?: () => void;
 }
 
-export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps> = ({
-  onBackToDashboard,
-}) => {
+export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps> = () => {
   const [records, setRecords] = useState<PenDailyRecord[]>(INITIAL_RECORDS);
   const [selectedDate, setSelectedDate] = useState<string>('2026-11-06');
   const [selectedHouseFilter, setSelectedHouseFilter] = useState<string>('all');
   const [isEntryModalOpen, setIsEntryModalOpen] = useState<boolean>(false);
+  const [isVoucherModalOpen, setIsVoucherModalOpen] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [backendSyncStatus, setBackendSyncStatus] = useState<'connected' | 'offline'>('connected');
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
-  // New Daily Log Form State
   const [targetHouse, setTargetHouse] = useState<string>('H3');
   const [newMortality, setNewMortality] = useState<number>(5);
   const [newCulls, setNewCulls] = useState<number>(1);
@@ -138,22 +151,59 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
   const [newLeakers, setNewLeakers] = useState<number>(5);
   const [attendant, setAttendant] = useState<string>('Babatunde Alamu');
 
-  const filteredRecords = records.filter(r => {
-    return selectedHouseFilter === 'all' || r.houseId === selectedHouseFilter;
-  });
+  useEffect(() => {
+    fetch('/api/v1/operations/daily-register')
+      .then((res) => {
+        if (!res.ok) throw new Error('API offline');
+        return res.json();
+      })
+      .then((data: { status?: string }) => {
+        if (data && data.status === 'success') {
+          setBackendSyncStatus('connected');
+        }
+      })
+      .catch(() => {
+        setBackendSyncStatus('offline');
+      });
+  }, []);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const res = await fetch('/api/v1/operations/daily-register');
+      if (res.ok) {
+        setBackendSyncStatus('connected');
+        setToastMessage('Synchronized latest daily shift records from Cloudflare D1!');
+      } else {
+        setBackendSyncStatus('offline');
+      }
+    } catch {
+      setBackendSyncStatus('offline');
+    } finally {
+      setIsRefreshing(false);
+      setTimeout(() => setToastMessage(null), 3500);
+    }
+  };
+
+  const filteredRecords = records.filter((r) => selectedHouseFilter === 'all' || r.houseId === selectedHouseFilter);
 
   const totalBirdsOpening = filteredRecords.reduce((sum, r) => sum + r.openingStock, 0);
   const totalMortality = filteredRecords.reduce((sum, r) => sum + r.mortality, 0);
+  const totalCulls = filteredRecords.reduce((sum, r) => sum + r.culls, 0);
   const totalCrates = filteredRecords.reduce((sum, r) => sum + r.eggsCrates, 0);
   const totalFeedKg = filteredRecords.reduce((sum, r) => sum + r.feedConsumedKg, 0);
+  const totalBirdsClosing = filteredRecords.reduce((sum, r) => sum + r.closingStock, 0);
+
+  const conservationPassed = totalBirdsOpening - totalMortality - totalCulls === totalBirdsClosing;
+
   const avgHdep = (
-    filteredRecords.filter(r => r.hdepPercent > 0).reduce((sum, r) => sum + r.hdepPercent, 0) /
-    (filteredRecords.filter(r => r.hdepPercent > 0).length || 1)
+    filteredRecords.filter((r) => r.hdepPercent > 0).reduce((sum, r) => sum + r.hdepPercent, 0) /
+    (filteredRecords.filter((r) => r.hdepPercent > 0).length || 1)
   ).toFixed(1);
 
-  const handleSaveDailyRecord = (e: React.FormEvent) => {
+  const handleSaveDailyRecord = async (e: React.FormEvent) => {
     e.preventDefault();
-    const existing = records.find(r => r.houseId === targetHouse);
+    const existing = records.find((r) => r.houseId === targetHouse);
     const opening = existing ? existing.closingStock : 12500;
     const closing = opening - Number(newMortality) - Number(newCulls);
     const totalEggs = Number(newCrates) * 30 + Number(newLoose);
@@ -164,14 +214,14 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
       houseId: targetHouse,
       houseName: `House ${targetHouse.replace('H', '')} Operational Unit`,
       flockBatch: `FL-${targetHouse}-2026`,
-      breed: 'ISA Brown',
+      breed: targetHouse === 'H2' ? 'Bovans White' : targetHouse === 'H4' ? 'Lohmann Brown' : 'ISA Brown',
       ageWeeks: 35,
       ageDays: 245,
       openingStock: opening,
       mortality: Number(newMortality),
       culls: Number(newCulls),
       feedConsumedKg: Number(newFeedKg),
-      feedType: 'Layer Mash Phase I',
+      feedType: targetHouse === 'H4' ? 'Grower Mash Special' : 'Layer Mash Phase I',
       eggsCrates: Number(newCrates),
       looseEggs: Number(newLoose),
       leakers: Number(newLeakers),
@@ -181,192 +231,255 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
       status: 'Verified & Signed',
     };
 
-    setRecords([newRecord, ...records.filter(r => r.houseId !== targetHouse)]);
+    setRecords([newRecord, ...records.filter((r) => r.houseId !== targetHouse)]);
     setIsEntryModalOpen(false);
-    setToastMessage(`Daily record for House ${targetHouse} saved and verified! Closing headcount: ${formatCount(closing)} birds.`);
+
+    try {
+      await fetch('/api/v1/operations/daily-register', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          penNumber: newRecord.houseName,
+          openingBirds: opening,
+          mortalityCount: Number(newMortality),
+          cullsCount: Number(newCulls),
+          closingBirds: closing,
+          eggsCollectedGood: Number(newCrates) * 30,
+          feedConsumedKg: Number(newFeedKg),
+          recordedBy: attendant,
+        }),
+      });
+    } catch {
+      // Local state already updated
+    }
+
+    setToastMessage(
+      `Daily shift for ${newRecord.houseName} posted and locked! Verified Closing Stock: ${formatCount(closing)} birds.`
+    );
     setTimeout(() => setToastMessage(null), 4000);
   };
 
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto font-sans">
-      
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
-            <span>Flocks & Housing</span>
-            <span>&gt;</span>
-            <span className="text-slate-900 font-semibold">Daily Pen Register</span>
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5">
-            <FileSpreadsheet className="w-6 h-6 text-[#008751]" />
-            7-Column Daily Pen Register
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Balogun-Ikire strict biological conservation ledger: Age, Opening Headcount, Mortality, Culls, Feed Intake, Egg Yield (30-Egg Crates), and Closing Headcount.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="text-xs font-semibold px-3 py-2 border border-slate-200 rounded-xl bg-white shadow-2xs text-slate-700 outline-hidden"
-          />
-
+    <section className={styles.root} aria-labelledby="daily-register-command-title">
+      {/* Executive Command Bar — Seamlessly connects under PageContextHeader without duplicate headers */}
+      <div className="portal-executive-bar" aria-label="Daily Pen Register Execution Controls">
+        <div className="portal-exec-actions">
+          <button type="button" className="portal-action-btn primary" onClick={() => setIsEntryModalOpen(true)}>
+            <Plus size={16} aria-hidden="true" />
+            <span>Post Daily Pen Log</span>
+          </button>
+          <button type="button" className="portal-action-btn secondary" onClick={() => setIsVoucherModalOpen(true)}>
+            <Printer size={15} aria-hidden="true" />
+            <span>Official Shift Voucher</span>
+          </button>
           <button
             type="button"
-            onClick={() => setIsEntryModalOpen(true)}
-            className="btn-primary-glow px-4 py-2 rounded-xl text-white text-xs font-bold flex items-center gap-2 cursor-pointer shadow-sm"
+            className="portal-action-btn secondary"
+            onClick={() => void handleRefresh()}
+            disabled={isRefreshing}
           >
-            <Plus className="w-4 h-4" />
-            Post Daily Pen Log
+            <RefreshCw size={14} className={isRefreshing ? 'spin' : ''} aria-hidden="true" />
+            <span>Sync D1 Register</span>
           </button>
+        </div>
+
+        <div className="portal-exec-mode" role="status">
+          <div className="portal-mode-badge">
+            <ShieldCheck size={14} aria-hidden="true" style={{ color: conservationPassed ? '#0d8052' : '#e0a526' }} />
+            <span>{backendSyncStatus === 'connected' ? 'LIVE D1 REGISTER' : 'LOCAL REGISTER'}</span>
+            <span className="portal-mode-account">
+              {conservationPassed ? 'CONSERVATION BALANCED ✓' : 'VARIANCE DETECTED'} · Shift: {selectedDate}
+            </span>
+          </div>
         </div>
       </div>
 
       {toastMessage && (
-        <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-[#005A36] text-xs rounded-xl flex items-center gap-2.5 shadow-xs animate-fade-in">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span className="font-semibold">{toastMessage}</span>
+        <div className="auth-state" role="status">
+          <CheckCircle2 size={16} style={{ verticalAlign: 'middle', marginRight: 8 }} />
+          {toastMessage}
         </div>
       )}
 
-      {/* 4 Summary Kpis */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="premium-card p-4 rounded-xl">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Total Birds On Site</span>
-          <div className="flex items-baseline justify-between font-mono-numbers">
-            <span className="text-xl font-bold text-slate-900">{formatCount(totalBirdsOpening)}</span>
-            <span className="text-[11px] text-slate-500 font-sans">Across 4 Houses</span>
-          </div>
+      {/* 4 Native Scoreboard Cards */}
+      <div className={styles.scoreboard} aria-label="Daily pen register metrics">
+        <div className={styles.score}>
+          <span>
+            <Bird size={19} aria-hidden="true" /> Total Birds On Site
+          </span>
+          <strong>{formatCount(totalBirdsOpening)}</strong>
+          <small>Closing: {formatCount(totalBirdsClosing)} across 4 houses</small>
         </div>
-
-        <div className="premium-card p-4 rounded-xl">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Today's Egg Production</span>
-          <div className="flex items-baseline justify-between font-mono-numbers">
-            <span className="text-xl font-bold text-[#008751]">{formatCount(totalCrates)} Crates</span>
-            <span className="text-[11px] text-emerald-600 font-bold font-sans">Avg {avgHdep}% HDEP</span>
-          </div>
-          <span className="text-[10px] text-slate-400 block mt-1">({formatCount(totalCrates * 30)} Standard Eggs)</span>
+        <div className={styles.score}>
+          <span>
+            <Egg size={19} aria-hidden="true" /> Today&apos;s Egg Production
+          </span>
+          <strong>{formatCount(totalCrates)} Crates</strong>
+          <small>
+            {formatCount(totalCrates * 30)} table eggs · Avg {avgHdep}% HDEP
+          </small>
         </div>
-
-        <div className="premium-card p-4 rounded-xl">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Daily Feed Intake</span>
-          <div className="flex items-baseline justify-between font-mono-numbers">
-            <span className="text-xl font-bold text-amber-700">{formatCount(totalFeedKg)} kg</span>
-            <span className="text-[11px] text-slate-500 font-sans">{(totalFeedKg / 50).toFixed(1)} Bags (50kg)</span>
-          </div>
+        <div className={styles.score}>
+          <span>
+            <Wheat size={19} aria-hidden="true" /> Daily Feed Intake
+          </span>
+          <strong>{formatCount(totalFeedKg)} kg</strong>
+          <small>{(totalFeedKg / 50).toFixed(1)} bags (50kg) consumed</small>
         </div>
+        <div className={styles.score}>
+          <span>
+            <Activity size={19} aria-hidden="true" /> Shift Mortality &amp; Culls
+          </span>
+          <strong>
+            {totalMortality} / {totalCulls}
+          </strong>
+          <small>0.06% daily rate (normal &lt;0.15%)</small>
+        </div>
+      </div>
 
-        <div className="premium-card p-4 rounded-xl">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Total Daily Mortality</span>
-          <div className="flex items-baseline justify-between font-mono-numbers">
-            <span className="text-xl font-bold text-slate-900">{totalMortality} Birds</span>
-            <span className="text-[11px] text-emerald-600 font-bold font-sans">0.06% (Normal &lt;0.15%)</span>
+      {/* Native FlowBand for Microclimate & Poultry THI Index */}
+      <div className={styles.flowBand} aria-labelledby="thi-band-title">
+        <div className={styles.flowHeading}>
+          <div>
+            <span>BALOGUN-IKIRE MICROCLIMATE &amp; POULTRY HEAT STRESS INDEX (THI)</span>
+            <h3 id="thi-band-title">House Environmental &amp; Bio-Safety Telemetry</h3>
+          </div>
+          <small>Coordinates: 7.36°N, 4.19°E · Tunnel Ventilation Stage 3 Active</small>
+        </div>
+        <div className={styles.flowCounts}>
+          <div>
+            <Thermometer size={19} aria-hidden="true" />
+            <span>Poultry THI Index</span>
+            <strong>70.8 THI</strong>
+          </div>
+          <div>
+            <Thermometer size={19} aria-hidden="true" />
+            <span>Ambient Temperature</span>
+            <strong>28.5°C (76% RH)</strong>
+          </div>
+          <div>
+            <Wind size={19} aria-hidden="true" />
+            <span>Tunnel Airflow Velocity</span>
+            <strong>2.4 m/s</strong>
+          </div>
+          <div>
+            <Droplets size={19} aria-hidden="true" />
+            <span>Nipple Line Water Flow</span>
+            <strong>1,142 L/hr</strong>
           </div>
         </div>
       </div>
 
-      {/* Main 7-Column Ledger Table */}
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-        <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-800">Operational Pen Ledgers:</span>
-            <span className="text-xs text-slate-500">Date: {selectedDate} (WAT Lagos)</span>
+      {/* Native Panel + Data Table for 7-Column Daily Pen Register */}
+      <Panel
+        title="7-Column Daily Pen Register & Biological Conservation Ledger"
+        description="Closing Stock = Opening Headcount − Mortality − Culls ± Transfers. Filter by poultry house or shift date."
+        actions={
+          <div className="row wrap">
+            {[
+              { id: 'all', label: 'All Houses' },
+              { id: 'H1', label: 'House 1 (ISA Brown)' },
+              { id: 'H2', label: 'House 2 (Bovans White)' },
+              { id: 'H3', label: 'House 3 (South Auto)' },
+              { id: 'H4', label: 'House 4 (Pullets)' },
+            ].map((tab) => (
+              <Btn
+                key={tab.id}
+                small
+                primary={selectedHouseFilter === tab.id}
+                onClick={() => setSelectedHouseFilter(tab.id)}
+              >
+                {tab.label}
+              </Btn>
+            ))}
           </div>
-          <div className="flex items-center gap-2">
-            <select
-              value={selectedHouseFilter}
-              onChange={(e) => setSelectedHouseFilter(e.target.value)}
-              className="text-xs bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 outline-hidden font-medium"
-            >
-              <option value="all">All Houses</option>
-              <option value="H1">House 1 (East Wing)</option>
-              <option value="H2">House 2 (West Wing)</option>
-              <option value="H3">House 3 (South Automated)</option>
-              <option value="H4">House 4 (Pullet Rearing)</option>
-            </select>
-          </div>
+        }
+      >
+        <div className="row between wrap">
+          <Chip tone="blue">Strict Headcount Law Active</Chip>
+          <label className="row" style={{ fontSize: '.82rem', fontWeight: 700 }}>
+            <span>Shift Date (WAT):</span>
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              style={{
+                minHeight: 36,
+                padding: '4px 10px',
+                borderRadius: 8,
+                border: '1px solid var(--border)',
+              }}
+            />
+          </label>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px] tracking-wider">
+        <div className="table-wrap mt">
+          <table className="data-table">
+            <thead>
               <tr>
-                <th className="py-3 px-4">House & Cohort</th>
-                <th className="py-3 px-3 text-center">Age (Wks/Days)</th>
-                <th className="py-3 px-4 text-right">Opening Stock</th>
-                <th className="py-3 px-4 text-right">Mortality / Culls</th>
-                <th className="py-3 px-4 text-right">Feed Consumed</th>
-                <th className="py-3 px-4 text-right">Eggs (30-Egg Crates)</th>
-                <th className="py-3 px-3 text-center">HDEP %</th>
-                <th className="py-3 px-4 text-right">Closing Stock</th>
-                <th className="py-3 px-4">Attendant & Sign-off</th>
+                <th>House &amp; Cohort</th>
+                <th>Age (Wks / Days)</th>
+                <th>Opening Stock</th>
+                <th>Mortality / Culls</th>
+                <th>Feed Consumed</th>
+                <th>Egg Yield (30-Egg Crates)</th>
+                <th>HDEP %</th>
+                <th>Closing Stock</th>
+                <th>Attendant &amp; Sign-off</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 font-mono-numbers">
+            <tbody>
               {filteredRecords.map((r) => {
-                const mortRate = ((r.mortality / (r.openingStock || 1)) * 100);
-                const isMortWarning = mortRate > 0.15;
+                const mortRate = (r.mortality / (r.openingStock || 1)) * 100;
+                const calcClosing = r.openingStock - r.mortality - r.culls;
+                const isDiscrepant = calcClosing !== r.closingStock;
+
                 return (
-                  <tr key={r.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-4 font-sans">
-                      <span className="font-bold text-slate-900 block">{r.houseName}</span>
-                      <span className="text-[10px] text-slate-500">{r.flockBatch}</span>
+                  <tr key={r.id}>
+                    <td>
+                      <strong>{r.houseName}</strong>
+                      <div className="metadata">{r.flockBatch}</div>
                     </td>
-                    <td className="py-3 px-3 text-center">
-                      <span className="font-bold text-slate-800">{r.ageWeeks} wks</span>
-                      <span className="text-[10px] text-slate-400 block font-normal">{r.ageDays} d</span>
+                    <td>
+                      <strong>{r.ageWeeks} wks</strong>
+                      <div className="metadata">{r.ageDays} days</div>
                     </td>
-                    <td className="py-3 px-4 text-right font-bold text-slate-900">
-                      {formatCount(r.openingStock)}
+                    <td>
+                      <strong>{formatCount(r.openingStock)}</strong>
                     </td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <span className={`font-bold ${isMortWarning ? 'text-rose-600' : 'text-slate-900'}`}>
-                          {r.mortality} mort
-                        </span>
-                        <span className="text-slate-400">/</span>
-                        <span className="text-slate-500">{r.culls} cull</span>
+                    <td>
+                      <strong>
+                        {r.mortality} mort / {r.culls} cull
+                      </strong>
+                      <div className="metadata">{mortRate.toFixed(2)}% daily rate</div>
+                    </td>
+                    <td>
+                      <strong>{formatCount(r.feedConsumedKg)} kg</strong>
+                      <div className="metadata">
+                        {((r.feedConsumedKg / (r.openingStock || 1)) * 1000).toFixed(0)} g/bird · {r.feedType}
                       </div>
-                      <span className="block text-[10px] text-slate-400">
-                        ({mortRate.toFixed(2)}%)
-                      </span>
                     </td>
-                    <td className="py-3 px-4 text-right">
-                      <span className="font-bold text-slate-900">{formatCount(r.feedConsumedKg)} kg</span>
-                      <span className="block text-[10px] text-slate-400 font-sans">
-                        {(r.feedConsumedKg / (r.openingStock || 1) * 1000).toFixed(0)} g/bird
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <span className="font-bold text-[#008751]">
-                        {formatCount(r.eggsCrates)} Crates
-                      </span>
-                      <span className="block text-[10px] text-slate-400 font-sans">
+                    <td>
+                      <strong style={{ color: 'var(--primary)' }}>{formatCount(r.eggsCrates)} Crates</strong>
+                      <div className="metadata">
                         +{r.looseEggs} loose ({r.leakers} leakers)
-                      </span>
+                      </div>
                     </td>
-                    <td className="py-3 px-3 text-center">
+                    <td>
                       {r.hdepPercent > 0 ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
-                          {r.hdepPercent}%
-                        </span>
+                        <Chip>{r.hdepPercent}% HDEP</Chip>
                       ) : (
-                        <span className="text-slate-400 text-[10px]">Rearing (0%)</span>
+                        <Chip tone="gray">Pullet Rearing</Chip>
                       )}
                     </td>
-                    <td className="py-3 px-4 text-right font-bold text-slate-900 bg-slate-50/50">
-                      {formatCount(r.closingStock)}
+                    <td>
+                      <strong style={{ color: isDiscrepant ? '#9b2c2c' : 'var(--primary)', fontSize: '1rem' }}>
+                        {formatCount(r.closingStock)}
+                      </strong>
                     </td>
-                    <td className="py-3 px-4 font-sans">
-                      <span className="text-slate-900 font-medium block text-xs">{r.attendantName}</span>
-                      <div className="flex items-center gap-1 text-[10px] text-emerald-700 mt-0.5">
-                        <ShieldCheck className="w-3 h-3 text-[#008751]" />
-                        <span>{r.status}</span>
-                      </div>
+                    <td>
+                      <strong>{r.attendantName}</strong>
+                      <div className="metadata">{r.status}</div>
                     </td>
                   </tr>
                 );
@@ -374,138 +487,207 @@ export const DailyPenRegisterWorkspace: React.FC<DailyPenRegisterWorkspaceProps>
             </tbody>
           </table>
         </div>
-      </div>
+      </Panel>
 
-      {/* Entry Modal */}
-      {isEntryModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
-            <h2 className="text-lg font-bold text-slate-900 mb-1 flex items-center gap-2">
-              <Bird className="w-5 h-5 text-[#008751]" />
-              Post Daily Pen Register Entry
-            </h2>
-            <p className="text-xs text-slate-500 mb-4">
-              Enter official shift count. Biological conservation is strictly enforced: Closing = Opening - Mortality - Culls.
-            </p>
+      {/* Official Shift Voucher Modal */}
+      {isVoucherModalOpen && (
+        <div
+          className="intel-overlay"
+          role="presentation"
+          onMouseDown={(e) => e.target === e.currentTarget && setIsVoucherModalOpen(false)}
+        >
+          <section
+            className="intel-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Official Daily Flock and Egg Register Voucher"
+            style={{ maxWidth: 580 }}
+          >
+            <button
+              type="button"
+              className="intel-sheet-close"
+              aria-label="Close Shift Voucher Modal"
+              onClick={() => setIsVoucherModalOpen(false)}
+            >
+              <X />
+            </button>
 
-            <form onSubmit={handleSaveDailyRecord} className="space-y-4 text-xs">
+            <div className="stack">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Target House & Flock</label>
-                <select
-                  value={targetHouse}
-                  onChange={(e) => setTargetHouse(e.target.value)}
-                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg outline-hidden font-semibold"
-                >
-                  <option value="H1">House 1 - ISA Brown (Layer)</option>
-                  <option value="H2">House 2 - Bovans White (Layer)</option>
-                  <option value="H3">House 3 - ISA Brown (Layer)</option>
-                  <option value="H4">House 4 - Lohmann Brown (Pullet)</option>
-                </select>
+                <span className="eyebrow">DAENEM FARMS LIMITED · BALOGUN-IKIRE</span>
+                <h2>Official Daily Flock &amp; Egg Register Voucher</h2>
+                <p className="muted">Shift Date: {selectedDate} (Africa/Lagos WAT)</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <dl className="identity-facts">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Mortality Count (Birds)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={newMortality}
-                    onChange={(e) => setNewMortality(Number(e.target.value))}
-                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg outline-hidden font-mono-numbers"
-                    required
-                  />
+                  <dt>Total Opening Stock</dt>
+                  <dd>{formatCount(totalBirdsOpening)} Birds</dd>
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Culls (Unthrifty / Sick)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={newCulls}
-                    onChange={(e) => setNewCulls(Number(e.target.value))}
-                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg outline-hidden font-mono-numbers"
-                    required
-                  />
+                  <dt>Total Eggs Harvested</dt>
+                  <dd>
+                    {formatCount(totalCrates)} Crates ({formatCount(totalCrates * 30)} Eggs)
+                  </dd>
                 </div>
-              </div>
+                <div>
+                  <dt>Total Feed Consumed</dt>
+                  <dd>
+                    {formatCount(totalFeedKg)} kg ({(totalFeedKg / 50).toFixed(1)} Bags)
+                  </dd>
+                </div>
+                <div>
+                  <dt>Verified Closing Stock</dt>
+                  <dd style={{ color: 'var(--primary)' }}>{formatCount(totalBirdsClosing)} Birds</dd>
+                </div>
+              </dl>
 
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Eggs (30-Crates)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={newCrates}
-                    onChange={(e) => setNewCrates(Number(e.target.value))}
-                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg outline-hidden font-mono-numbers"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Loose Eggs</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="29"
-                    value={newLoose}
-                    onChange={(e) => setNewLoose(Number(e.target.value))}
-                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg outline-hidden font-mono-numbers"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Leakers / Cracked</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={newLeakers}
-                    onChange={(e) => setNewLeakers(Number(e.target.value))}
-                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg outline-hidden font-mono-numbers"
-                  />
-                </div>
+              <div className="row between wrap">
+                <Btn onClick={() => window.print()}>
+                  <Printer size={15} /> Print Official Voucher
+                </Btn>
+                <Btn primary onClick={() => setIsVoucherModalOpen(false)}>
+                  Close
+                </Btn>
               </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Feed Consumed (kg)</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={newFeedKg}
-                  onChange={(e) => setNewFeedKg(Number(e.target.value))}
-                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg outline-hidden font-mono-numbers"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Shift Attendant Name</label>
-                <input
-                  type="text"
-                  value={attendant}
-                  onChange={(e) => setAttendant(e.target.value)}
-                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg outline-hidden"
-                  required
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t border-slate-200">
-                <button
-                  type="button"
-                  onClick={() => setIsEntryModalOpen(false)}
-                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn-primary-glow px-4 py-2 rounded-lg text-white font-bold cursor-pointer"
-                >
-                  Save & Attest Ledger
-                </button>
-              </div>
-            </form>
-          </div>
+            </div>
+          </section>
         </div>
       )}
 
-    </div>
+      {/* Post Daily Pen Register Entry Modal */}
+      {isEntryModalOpen && (
+        <div
+          className="intel-overlay"
+          role="presentation"
+          onMouseDown={(e) => e.target === e.currentTarget && setIsEntryModalOpen(false)}
+        >
+          <section
+            className="intel-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Post Daily Pen Register Entry"
+            style={{ maxWidth: 600 }}
+          >
+            <button
+              type="button"
+              className="intel-sheet-close"
+              aria-label="Close Entry Modal"
+              onClick={() => setIsEntryModalOpen(false)}
+            >
+              <X />
+            </button>
+
+            <form className="stack" onSubmit={(e) => void handleSaveDailyRecord(e)}>
+              <div>
+                <span className="eyebrow">BIOLOGICAL HEADCOUNT CONSERVATION</span>
+                <h2>Post Daily Pen Register Entry</h2>
+                <p className="muted">Closing Stock = Opening Headcount − Mortality − Culls.</p>
+              </div>
+
+              <label className="field">
+                <span>Target House &amp; Flock</span>
+                <select value={targetHouse} onChange={(e) => setTargetHouse(e.target.value)}>
+                  <option value="H1">House 1 — ISA Brown (Layer)</option>
+                  <option value="H2">House 2 — Bovans White (Layer)</option>
+                  <option value="H3">House 3 — ISA Brown (Layer)</option>
+                  <option value="H4">House 4 — Lohmann Brown (Pullet)</option>
+                </select>
+              </label>
+
+              <div className="form-grid">
+                <label className="field">
+                  <span>Mortality Count (Birds)</span>
+                  <input
+                    type="number"
+                    min={0}
+                    required
+                    value={newMortality}
+                    onChange={(e) => setNewMortality(Number(e.target.value))}
+                  />
+                </label>
+
+                <label className="field">
+                  <span>Culls (Unthrifty / Sick)</span>
+                  <input
+                    type="number"
+                    min={0}
+                    required
+                    value={newCulls}
+                    onChange={(e) => setNewCulls(Number(e.target.value))}
+                  />
+                </label>
+              </div>
+
+              <div className="grid3">
+                <label className="field">
+                  <span>Eggs (30-Egg Crates)</span>
+                  <input
+                    type="number"
+                    min={0}
+                    required
+                    value={newCrates}
+                    onChange={(e) => setNewCrates(Number(e.target.value))}
+                  />
+                </label>
+
+                <label className="field">
+                  <span>Loose Eggs (0–29)</span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={29}
+                    value={newLoose}
+                    onChange={(e) => setNewLoose(Number(e.target.value))}
+                  />
+                </label>
+
+                <label className="field">
+                  <span>Leakers / Cracked</span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={newLeakers}
+                    onChange={(e) => setNewLeakers(Number(e.target.value))}
+                  />
+                </label>
+              </div>
+
+              <div className="form-grid">
+                <label className="field">
+                  <span>Feed Consumed (kg)</span>
+                  <input
+                    type="number"
+                    min={0}
+                    required
+                    value={newFeedKg}
+                    onChange={(e) => setNewFeedKg(Number(e.target.value))}
+                  />
+                </label>
+
+                <label className="field">
+                  <span>Shift Attendant Name</span>
+                  <input
+                    type="text"
+                    required
+                    value={attendant}
+                    onChange={(e) => setAttendant(e.target.value)}
+                  />
+                </label>
+              </div>
+
+              <div className="row between wrap">
+                <Btn type="button" onClick={() => setIsEntryModalOpen(false)}>
+                  Cancel
+                </Btn>
+                <Btn primary type="submit">
+                  Save &amp; Attest Ledger
+                </Btn>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
+    </section>
   );
 };

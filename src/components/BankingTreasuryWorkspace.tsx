@@ -5,6 +5,8 @@ import {
   Building2, RefreshCw, FileText, Check
 } from 'lucide-react';
 import { formatDualTime, formatNaira, formatCount } from '../lib/temporal.ts';
+import { MoniepointPaymentLookupTerminal } from './MoniepointPaymentLookupTerminal.tsx';
+import type { NibssLookupResult } from '../lib/moniepoint-nip-payment-engine.ts';
 
 interface BankAccount {
   id: string;
@@ -119,10 +121,13 @@ export const BankingTreasuryWorkspace: React.FC = () => {
   const [selectedChannelFilter, setSelectedChannelFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [activeLookupTxId, setActiveLookupTxId] = useState<string>('tx-503');
 
   const totalLiquidity = ACCOUNTS.reduce((sum, acc) => sum + acc.availableBalance, 0);
+  const activeLookupTx = transactions.find((t) => t.id === activeLookupTxId) || transactions[2] || transactions[0];
 
   const handleMatchOrder = (txId: string) => {
+    setActiveLookupTxId(txId);
     setTransactions(transactions.map(t => {
       if (t.id === txId) {
         return {
@@ -135,6 +140,24 @@ export const BankingTreasuryWorkspace: React.FC = () => {
     }));
     setToastMessage(`Transaction ${txId} successfully 3-way matched to Customer Order!`);
     setTimeout(() => setToastMessage(null), 4000);
+  };
+
+  const handleTerminalVerified = (res: NibssLookupResult) => {
+    setTransactions((prev) =>
+      prev.map((t) =>
+        t.id === activeLookupTx.id
+          ? {
+              ...t,
+              reconciliationStatus: 'Matched to Order',
+              matchedDocId: `${res.orderNumber} (Gate Pass ${res.gatePassId})`,
+            }
+          : t
+      )
+    );
+    setToastMessage(
+      `Moniepoint / NIBSS Verified (${res.sessionId.slice(0, 8)}...): ${formatNaira(res.amountCreditedNgn)} reconciled to ${res.orderNumber}!`
+    );
+    setTimeout(() => setToastMessage(null), 5000);
   };
 
   const filteredTx = transactions.filter(t => {
@@ -206,6 +229,22 @@ export const BankingTreasuryWorkspace: React.FC = () => {
           </div>
         ))}
       </div>
+
+      {/* Moniepoint-Style Animated Customer Payment Lookup & 3-Way Order Matcher */}
+      {activeLookupTx && (
+        <MoniepointPaymentLookupTerminal
+          target={{
+            id: activeLookupTx.id,
+            orderNumber:
+              activeLookupTx.matchedDocId && activeLookupTx.matchedDocId.startsWith('ORD-')
+                ? activeLookupTx.matchedDocId.split(' ')[0]
+                : 'ORD-2026-890',
+            customerName: activeLookupTx.payerOrBeneficiary,
+            expectedAmountNgn: activeLookupTx.amount,
+          }}
+          onPaymentVerified={handleTerminalVerified}
+        />
+      )}
 
       {/* Transaction & Reconciliation Feed */}
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">

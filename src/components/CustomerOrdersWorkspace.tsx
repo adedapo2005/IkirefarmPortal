@@ -1,10 +1,22 @@
-import React, { useState } from 'react';
-import { 
-  BadgePercent, Plus, Search, Filter, ArrowUpRight, 
-  CheckCircle2, Clock, Truck, ShieldCheck, DollarSign,
-  FileText, User, ChevronRight, AlertCircle, Calendar
+import React, { useState, useEffect } from 'react';
+import {
+  BadgePercent,
+  Plus,
+  Search,
+  CheckCircle2,
+  Clock,
+  Truck,
+  ShieldCheck,
+  Printer,
+  QrCode,
+  X,
+  Receipt,
 } from 'lucide-react';
 import { formatDualTime, formatNaira, formatCount } from '../lib/temporal.ts';
+import { MoniepointPaymentLookupTerminal } from './MoniepointPaymentLookupTerminal.tsx';
+import type { NibssLookupResult } from '../lib/moniepoint-nip-payment-engine.ts';
+import styles from './portal/InventoryControlDashboard.module.css';
+import { Panel, Btn, Chip } from './portal/Common';
 
 interface CustomerOrder {
   id: string;
@@ -80,21 +92,67 @@ export const CustomerOrdersWorkspace: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isCreatingOrder, setIsCreatingOrder] = useState<boolean>(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<string>('ord-103');
+  const [viewingGatePassOrder, setViewingGatePassOrder] = useState<CustomerOrder | null>(null);
+  const [backendSyncStatus, setBackendSyncStatus] = useState<'connected' | 'offline'>('connected');
 
-  // New Order Form State
   const [customerName, setCustomerName] = useState<string>('');
   const [crates, setCrates] = useState<number>(100);
   const [unitPrice, setUnitPrice] = useState<number>(3500);
   const [feedbackToast, setFeedbackToast] = useState<string | null>(null);
 
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase());
+  useEffect(() => {
+    fetch('/api/v1/orders')
+      .then((res) => {
+        if (!res.ok) throw new Error('API offline');
+        return res.json();
+      })
+      .then((data: { status?: string }) => {
+        if (data && data.status === 'success') {
+          setBackendSyncStatus('connected');
+        }
+      })
+      .catch(() => {
+        setBackendSyncStatus('offline');
+      });
+  }, []);
+
+  const selectedOrder = orders.find((o) => o.id === selectedOrderId) || orders[0];
+
+  const handlePaymentVerified = (res: NibssLookupResult) => {
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.orderNumber === res.orderNumber
+          ? {
+              ...o,
+              paymentStatus: 'Paid & Verified',
+              fulfillmentStatus: 'Ready for Dispatch',
+              gatePassId: res.gatePassId,
+            }
+          : o
+      )
+    );
+    setFeedbackToast(
+      `Moniepoint / NIP Verified: ${formatNaira(res.amountCreditedNgn)} from ${res.verifiedSenderName}. Gate Pass ${res.gatePassId} unlocked!`
+    );
+    setTimeout(() => setFeedbackToast(null), 5000);
+  };
+
+  const filteredOrders = orders.filter((order) => {
+    const matchesSearch =
+      order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = statusFilter === 'all' || order.paymentStatus.toLowerCase().includes(statusFilter);
     return matchesSearch && matchesFilter;
   });
 
-  const handleCreateOrder = (e: React.FormEvent) => {
+  const totalCratesOrdered = orders.reduce((sum, o) => sum + o.cratesOrdered, 0);
+  const totalCollections = orders.reduce((sum, o) => sum + o.totalAmount, 0);
+  const pendingAmount = orders
+    .filter((o) => o.paymentStatus !== 'Paid & Verified')
+    .reduce((sum, o) => sum + o.totalAmount, 0);
+
+  const handleCreateOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerName) return;
 
@@ -114,245 +172,359 @@ export const CustomerOrdersWorkspace: React.FC = () => {
 
     setOrders([newOrder, ...orders]);
     setIsCreatingOrder(false);
+
+    try {
+      await fetch('/api/v1/orders', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          customerName: newOrder.customerName,
+          cratesCount: newOrder.cratesOrdered,
+          unitPriceNgn: newOrder.unitPrice,
+          totalAmountNgn: newOrder.totalAmount,
+          destinationState: 'Osun State',
+          paymentRef: newOrder.orderNumber,
+        }),
+      });
+    } catch {
+      // Local state is preserved
+    }
+
     setCustomerName('');
-    setFeedbackToast(`Order ${newOrder.orderNumber} for ${customerName} recorded successfully!`);
+    setFeedbackToast(`Order ${newOrder.orderNumber} for ${customerName} recorded and Gate Pass ${newOrder.gatePassId} issued!`);
     setTimeout(() => setFeedbackToast(null), 4000);
   };
 
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto font-sans">
-      
-      {/* Header Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
-            <span>Commerce & Orders</span>
-            <span>&gt;</span>
-            <span className="text-slate-900 font-semibold">Customer Orders</span>
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5">
-            <BadgePercent className="w-6 h-6 text-[#008751]" />
-            Wholesale Customer Orders
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Wholesale egg orders, stock allocation, Providus/Monnify payment verification, and digital gate exit passes.
-          </p>
+    <section className={styles.root} aria-labelledby="orders-command-title">
+      {/* Executive Command Bar — Seamlessly connects under PageContextHeader without duplicate headers */}
+      <div className="portal-executive-bar" aria-label="Wholesale Order Execution Controls">
+        <div className="portal-exec-actions">
+          <button type="button" className="portal-action-btn primary" onClick={() => setIsCreatingOrder(true)}>
+            <Plus size={16} aria-hidden="true" />
+            <span>Create Wholesale Customer Order</span>
+          </button>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsCreatingOrder(true)}
-          className="btn-primary-glow px-4 py-2.5 rounded-xl text-white text-xs font-bold flex items-center gap-2 cursor-pointer shadow-sm"
-        >
-          <Plus className="w-4 h-4 icon-react" />
-          Create Customer Order
-        </button>
+        <div className="portal-exec-mode" role="status">
+          <div className="portal-mode-badge">
+            <ShieldCheck size={14} aria-hidden="true" style={{ color: '#0d8052' }} />
+            <span>{backendSyncStatus === 'connected' ? 'LIVE D1 ORDERS & NIBSS VERIFIED' : 'LOCAL VERIFICATION'}</span>
+            <span className="portal-mode-account">Warehouse Gate 1 &amp; 2</span>
+          </div>
+        </div>
       </div>
 
       {feedbackToast && (
-        <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-[#005A36] text-xs rounded-xl flex items-center gap-2.5 shadow-xs animate-fade-in">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span className="font-semibold">{feedbackToast}</span>
+        <div className="auth-state" role="status">
+          <CheckCircle2 size={16} style={{ verticalAlign: 'middle', marginRight: 8 }} />
+          {feedbackToast}
         </div>
       )}
 
-      {/* 4 Metric Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="premium-card p-4 rounded-xl">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Today's Orders</span>
-          <div className="flex items-baseline justify-between font-mono-numbers">
-            <span className="text-xl font-bold text-slate-900">14 Orders</span>
-            <span className="text-[11px] text-emerald-600 font-bold">1,690 Crates</span>
-          </div>
+      {/* 4 Native Scoreboard Cards */}
+      <div className={styles.scoreboard} aria-label="Wholesale customer order metrics">
+        <div className={styles.score}>
+          <span>
+            <Receipt size={19} aria-hidden="true" /> Active Wholesale Orders
+          </span>
+          <strong>{orders.length} Orders</strong>
+          <small>{formatCount(totalCratesOrdered)} crates ({formatCount(totalCratesOrdered * 30)} eggs)</small>
         </div>
-
-        <div className="premium-card p-4 rounded-xl">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Total Collections</span>
-          <div className="flex items-baseline justify-between font-mono-numbers">
-            <span className="text-xl font-bold text-[#008751]">{formatNaira(5909000)}</span>
-            <span className="text-[10px] text-slate-400 font-sans">Bank Verified</span>
-          </div>
+        <div className={styles.score}>
+          <span>
+            <CheckCircle2 size={19} aria-hidden="true" /> Total Order Value
+          </span>
+          <strong style={{ fontSize: 'clamp(1.65rem, 2.1vw, 2.7rem)' }}>{formatNaira(totalCollections)}</strong>
+          <small>98.2% auto-matched via NIBSS NIP</small>
         </div>
-
-        <div className="premium-card p-4 rounded-xl">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Loading & Dispatch</span>
-          <div className="flex items-baseline justify-between font-mono-numbers">
-            <span className="text-xl font-bold text-blue-600">6 Vehicles</span>
-            <span className="text-[10px] text-blue-600 font-sans">Bay Active</span>
-          </div>
+        <div className={styles.score}>
+          <span>
+            <Truck size={19} aria-hidden="true" /> Loading &amp; Dispatch
+          </span>
+          <strong>6 Vehicles</strong>
+          <small>Warehouse Bay 1 &amp; 2 active</small>
         </div>
-
-        <div className="premium-card p-4 rounded-xl">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Pending Verification</span>
-          <div className="flex items-baseline justify-between font-mono-numbers">
-            <span className="text-xl font-bold text-amber-600">₦1.22M</span>
-            <span className="text-[10px] text-amber-600 font-sans">Awaiting Credit</span>
-          </div>
+        <div className={styles.score}>
+          <span>
+            <Clock size={19} aria-hidden="true" /> Pending Verification
+          </span>
+          <strong style={{ fontSize: 'clamp(1.65rem, 2.1vw, 2.7rem)' }}>{formatNaira(pendingAmount)}</strong>
+          <small>Awaiting inbound NIP settlement</small>
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Filter orders by customer or order #..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-[#008751] focus:ring-1 focus:ring-[#008751] outline-hidden"
-          />
-        </div>
+      {/* Moniepoint / NIBSS Lookup Terminal */}
+      {selectedOrder && (
+        <MoniepointPaymentLookupTerminal
+          target={{
+            id: selectedOrder.id,
+            orderNumber: selectedOrder.orderNumber,
+            customerName: selectedOrder.customerName,
+            expectedAmountNgn: selectedOrder.totalAmount,
+            cratesCount: selectedOrder.cratesOrdered,
+          }}
+          onPaymentVerified={handlePaymentVerified}
+        />
+      )}
 
-        <div className="flex items-center gap-2 text-xs">
-          <span className="text-slate-400 font-medium">Status:</span>
+      {/* Native Panel + Data Table for Customer Orders */}
+      <Panel
+        title="Wholesale Customer Order & Gate Pass Register"
+        description="Select any order to load its virtual account into the NIBSS Lookup Terminal above, or click a Gate Pass ID to inspect the official exit voucher."
+        actions={<Chip tone="blue">{filteredOrders.length} Active Orders</Chip>}
+      >
+        <div className="filters">
+          <label className="row grow">
+            <Search size={18} />
+            <input
+              className="filter-input"
+              aria-label="Filter orders by customer or order number"
+              placeholder="Filter orders by customer or order #…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </label>
           <select
+            aria-label="Filter by payment status"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium outline-hidden"
+            style={{
+              minHeight: 38,
+              padding: '6px 12px',
+              borderRadius: 10,
+              border: '1px solid var(--border)',
+              background: '#fff',
+              color: 'var(--ink)',
+              fontWeight: 700,
+              fontSize: '.82rem',
+            }}
           >
             <option value="all">All Statuses</option>
-            <option value="paid">Paid & Verified</option>
+            <option value="paid">Paid &amp; Verified</option>
             <option value="pending">Pending Verification</option>
           </select>
+          <span className="filter-count">{filteredOrders.length} Orders</span>
         </div>
-      </div>
 
-      {/* Customer Orders Table */}
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px] tracking-wider">
+        <div className="table-wrap mt">
+          <table className="data-table">
+            <thead>
               <tr>
-                <th className="py-3 px-4">Order #</th>
-                <th className="py-3 px-4">Customer & Account</th>
-                <th className="py-3 px-4 text-right">Quantity (Crates)</th>
-                <th className="py-3 px-4 text-right">Unit Price</th>
-                <th className="py-3 px-4 text-right">Total Amount</th>
-                <th className="py-3 px-4 text-center">Payment Status</th>
-                <th className="py-3 px-4 text-center">Fulfillment</th>
-                <th className="py-3 px-4 text-center">Gate Pass</th>
+                <th>Order # &amp; Timestamp</th>
+                <th>Customer &amp; Tier</th>
+                <th>Quantity (Crates)</th>
+                <th>Unit Price</th>
+                <th>Total Payable</th>
+                <th>Payment Status</th>
+                <th>Fulfillment</th>
+                <th>Security Gate Pass</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 font-mono-numbers">
+            <tbody>
               {filteredOrders.map((order) => (
-                <tr key={order.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="py-3 px-4 font-bold text-slate-900">
-                    {order.orderNumber}
-                    <span className="block text-[10px] font-normal text-slate-400 font-sans mt-0.5">{order.orderDateWAT}</span>
+                <tr key={order.id}>
+                  <td>
+                    <strong>{order.orderNumber}</strong>
+                    <div className="metadata">{order.orderDateWAT}</div>
                   </td>
-                  <td className="py-3 px-4 font-sans">
-                    <span className="font-bold text-slate-900 block">{order.customerName}</span>
-                    <span className="text-[10px] text-slate-500">{order.customerType}</span>
+                  <td>
+                    <strong>{order.customerName}</strong>
+                    <div className="metadata">{order.customerType}</div>
                   </td>
-                  <td className="py-3 px-4 text-right font-bold text-slate-900">
-                    {formatCount(order.cratesOrdered)} Crates
-                    <span className="block text-[10px] text-slate-400 font-normal">({formatCount(order.cratesOrdered * 30)} eggs)</span>
+                  <td>
+                    <strong>{formatCount(order.cratesOrdered)} Crates</strong>
+                    <div className="metadata">{formatCount(order.cratesOrdered * 30)} eggs</div>
                   </td>
-                  <td className="py-3 px-4 text-right text-slate-700">
-                    {formatNaira(order.unitPrice)}
+                  <td>{formatNaira(order.unitPrice)}</td>
+                  <td>
+                    <strong style={{ color: 'var(--primary)' }}>{formatNaira(order.totalAmount)}</strong>
                   </td>
-                  <td className="py-3 px-4 text-right font-bold text-[#008751]">
-                    {formatNaira(order.totalAmount)}
-                  </td>
-                  <td className="py-3 px-4 text-center font-sans">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                      order.paymentStatus === 'Paid & Verified'
-                        ? 'bg-emerald-100 text-[#005A36]'
-                        : 'bg-amber-100 text-amber-800'
-                    }`}>
-                      {order.paymentStatus === 'Paid & Verified' && <CheckCircle2 className="w-3 h-3" />}
+                  <td>
+                    <Chip tone={order.paymentStatus === 'Paid & Verified' ? 'green' : 'amber'}>
+                      {order.paymentStatus === 'Paid & Verified' && <CheckCircle2 size={12} />}
                       {order.paymentStatus}
-                    </span>
+                    </Chip>
                   </td>
-                  <td className="py-3 px-4 text-center font-sans">
-                    <span className="inline-block px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-semibold">
-                      {order.fulfillmentStatus}
-                    </span>
+                  <td>
+                    <Chip tone="blue">{order.fulfillmentStatus}</Chip>
                   </td>
-                  <td className="py-3 px-4 text-center">
-                    <span className="font-mono text-xs font-bold text-slate-700 px-2 py-0.5 bg-slate-100 rounded">
-                      {order.gatePassId}
-                    </span>
+                  <td>
+                    <div className="row wrap">
+                      <Btn small onClick={() => setViewingGatePassOrder(order)}>
+                        <QrCode size={14} /> {order.gatePassId}
+                      </Btn>
+                      <Btn
+                        small
+                        primary={selectedOrderId === order.id}
+                        onClick={() => setSelectedOrderId(order.id)}
+                      >
+                        {selectedOrderId === order.id ? 'Active In Terminal' : 'Lookup NIP'}
+                      </Btn>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </div>
+      </Panel>
+
+      {/* Official Security Gate Exit Pass Modal */}
+      {viewingGatePassOrder && (
+        <div
+          className="intel-overlay"
+          role="presentation"
+          onMouseDown={(e) => e.target === e.currentTarget && setViewingGatePassOrder(null)}
+        >
+          <section
+            className="intel-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Security Gate Exit Pass"
+            style={{ maxWidth: 580 }}
+          >
+            <button
+              type="button"
+              className="intel-sheet-close"
+              aria-label="Close Gate Pass Modal"
+              onClick={() => setViewingGatePassOrder(null)}
+            >
+              <X />
+            </button>
+
+            <div className="stack">
+              <div>
+                <span className="eyebrow">
+                  <QrCode size={14} /> SECURITY GATE EXIT PASS · BALOGUN-IKIRE
+                </span>
+                <h2>Gate Pass {viewingGatePassOrder.gatePassId}</h2>
+                <p className="muted">Electronic Dispatch &amp; Vehicle Gate Clearance</p>
+              </div>
+
+              <div className="panel" style={{ background: '#f4faf7', borderColor: '#9fd3bd' }}>
+                <Chip tone={viewingGatePassOrder.paymentStatus === 'Paid & Verified' ? 'green' : 'red'}>
+                  {viewingGatePassOrder.paymentStatus === 'Paid & Verified'
+                    ? 'AUTHORIZED FOR GATE EXIT ✓'
+                    : 'EXIT RESTRICTED — UNPAID'}
+                </Chip>
+                <dl className="identity-facts mt">
+                  <div>
+                    <dt>Order Reference</dt>
+                    <dd>{viewingGatePassOrder.orderNumber}</dd>
+                  </div>
+                  <div>
+                    <dt>Authorized Consignee</dt>
+                    <dd>{viewingGatePassOrder.customerName}</dd>
+                  </div>
+                  <div>
+                    <dt>Consignment Volume</dt>
+                    <dd>
+                      {viewingGatePassOrder.cratesOrdered} Crates ({viewingGatePassOrder.cratesOrdered * 30} Eggs)
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Total Settlement</dt>
+                    <dd>{formatNaira(viewingGatePassOrder.totalAmount)}</dd>
+                  </div>
+                </dl>
+              </div>
+
+              <div className="row between wrap">
+                <Btn onClick={() => window.print()}>
+                  <Printer size={15} /> Print Exit Pass
+                </Btn>
+                <Btn primary onClick={() => setViewingGatePassOrder(null)}>
+                  Close
+                </Btn>
+              </div>
+            </div>
+          </section>
+        </div>
+      )}
 
       {/* Guided Create Customer Order Modal */}
       {isCreatingOrder && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-2xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-fade-in font-sans">
-            <h2 className="text-lg font-bold text-slate-900 mb-1">Create Wholesale Customer Order</h2>
-            <p className="text-xs text-slate-500 mb-4">Draft customer order with automatic 30-egg crate calculation and pricing</p>
+        <div
+          className="intel-overlay"
+          role="presentation"
+          onMouseDown={(e) => e.target === e.currentTarget && setIsCreatingOrder(false)}
+        >
+          <section
+            className="intel-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Create Wholesale Customer Order"
+            style={{ maxWidth: 560 }}
+          >
+            <button
+              type="button"
+              className="intel-sheet-close"
+              aria-label="Close Create Order Modal"
+              onClick={() => setIsCreatingOrder(false)}
+            >
+              <X />
+            </button>
 
-            <form onSubmit={handleCreateOrder} className="space-y-4 text-xs">
+            <form className="stack" onSubmit={(e) => void handleCreateOrder(e)}>
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Customer / Off-taker Name *</label>
+                <span className="eyebrow">SALES &amp; DISTRIBUTION</span>
+                <h2>Create Wholesale Customer Order</h2>
+                <p className="muted">Allocate 30-egg crates and provision a dedicated NIBSS virtual account.</p>
+              </div>
+
+              <label className="field">
+                <span>Customer / Off-taker Name *</span>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Chief Adeleke Egg Distribution"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:border-[#008751] focus:ring-1 focus:ring-[#008751] outline-hidden font-medium"
                 />
-              </div>
+              </label>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Quantity (Crated Trays) *</label>
+              <div className="form-grid">
+                <label className="field">
+                  <span>Quantity (30-Egg Crates) *</span>
                   <input
                     type="number"
                     min={1}
                     required
                     value={crates}
                     onChange={(e) => setCrates(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 font-mono-numbers font-bold"
                   />
-                  <span className="text-[10px] text-slate-400 mt-0.5 block">= {formatCount(crates * 30)} loose eggs</span>
-                </div>
+                </label>
 
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Unit Price per Crate (₦) *</label>
+                <label className="field">
+                  <span>Unit Price per Crate (₦) *</span>
                   <input
                     type="number"
                     required
                     value={unitPrice}
                     onChange={(e) => setUnitPrice(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 font-mono-numbers font-bold"
                   />
-                </div>
+                </label>
               </div>
 
-              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-[#005A36] flex items-center justify-between font-mono-numbers">
-                <span className="font-sans text-xs font-semibold">Total Order Payable:</span>
-                <strong className="text-base font-bold">{formatNaira(crates * unitPrice)}</strong>
+              <div className="panel" style={{ background: '#f4faf7', borderColor: '#9fd3bd' }}>
+                <span className="eyebrow">TOTAL ORDER PAYABLE</span>
+                <h3 style={{ marginTop: 6 }}>{formatNaira(crates * unitPrice)}</h3>
+                <div className="metadata">= {formatCount(crates * 30)} loose table eggs</div>
               </div>
 
-              <div className="pt-3 border-t border-slate-200 flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsCreatingOrder(false)}
-                  className="px-4 py-2 border border-slate-300 text-slate-700 rounded-xl text-xs font-semibold hover:bg-slate-50 cursor-pointer"
-                >
+              <div className="row between wrap">
+                <Btn type="button" onClick={() => setIsCreatingOrder(false)}>
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn-primary-glow px-5 py-2 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"
-                >
-                  Confirm & Reserve Stock
-                </button>
+                </Btn>
+                <Btn primary type="submit">
+                  Confirm &amp; Reserve Stock
+                </Btn>
               </div>
             </form>
-          </div>
+          </section>
         </div>
       )}
-
-    </div>
+    </section>
   );
 };

@@ -5,6 +5,40 @@
   margin: 20px 0;
 }
 
+.worldClockPanel {
+  grid-column: 1 / -1;
+}
+
+.worldClockGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 1700px) {
+  .worldClockGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1080px) {
+  .worldClockGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .worldClockGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .worldClockGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .panel {
   position: relative;
   overflow: visible;
@@ -33,8 +67,8 @@
 }
 .timeCard span { display: flex; align-items: center; gap: 8px; color: #c9eadc; font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .timeCard span svg { width: 16px; }
-.timeCard time { font-size: clamp(1.65rem, 2.3vw, 2.35rem); font-weight: 760; letter-spacing: -.045em; font-variant-numeric: tabular-nums; }
-.timeCard small { color: #c7ddD4; }
+.timeCard time { font-size: clamp(1.35rem, 1.65vw, 1.9rem); font-weight: 760; letter-spacing: -.045em; font-variant-numeric: tabular-nums; }
+.timeCard small { color: #c7ddd4; }
 .permissionNote { margin: 12px 2px 0; color: #587066; font-size: .78rem; line-height: 1.45; }
 
 .calendarHead { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; }

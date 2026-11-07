@@ -8,21 +8,27 @@ import { titleCase } from "@/lib/ui-language";
 import { Btn } from "./Common";
 
 const purposeByGroup: Record<string, string> = {
-  "Farm & Production": "Keeps production evidence, exceptions, and decisions traceable.",
-  Finance: "Keeps financial evidence, approvals, and next actions controlled.",
-  "Stock & Finance": "Connects stock, sourcing, sales, and finance evidence.",
-  People: "Supports workforce decisions while preserving employee privacy.",
-  "People & Work": "Supports workforce decisions while preserving payroll and privacy boundaries.",
-  Commercial: "Connects customer, supplier, order, and fulfillment activity.",
+  Home: "Prioritizes company decisions, monitors operational exceptions, and ensures executive oversight.",
+  "Farm Work": "Maintains biological flock conservation, production logging, and biosecurity standards.",
+  "Stock & Purchases": "Coordinates feed, medication, inventory balances, and supplier procurement.",
+  "Sales & Payments": "Verifies customer wholesale payments and controls secure gate release.",
+  "People & Payroll": "Calculates statutory deductions, ensures tax compliance, and settles staff pay.",
+  "Projects & Equipment": "Tracks farm facility construction, machinery readiness, and infrastructure.",
+  "Reports & Insights": "Provides operational analytics, yield metrics, and financial intelligence.",
+  Communication: "Maintains authorized internal notices, messaging, and operational updates.",
+  Administration: "Enforces permission controls, audit accountability, and system security.",
+  "Farm & Production": "Maintains biological flock conservation, production logging, and biosecurity standards.",
+  Finance: "Keeps financial records, banking reconciliation, and statutory deductions controlled.",
+  "Stock & Finance": "Connects stock levels, feed formulation, wholesale orders, and payments.",
+  "People & Work": "Supports workforce decisions, statutory deductions, and payroll verification.",
+  Commercial: "Connects customer orders, bank payments, and gate fulfillment.",
   "Customer Engagement": "Connects customer identity, transactions, communication, and service history.",
-  Operations: "Coordinates operational work, exceptions, evidence, and hand-offs.",
+  Operations: "Coordinates operational work, daily pen logs, and biological headcount.",
   "Control & Assurance": "Keeps evidence, incidents, activity, and controls reviewable.",
-  Administration: "Keeps administrative changes permissioned, explainable, and auditable.",
   System: "Supports configuration, review, diagnostics, and service continuity.",
-  Admin: "Keeps Sites preview administration discoverable, presentation-only, and isolated from production authority.",
+  Admin: "Keeps administrative changes permissioned, explainable, and auditable.",
   Workspace: "Prioritizes the decisions, changes, and risks that matter now.",
   "Self-Service": "Supports authorized personal tasks without exposing administrative records.",
-  Communication: "Keeps authorized communication and knowledge connected to work.",
 };
 
 export default function PageContextHeader({
@@ -46,10 +52,10 @@ export default function PageContextHeader({
 }) {
   const canWrite = Boolean(page.action && page.write && has(person, page.write));
   const groupPurpose = purposeByGroup[page.group] || "Keeps the current authorized work, evidence, status, and next actions accountable.";
-  const purpose = `${page.dna}. ${groupPurpose}`;
+  const purpose = page.dna || groupPurpose;
   const hasSearch = has(person, "search.view");
   const sourceStatus = page.dataState === "live"
-    ? "Live server records"
+    ? "Cloudflare D1 Database"
     : page.authority === "existing" ? "Integration pending"
       : page.authority === "development" ? "Under development" : "Design fixture";
   const locationKey = person.organizationScope?.locationKey;

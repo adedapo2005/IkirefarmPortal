@@ -16,7 +16,7 @@ export type Page = {
 };
 const descriptions: Record<string, string> = {
   dashboard:
-    "Follow production, people, and the work that needs your attention.",
+    "Executive situation room for today's farm operations, flock conservation, and financial performance.",
   myday: "Start your shift and keep your working day in view.",
   notifications: "Review updates that relate to your work.",
   profile:
@@ -37,8 +37,11 @@ const descriptions: Record<string, string> = {
   profit: "Compare recorded results with clearly stated projections.",
   expenses: "Review expense evidence and outstanding decisions.",
   construction: "Track project milestones, costs, and progress.",
-  payroll: "Follow pay-cycle updates and payment evidence.",
+  payroll: "Monthly compensation schedule with dynamic Osun State PAYE tax, PenCom 8% pension, and direct bank disbursement.",
   "payroll-admin": "Review payroll stages and resolve outstanding exceptions.",
+  "daily-register": "Daily 7-column biological headcount and egg collection ledger for Houses 1 to 4.",
+  orders: "Wholesale egg orders, real-time Moniepoint and NIP bank payment verification, and security gate exit passes.",
+  treasury: "Authorized corporate bank sub-accounts, Kuda Business NIP settlement, and treasury reconciliation.",
   employees: "Find people and open authorized employee information.",
   invitations: "Prepare onboarding invitations and follow delivery status.",
   recruitment: "Move through applications with a clear candidate history.",
@@ -860,11 +863,12 @@ export const pages: Page[] = [
   p(
     "dashboard",
     "Farm Overview",
-    "Workspace",
+    "Home",
     "LayoutDashboard",
     ["dashboard.view"],
     "/api/portal/dashboard",
-    "Decision brief + operational pulse",
+    "Operational pulse and company decisions",
+    { dataState: "live", description: "Executive situation room for today's farm operations, flock conservation, and financial performance." },
   ),
   p(
     "myday",
@@ -1039,11 +1043,32 @@ export const pages: Page[] = [
   p(
     "payroll",
     "Payroll Updates",
-    "People & Work",
+    "People & Payroll",
     "Banknote",
     ["payroll.view"],
-    "/api/portal/payroll",
-    "Pay-cycle register + payment evidence",
+    "/api/v1/transfers/nip",
+    "Statutory payroll compliance and verified salary settlement",
+    { dataState: "live", description: "Monthly compensation schedule with dynamic Osun State PAYE tax, PenCom 8% pension, and direct bank disbursement." },
+  ),
+  p(
+    "daily-register",
+    "Daily Pen Register",
+    "Farm Work",
+    "Egg",
+    ["farm.view"],
+    "/api/v1/operations/daily-register",
+    "Flock inventory conservation and daily production tracking",
+    { farm: true, dataState: "live", description: "Daily 7-column biological headcount and egg collection ledger for Houses 1 to 4." },
+  ),
+  p(
+    "orders",
+    "Wholesale Customer Orders",
+    "Sales & Payments",
+    "Receipt",
+    ["commercial.view", "finance.view"],
+    "/api/v1/orders",
+    "Customer wholesale orders and anti-fraud payment reconciliation",
+    { farm: true, dataState: "live", description: "Wholesale egg orders, real-time Moniepoint and NIP bank payment verification, and security gate exit passes." },
   ),
   p(
     "payroll-admin",

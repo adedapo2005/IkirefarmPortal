@@ -632,3 +632,262 @@ div[data-slot="sidebar-inner"] {
   background: rgba(255, 255, 255, 0.12) !important;
   color: #FFFFFF !important;
 }
+
+
+/* =========================================================================================
+   7. ENTERPRISE LUXURY MOTION, GLOW, DEPTH & MICRO-INTERACTION ENGINE (FIELDLINE V6)
+   ========================================================================================= */
+
+@keyframes daenemPulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55), 0 0 8px rgba(16, 185, 129, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0), 0 0 14px rgba(16, 185, 129, 0.75);
+    transform: scale(1.08);
+  }
+}
+
+@keyframes daenemAmberPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.55), 0 0 8px rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(245, 158, 11, 0), 0 0 14px rgba(245, 158, 11, 0.75);
+  }
+}
+
+@keyframes daenemViewEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.994);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes daenemChartDraw {
+  from {
+    stroke-dashoffset: 1200;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes daenemBarRise {
+  from {
+    transform: scaleY(0.08);
+    opacity: 0.3;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* Smooth Transitions & Elevation for All Cards, Panels & Widgets */
+.panel,
+.premium-card,
+.gateway-widget,
+.metric-widget,
+.purpose-dashboard-panel,
+.home-command-grid > *,
+.home-context-grid > *,
+[data-slot="card"] {
+  position: relative;
+  transition:
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 240ms ease,
+    background-color 240ms ease;
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.85),
+    0 1px 3px rgba(15, 23, 42, 0.04),
+    0 8px 24px -4px rgba(16, 55, 46, 0.06);
+}
+
+.panel:hover,
+.premium-card:hover,
+.gateway-widget:hover,
+.metric-widget:hover,
+.purpose-dashboard-panel:hover,
+.home-command-grid > *:hover,
+[data-slot="card"]:hover {
+  transform: translateY(-3px);
+  border-color: rgba(0, 135, 81, 0.38) !important;
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.95),
+    0 16px 36px -6px rgba(16, 55, 46, 0.11),
+    0 0 0 1px rgba(0, 168, 107, 0.14),
+    0 0 22px -4px rgba(0, 168, 107, 0.12);
+}
+
+/* Interactive Buttons & Controls Physics */
+button,
+.btn,
+[role="button"] {
+  transition:
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+button:not(:disabled):active,
+.btn:not(:disabled):active {
+  transform: translateY(1px) scale(0.985) !important;
+}
+
+/* Interactive Icon Reactions inside Buttons, Cards & Navigation */
+button svg,
+.btn svg,
+.panel-heading svg,
+.home-action-grid button svg,
+.home-attention-stack button svg,
+.portal-sidebar [data-slot="sidebar-menu-button"] svg {
+  transition:
+    transform 240ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    filter 240ms ease,
+    color 200ms ease;
+}
+
+button:hover svg,
+.btn:hover svg,
+.home-action-grid button:hover svg:first-child,
+.home-attention-stack button:hover svg:first-child {
+  transform: scale(1.14) translateY(-1px);
+  filter: drop-shadow(0 2px 6px rgba(0, 168, 107, 0.35));
+}
+
+.portal-sidebar [data-slot="sidebar-menu-button"]:hover svg {
+  transform: scale(1.12);
+  filter: drop-shadow(0 0 8px rgba(167, 243, 208, 0.55));
+}
+
+.portal-sidebar [data-slot="sidebar-menu-button"][data-active="true"] {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 4px 14px rgba(0, 56, 34, 0.28),
+    0 0 16px rgba(0, 168, 107, 0.32) !important;
+}
+
+/* Form Inputs & Pickers Focus Glow */
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  transition:
+    border-color 180ms ease,
+    box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 180ms ease;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):hover,
+select:hover,
+textarea:hover {
+  border-color: #94A3B8;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #008751 !important;
+  box-shadow:
+    0 0 0 3.5px rgba(0, 135, 81, 0.16),
+    0 2px 8px rgba(0, 135, 81, 0.08) !important;
+}
+
+/* Data Table Row Highlight & Elevation */
+.data-table tbody tr,
+table tbody tr {
+  transition: background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.data-table tbody tr:hover,
+table tbody tr:hover {
+  background-color: #F0FDF4 !important;
+  box-shadow: inset 3px 0 0 0 #008751;
+}
+
+/* ============================================================================
+   8. MONIEPOINT / NIBSS LIVE PAYMENT LOOKUP & ANIMATED TERMINAL ENGINE
+   ============================================================================ */
+@keyframes mpRadarRipple {
+  0% { transform: scale(0.78); opacity: 0.85; }
+  100% { transform: scale(2.35); opacity: 0; }
+}
+
+@keyframes mpCheckPop {
+  0% { transform: scale(0.35); opacity: 0; }
+  65% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes mpCheckDraw {
+  0% { stroke-dashoffset: 64; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes mpFraudShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+.mp-terminal-card {
+  background: linear-gradient(155deg, #06152d 0%, #0a2246 52%, #052e24 100%);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow:
+    0 18px 40px -12px rgba(6, 21, 45, 0.5),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+.mp-terminal-card.fraud-mode {
+  background: linear-gradient(155deg, #2a0812 0%, #3b0a18 55%, #1e0b16 100%);
+  border-color: rgba(244, 63, 94, 0.55);
+  animation: mpFraudShake 0.42s ease-in-out;
+}
+
+.mp-radar-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 2px solid #10b981;
+  animation: mpRadarRipple 2.2s infinite cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mp-radar-ring.r2 {
+  animation-delay: 0.7s;
+  border-color: #38bdf8;
+}
+
+.mp-radar-ring.r3 {
+  animation-delay: 1.4s;
+  border-color: #34d399;
+}
+
+.mp-orb-pop {
+  animation: mpCheckPop 0.52s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.mp-check-stroke {
+  stroke-dasharray: 64;
+  stroke-dashoffset: 64;
+  animation: mpCheckDraw 0.52s 0.16s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -2407,36 +2407,9 @@ export default function PortalExperience({
                       )}
                     {route === "dashboard" && (
                       <section className="foundation-home-composition" aria-label="FarmPortal intelligent Home">
-                        <nav className="foundation-home-sections" aria-label="Home sections">
-                          <button type="button" onClick={() => document.getElementById("foundation-home-today")?.scrollIntoView({ behavior: "auto", block: "start" })}>Today</button>
-                          {isOwnerPrincipal(person) && <button type="button" onClick={() => document.getElementById("foundation-home-decisions")?.scrollIntoView({ behavior: "auto", block: "start" })}>Owner Decisions</button>}
-                          {(isOwnerPrincipal(person) || has(person, "finance.view")) && <button type="button" onClick={() => document.getElementById("foundation-home-signals")?.scrollIntoView({ behavior: "auto", block: "start" })}>Executive Signals</button>}
-                          {has(person, "widgets.manage") && <button type="button" onClick={() => document.getElementById("foundation-home-widgets")?.scrollIntoView({ behavior: "auto", block: "start" })}>My Widgets</button>}
-                        </nav>
                         <div id="foundation-home-today">
                           <HomeCommandExperience {...props} />
                         </div>
-                        {isOwnerPrincipal(person) && <section id="foundation-home-decisions" aria-label="Owner Decisions">
-                          <div className="panel" role="status" aria-label="Owner Decisions — awaiting verified information">
-                            <span className="eyebrow">OWNER DECISIONS</span>
-                            <h2>Review What Needs Your Approval</h2>
-                            <p>Approval totals and company-wide performance are shown only when verified records are connected. No sample figures are presented as live information.</p>
-                            <div className="row wrap mt">
-                              {canPage(person, "signup-admin") && <Btn onClick={() => go("signup-admin")}>Account Approvals</Btn>}
-                              {canPage(person, "procurement") && <Btn onClick={() => go("procurement")}>Purchase Requests</Btn>}
-                              {canPage(person, "expenses") && <Btn onClick={() => go("expenses")}>Expense Reviews</Btn>}
-                            </div>
-                          </div>
-                        </section>}
-                        {(isOwnerPrincipal(person) || has(person, "finance.view")) && <section id="foundation-home-signals" aria-label="Executive Signals">
-                          <ExecutiveCommandPulse person={person} go={go} />
-                        </section>}
-                        {has(person, "widgets.manage") && <section id="foundation-home-widgets" aria-label="My Widgets">
-                          <PersonalizedWidgets person={person} go={go} />
-                        </section>}
-                        <section className="foundation-home-existing-overview" aria-label="Foundation operational overview">
-                          <PurposeBuiltDashboard person={person} go={go} notices={notices} />
-                        </section>
                       </section>
                     )}
                     {(["operations", "inventory", "finance"] as const).some((candidate) => candidate === route) && (

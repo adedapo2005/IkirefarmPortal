@@ -1,0 +1,20 @@
+name = "ikirefarmportal"
+compatibility_date = "2026-11-06"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ikirefarmportal-production-db"
+database_id = "fd42fa1b-372e-409e-83d5-54a5cf4c5a1d"
+
+[env.production]
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "ikirefarmportal-production-db"
+database_id = "fd42fa1b-372e-409e-83d5-54a5cf4c5a1d"
+
+[env.preview]
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "ikirefarmportal-production-db"
+database_id = "fd42fa1b-372e-409e-83d5-54a5cf4c5a1d"
