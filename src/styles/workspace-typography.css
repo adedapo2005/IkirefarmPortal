@@ -1,0 +1,198 @@
+/* ==========================================================================
+   FarmPortal — Premium Workspace Typography (v1)
+   Scope: #main-content plus content-owned dialogs, sheets, popovers, menus,
+   tooltips and toasts. Protected chrome is excluded:
+     - the sidebar (.ws-sidebar, mobile drawer [data-mobile="true"])
+     - the application top bar (header.topbar, outside #main-content)
+     - overlays marked [data-chrome="protected"] (nav tooltips, rail flyouts,
+       account menu, system status menu)
+   Colours are untouched: this file sets no colour properties.
+   ========================================================================== */
+
+/* Self-hosted Inter Variable (WOFF2), workspace-only family name so the protected
+   navigation's existing 'Inter Variable' face is not altered. */
+@font-face { font-family: "FarmPortal Inter"; font-style: normal; font-display: swap; font-weight: 100 900;
+  src: url("/fonts/inter-latin-wght-normal.woff2") format("woff2-variations"), url("/fonts/inter-latin-wght-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "FarmPortal Inter"; font-style: normal; font-display: swap; font-weight: 100 900;
+  src: url("/fonts/inter-latin-ext-wght-normal.woff2") format("woff2-variations"), url("/fonts/inter-latin-ext-wght-normal.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+
+/* --- Tokens ------------------------------------------------------------- */
+/* Sizes are authored in CSS px at a 16px root and expressed in rem, so user
+   font scaling is preserved. `--fp-root` lets the wide breakpoint compensate
+   for the pre-existing `html{font-size:19px}` rule at ≥2200px (kept because
+   the protected navigation depends on it). */
+:root {
+  --fp-root: 15; /* matches the existing app root (index.css :root font-size:15px) */
+  --fp-font: "FarmPortal Inter", "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --fp-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+
+  /* Mobile-first values (<768px). */
+  --fp-display: 28;   --fp-page: 26;   --fp-section: 20;  --fp-card: 17;
+  --fp-dialog: 21;    --fp-report: 23; --fp-body: 16;     --fp-body-2: 14;
+  --fp-label: 14;     --fp-support: 13; --fp-kpi: 28;
+  --fp-button: 15;    --fp-input: 16;  --fp-th: 14;       --fp-td: 15;
+  --fp-badge: 13;     --fp-message: 16;
+}
+@media (min-width: 768px) {
+  :root { --fp-display: 32; --fp-page: 28; --fp-section: 21; --fp-card: 18; --fp-dialog: 22; --fp-report: 24; --fp-kpi: 28; }
+}
+@media (min-width: 1024px) {
+  :root { --fp-display: 36; --fp-page: 30; --fp-section: 22; --fp-card: 18; --fp-dialog: 22; --fp-report: 26; --fp-kpi: 30; }
+}
+@media (min-width: 1920px) {
+  :root {
+    --fp-display: 40; --fp-page: 34; --fp-section: 24; --fp-card: 19; --fp-dialog: 24; --fp-report: 28;
+    --fp-body: 17; --fp-body-2: 15; --fp-label: 15; --fp-support: 14; --fp-kpi: 34;
+    --fp-button: 16; --fp-input: 17; --fp-th: 15; --fp-td: 16; --fp-badge: 14;
+  }
+}
+@media (min-width: 2200px) {
+  :root { --fp-root: 19; }
+}
+
+/* rem helper: N px at the current root. */
+:root {
+  --t-display: calc(var(--fp-display) / var(--fp-root) * 1rem);
+  --t-page:    calc(var(--fp-page) / var(--fp-root) * 1rem);
+  --t-section: calc(var(--fp-section) / var(--fp-root) * 1rem);
+  --t-card:    calc(var(--fp-card) / var(--fp-root) * 1rem);
+  --t-dialog:  calc(var(--fp-dialog) / var(--fp-root) * 1rem);
+  --t-report:  calc(var(--fp-report) / var(--fp-root) * 1rem);
+  --t-body:    calc(var(--fp-body) / var(--fp-root) * 1rem);
+  --t-body-2:  calc(var(--fp-body-2) / var(--fp-root) * 1rem);
+  --t-label:   calc(var(--fp-label) / var(--fp-root) * 1rem);
+  --t-support: calc(var(--fp-support) / var(--fp-root) * 1rem);
+  --t-kpi:     calc(var(--fp-kpi) / var(--fp-root) * 1rem);
+  --t-button:  calc(var(--fp-button) / var(--fp-root) * 1rem);
+  --t-input:   calc(var(--fp-input) / var(--fp-root) * 1rem);
+  --t-th:      calc(var(--fp-th) / var(--fp-root) * 1rem);
+  --t-td:      calc(var(--fp-td) / var(--fp-root) * 1rem);
+  --t-badge:   calc(var(--fp-badge) / var(--fp-root) * 1rem);
+  --t-message: calc(var(--fp-message) / var(--fp-root) * 1rem);
+  --sp-1: .25rem; --sp-2: .5rem; --sp-3: .75rem; --sp-4: 1rem; --sp-5: 1.25rem; --sp-6: 1.5rem; --sp-8: 2rem;
+}
+
+/* --- Scope roots --------------------------------------------------------- */
+#main-content,
+:is([data-slot="dialog-content"], [data-slot="alert-dialog-content"], [data-slot="sheet-content"], [data-slot="popover-content"], [data-slot="dropdown-menu-content"], [data-slot="tooltip-content"], [data-sonner-toast]):not([data-chrome="protected"]):not([data-mobile="true"]):not([data-sidebar]) {
+  font-family: var(--fp-font);
+  font-size: var(--t-body);
+  font-weight: 400;
+  line-height: 1.55;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Shorthand used below: W = workspace + content overlays. */
+/* Forced uppercase is removed inside the scope only. */
+#main-content *,
+:is([data-slot="dialog-content"], [data-slot="alert-dialog-content"], [data-slot="sheet-content"], [data-slot="popover-content"], [data-slot="dropdown-menu-content"], [data-slot="tooltip-content"], [data-sonner-toast]):not([data-chrome="protected"]):not([data-mobile="true"]):not([data-sidebar]) * {
+  font-family: inherit;
+  text-transform: none !important;
+}
+#main-content :is(code, kbd, samp, .mono, [data-ref], .reference-code) { font-family: var(--fp-mono); }
+
+/* --- Hierarchy ----------------------------------------------------------- */
+#main-content :is(h1, .page-title) {
+  font-size: var(--t-page) !important; font-weight: 600 !important; line-height: 1.2 !important; letter-spacing: -0.02em !important;
+}
+#main-content :is(.display-title, .home-welcome h1, .home-welcome h2:first-child) {
+  font-size: var(--t-display) !important; font-weight: 600 !important; line-height: 1.15 !important; letter-spacing: -0.02em !important;
+}
+#main-content :is(h2, .section-title) {
+  font-size: var(--t-section) !important; font-weight: 600 !important; line-height: 1.3 !important; letter-spacing: -0.01em !important;
+}
+#main-content :is(h3, h4, .panel-heading h2, .card-title, [data-slot="card-title"]) {
+  font-size: var(--t-card) !important; font-weight: 600 !important; line-height: 1.35 !important; letter-spacing: normal !important;
+}
+#main-content :is(.report-title, [data-report-title]) {
+  font-size: var(--t-report) !important; font-weight: 600 !important; line-height: 1.25 !important; letter-spacing: -0.01em !important;
+}
+:is([data-slot="dialog-title"], [data-slot="alert-dialog-title"], [data-slot="sheet-title"]) {
+  font-family: var(--fp-font);
+  font-size: var(--t-dialog) !important; font-weight: 600 !important; line-height: 1.28 !important; letter-spacing: -0.01em !important;
+}
+:is([data-slot="dialog-description"], [data-slot="alert-dialog-description"], [data-slot="sheet-description"]) {
+  font-size: var(--t-body-2) !important; font-weight: 400 !important; line-height: 1.5 !important;
+}
+
+/* Heading → description rhythm (8–12px). */
+#main-content :is(h1, h2, h3) + p { margin-top: var(--sp-2); }
+
+/* Body, secondary and supporting text. */
+#main-content p { font-size: var(--t-body); font-weight: 400; line-height: 1.55; max-width: 75ch; }
+#main-content :is(.panel-heading p, .metadata, .muted, small, figcaption, .form-note) {
+  font-size: var(--t-support) !important; font-weight: 400 !important; line-height: 1.5 !important;
+}
+#main-content :is(.secondary, .description, dd) { font-size: var(--t-body-2); line-height: 1.5; }
+#main-content .eyebrow { font-size: var(--t-label) !important; font-weight: 500 !important; letter-spacing: normal !important; line-height: 1.4 !important; }
+
+
+/* --- KPI and numerals ---------------------------------------------------- */
+#main-content :is(.metric, [data-kpi], [class*="kpiValue"], [class*="metricValue"]) {
+  font-size: var(--t-kpi) !important; font-weight: 600 !important; line-height: 1.15 !important; letter-spacing: -0.01em !important;
+}
+#main-content :is(.metric, [data-kpi], [class*="kpiValue"], [class*="metricValue"], td, th, time, .chip, [class*="amount"], [class*="Amount"], [class*="value"], [class*="Value"], [class*="count"], [class*="Count"], [class*="clock"], [class*="Clock"]),
+:is([data-slot="dialog-content"], [data-sonner-toast]) :is(td, time) {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* --- Controls ------------------------------------------------------------ */
+#main-content :is(label, .field > span, [data-slot="label"], [data-slot="form-label"]) {
+  font-size: var(--t-label); font-weight: 500; line-height: 1.4; letter-spacing: normal;
+}
+#main-content .field { gap: var(--sp-2); }
+#main-content :is(button, .btn, [role="button"], a.btn),
+:is([data-slot="dialog-content"], [data-slot="alert-dialog-content"], [data-slot="sheet-content"]):not([data-mobile="true"]):not([data-sidebar]) :is(button, .btn) {
+  font-size: var(--t-button); font-weight: 600; line-height: 1.3; letter-spacing: normal;
+}
+#main-content :is(.btn, button.primary, [data-slot="button"]),
+:is([data-slot="dialog-content"], [data-slot="alert-dialog-content"]) :is(.btn, [data-slot="button"]) {
+  min-height: 44px; height: auto; white-space: normal;
+}
+@media (pointer: coarse) {
+  #main-content :is(.btn, [data-slot="button"]) { min-height: 48px; }
+}
+#main-content :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea, [data-slot="select-trigger"]),
+:is([data-slot="dialog-content"], [data-slot="alert-dialog-content"], [data-slot="sheet-content"], [data-slot="popover-content"]):not([data-mobile="true"]):not([data-sidebar]) :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea, [data-slot="select-trigger"]) {
+  font-size: var(--t-input) !important; font-weight: 400 !important; line-height: 1.4; letter-spacing: normal;
+}
+#main-content :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]), select, [data-slot="select-trigger"]) { min-height: 48px; }
+#main-content ::placeholder { font-weight: 400; }
+
+/* --- Tables -------------------------------------------------------------- */
+#main-content th, #main-content [role="columnheader"] {
+  font-size: var(--t-th) !important; font-weight: 600 !important; line-height: 1.35 !important; letter-spacing: normal !important;
+}
+#main-content td, #main-content [role="cell"], #main-content [role="gridcell"] {
+  font-size: var(--t-td) !important; font-weight: 400; line-height: 1.45 !important; letter-spacing: normal;
+}
+#main-content td :is(strong, b) { font-weight: 600; }
+#main-content :is(td, th):is(.num, .numeric, [data-numeric], [data-align="right"], .text-right) { text-align: right; }
+
+/* --- Badges and messages ------------------------------------------------- */
+#main-content :is(.chip, [data-slot="badge"], [class*="badge"], [class*="Badge"], [class*="status-pill"], [class*="statusPill"]) {
+  font-size: var(--t-badge) !important; font-weight: 600 !important; line-height: 1.35 !important; letter-spacing: normal !important;
+  white-space: normal; overflow: visible; text-overflow: clip; max-width: 100%;
+}
+#main-content :is([role="alert"], [role="status"]:not(.purpose-skeleton), [data-slot="alert"], .notice, .system-message),
+[data-sonner-toast] {
+  font-size: var(--t-message) !important; font-weight: 400; line-height: 1.5 !important;
+}
+:is(#main-content [data-slot="alert-title"], [data-sonner-toast] [data-title]) { font-weight: 600 !important; }
+[data-sonner-toast] [data-description] { font-size: var(--t-body-2) !important; line-height: 1.5; }
+:is([data-slot="tooltip-content"]):not([data-chrome="protected"]) { font-size: var(--t-support) !important; line-height: 1.45 !important; font-weight: 500 !important; }
+:is([data-slot="dropdown-menu-content"]):not([data-chrome="protected"]) [role="menuitem"] { font-size: var(--t-body-2) !important; font-weight: 500; line-height: 1.4; }
+
+/* --- Narrow screens: keep text, reduce spacing and stack. ----------------- */
+@media (max-width: 389px) {
+  #main-content { padding-inline: var(--sp-3) !important; }
+  #main-content .panel { padding-inline: var(--sp-3); }
+}
+#main-content :is(h1, h2, h3, h4, p, td, th, label, button, .chip) { overflow-wrap: anywhere; }
+
+@media (prefers-reduced-motion: reduce) {
+  #main-content * { scroll-behavior: auto !important; }
+}

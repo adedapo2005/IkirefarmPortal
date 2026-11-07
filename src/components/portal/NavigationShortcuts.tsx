@@ -194,7 +194,7 @@ export default function NavigationShortcuts({
                 <LayoutDashboard size={19} aria-hidden="true" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="right" sideOffset={10} className={shellStyles.navTooltip}>
+            <TooltipContent side="right" sideOffset={10} className={shellStyles.navTooltip} data-chrome="protected">
               <span className={shellStyles.navTooltipCopy}>
                 <strong>Home</strong><small>Workspace Overview</small>
               </span>
@@ -216,7 +216,7 @@ export default function NavigationShortcuts({
                   <Star size={18} aria-hidden="true" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="right" sideOffset={10} className={shellStyles.navTooltip}>
+              <TooltipContent side="right" sideOffset={10} className={shellStyles.navTooltip} data-chrome="protected">
                 <span className={shellStyles.navTooltipCopy}>
                   <strong>{page.title}</strong>
                   <small>{labels.get(id) || page.group}</small>

@@ -30,7 +30,7 @@ export default function WorkspaceSystemMenu({ person, releaseLabel, onRelease, o
           <span>System Status</span>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className={styles.statusMenu}>
+      <DropdownMenuContent align="end" className={styles.statusMenu} data-chrome="protected">
         {release && <>
           <DropdownMenuItem onSelect={onRelease}>
             <Info aria-hidden="true" />

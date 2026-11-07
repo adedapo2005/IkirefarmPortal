@@ -743,14 +743,14 @@ function Navigation({
                                 </button>
                               </DropdownMenuTrigger>
                             </TooltipTrigger>
-                            <TooltipContent side="right" sideOffset={10} className={shellStyles.navTooltip}>
+                            <TooltipContent side="right" sideOffset={10} className={shellStyles.navTooltip} data-chrome="protected">
                               <span className={shellStyles.navTooltipCopy}>
                                 <strong>{section.label}</strong>
                                 <small>{group.label}</small>
                               </span>
                             </TooltipContent>
                           </Tooltip>
-                          <DropdownMenuContent side="right" align="start" sideOffset={12} className="ws-flyout">
+                          <DropdownMenuContent side="right" align="start" sideOffset={12} className="ws-flyout" data-chrome="protected">
                             <p className="ws-flyout-title">{section.label}</p>
                             {pages.map((page) => (
                               <DropdownMenuItem
@@ -2398,7 +2398,7 @@ export default function PortalExperience({
                         <ChevronDown size={14} className="desktop-only" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className={`min-w-56 ${shellStyles.workspaceMenu}`}>
+                    <DropdownMenuContent align="end" className={`min-w-56 ${shellStyles.workspaceMenu}`} data-chrome="protected">
                       {canPage(person, "profile") && (
                         <DropdownMenuItem onSelect={() => go("profile")}>
                           <UserRound />
@@ -2736,7 +2736,7 @@ export default function PortalExperience({
         open={command && has(person, "search.view")}
         onOpenChange={setCommand}
       >
-        <DialogContent className={`command-surface ${shellStyles.workspaceDialog} ${shellStyles.commandDialog}`} onCloseAutoFocus={(event) => {
+        <DialogContent className={`command-surface ${shellStyles.workspaceDialog} ${shellStyles.commandDialog}`} data-chrome="protected" onCloseAutoFocus={(event) => {
           event.preventDefault();
           if (commandFocusOwnerRef.current !== commandOwner) {
             commandTriggerRef.current?.focus();
