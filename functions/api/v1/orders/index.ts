@@ -1,6 +1,7 @@
 /**
  * CLOUDFLARE PAGES FUNCTION — WHOLESALE CUSTOMER ORDERS & GATE PASSES
  * Route: GET & POST /api/v1/orders
+ * Authoritative Storage: D1 table `wholesale_orders` + `audit_ledger`
  */
 
 interface Env {
@@ -15,112 +16,133 @@ interface OrderCreatePayload {
   paymentChannel?: string;
   driverName?: string;
   vehiclePlate?: string;
+  creatorName?: string;
 }
 
 export const onRequestGet: PagesFunction<Env> = async (context) => {
-  if (context.env.DB) {
-    try {
-      const { results } = await context.env.DB.prepare(`
-        SELECT * FROM wholesale_orders ORDER BY created_at DESC LIMIT 50
-      `).all();
-      if (results && results.length > 0) {
-        return new Response(JSON.stringify({ status: 'success', orders: results }), {
-          status: 200,
-          headers: { 'content-type': 'application/json' },
-        });
-      }
-    } catch (e) {
-      console.error('D1 query error:', e);
-    }
+  if (!context.env.DB) {
+    return new Response(JSON.stringify({
+      status: 'unavailable',
+      error: 'Authoritative D1 database binding is not configured.',
+      orders: [],
+    }), {
+      status: 503,
+      headers: { 'content-type': 'application/json' },
+    });
   }
 
-  // Pre-seeded wholesale customer order registry matching Ikire Farm Operations
-  const defaultOrders = [
-    {
-      id: 'ord-8821',
-      orderNumber: 'DF-ORD-8821',
-      customerName: 'Alhaji Rasheed Akanni',
-      customerPhone: '0803 491 8294',
-      cratesOrdered: 120,
-      unitPriceNgn: 4900,
-      totalAmountNgn: 588000,
-      paymentStatus: 'PAID_VERIFIED',
-      paymentChannel: 'Moniepoint MFB NIP',
-      dynamicVirtualAccount: '8049882101',
-      nipSessionId: '999014261106093411000849201842',
-      senderKycName: 'RASHEED AKANNI ENT',
-      gatePassId: 'GP-8821',
-      gatePassStatus: 'CLEARED_EXIT',
-      driverName: 'Kabiru Sanusi',
-      vehiclePlate: 'KTU-842-XB (Isuzu 5-Ton)',
-      dispatchedAtWat: '06 Nov 2026, 09:42 AM WAT',
-    },
-    {
-      id: 'ord-8824',
-      orderNumber: 'DF-ORD-8824',
-      customerName: 'Madam Folake Super Stores',
-      customerPhone: '0802 819 4721',
-      cratesOrdered: 80,
-      unitPriceNgn: 4950,
-      totalAmountNgn: 396000,
-      paymentStatus: 'PAID_VERIFIED',
-      paymentChannel: 'Moniepoint MFB NIP',
-      dynamicVirtualAccount: '8049882402',
-      nipSessionId: '999014261106112044000192847102',
-      senderKycName: 'FOLAKE VENTURES LTD',
-      gatePassId: 'GP-8824',
-      gatePassStatus: 'CLEARED_EXIT',
-      driverName: 'Tunde Adeleke',
-      vehiclePlate: 'BDG-194-AA (Toyota Dyna)',
-      dispatchedAtWat: '06 Nov 2026, 11:35 AM WAT',
-    },
-    {
-      id: 'ord-8829',
-      orderNumber: 'DF-ORD-8829',
-      customerName: 'Ibadan Bakeries Syndicate',
-      customerPhone: '0814 928 3741',
-      cratesOrdered: 200,
-      unitPriceNgn: 4850,
-      totalAmountNgn: 970000,
-      paymentStatus: 'PENDING_PAYMENT',
-      paymentChannel: 'Moniepoint MFB NIP',
-      dynamicVirtualAccount: '8049882903',
-      gatePassId: 'GP-8829',
-      gatePassStatus: 'LOCKED',
-      driverName: 'Emeka Nwosu',
-      vehiclePlate: 'LAG-302-XC (Canter 3.5T)',
-    },
-  ];
+  try {
+    const { results } = await context.env.DB.prepare(`
+      SELECT 
+        id,
+        order_number AS orderNumber,
+        customer_name AS customerName,
+        customer_phone AS customerPhone,
+        crates_ordered AS cratesOrdered,
+        unit_price_ngn AS unitPriceNgn,
+        total_amount_ngn AS totalAmountNgn,
+        payment_status AS paymentStatus,
+        payment_channel AS paymentChannel,
+        dynamic_virtual_account AS dynamicVirtualAccount,
+        nip_session_id AS nipSessionId,
+        sender_kyc_name AS senderKycName,
+        gate_pass_id AS gatePassId,
+        gate_pass_status AS gatePassStatus,
+        driver_name AS driverName,
+        vehicle_plate AS vehiclePlate,
+        dispatched_at_wat AS dispatchedAtWat,
+        created_at AS createdAt
+      FROM wholesale_orders 
+      ORDER BY created_at DESC 
+      LIMIT 100
+    `).all();
 
-  return new Response(JSON.stringify({ status: 'success', orders: defaultOrders }), {
-    status: 200,
-    headers: { 'content-type': 'application/json' },
-  });
+    return new Response(JSON.stringify({
+      status: 'success',
+      source: 'Cloudflare D1 Production Relational Database',
+      orders: results || [],
+    }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+  } catch (err: unknown) {
+    return new Response(JSON.stringify({
+      status: 'error',
+      error: err instanceof Error ? err.message : 'D1 query failed',
+      orders: [],
+    }), {
+      status: 500,
+      headers: { 'content-type': 'application/json' },
+    });
+  }
 };
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
+  if (!context.env.DB) {
+    return new Response(JSON.stringify({
+      status: 'error',
+      error: 'Authoritative D1 database binding is unavailable. Order cannot be persisted.',
+      persisted: false,
+    }), {
+      status: 503,
+      headers: { 'content-type': 'application/json' },
+    });
+  }
+
   try {
     const body = (await context.request.json()) as OrderCreatePayload;
+
+    if (!body.customerName || !body.cratesOrdered || body.cratesOrdered <= 0 || !body.unitPriceNgn || body.unitPriceNgn <= 0) {
+      return new Response(JSON.stringify({
+        status: 'error',
+        error: 'Customer name, positive crate count, and positive unit price are required.',
+      }), {
+        status: 422,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+
+    const orderId = `ord-${Date.now()}`;
     const orderNum = `DF-ORD-${Math.floor(8830 + Math.random() * 890)}`;
-    const totalNgn = body.cratesOrdered * body.unitPriceNgn;
+    const totalNgn = Number(body.cratesOrdered) * Number(body.unitPriceNgn);
     const gatePass = `GP-${orderNum.replace(/\D/g, '')}`;
     const dynamicVa = `8049${orderNum.replace(/\D/g, '').padEnd(6, '0')}`;
+    const actor = body.creatorName || 'Sales Desk';
+    const nowWat = new Date().toLocaleTimeString('en-NG') + ' WAT';
 
-    if (context.env.DB) {
-      await context.env.DB.prepare(`
+    // Atomic insert of order + audit ledger entry
+    await context.env.DB.batch([
+      context.env.DB.prepare(`
         INSERT INTO wholesale_orders (
           id, order_number, customer_name, customer_phone, crates_ordered, unit_price_ngn,
-          total_amount_ngn, payment_status, dynamic_virtual_account, gate_pass_id, driver_name, vehicle_plate
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDING_PAYMENT', ?, ?, ?, ?)
+          total_amount_ngn, payment_status, payment_channel, dynamic_virtual_account, gate_pass_id,
+          gate_pass_status, driver_name, vehicle_plate
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDING_PAYMENT', ?, ?, ?, 'LOCKED', ?, ?)
       `).bind(
-        `ord-${Date.now()}`, orderNum, body.customerName, body.customerPhone || null,
-        body.cratesOrdered, body.unitPriceNgn, totalNgn, dynamicVa, gatePass,
+        orderId, orderNum, body.customerName, body.customerPhone || null,
+        Number(body.cratesOrdered), Number(body.unitPriceNgn), totalNgn,
+        body.paymentChannel || 'Moniepoint MFB NIP', dynamicVa, gatePass,
         body.driverName || 'Awaiting Driver', body.vehiclePlate || 'Awaiting Vehicle'
-      ).run();
-    }
+      ),
+      context.env.DB.prepare(`
+        INSERT INTO audit_ledger (id, actor_name, actor_role, action_type, entity_affected, entity_id, change_summary, created_at_wat)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        `audit-${Date.now()}`,
+        actor,
+        'Sales Officer',
+        'ORDER_CREATE',
+        'wholesale_orders',
+        orderId,
+        `Created wholesale order ${orderNum} for ${body.customerName}: ${body.cratesOrdered} crates @ ₦${body.unitPriceNgn} = ₦${totalNgn}`,
+        nowWat
+      ),
+    ]);
 
     return new Response(JSON.stringify({
       status: 'created',
+      persisted: true,
+      id: orderId,
       orderNumber: orderNum,
       totalAmountNgn: totalNgn,
       dynamicVirtualAccount: dynamicVa,
@@ -135,6 +157,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return new Response(JSON.stringify({
       status: 'failed',
       error: err instanceof Error ? err.message : 'Invalid order payload',
+      persisted: false,
     }), {
       status: 500,
       headers: { 'content-type': 'application/json' },

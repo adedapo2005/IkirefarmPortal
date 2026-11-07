@@ -86,6 +86,19 @@ export function App() {
     const isVet = userRole === 'vet';
     const isProvisional = userRole === 'provisional';
 
+    // Scoped permissions per role - fails closed rather than granting universal 'all' authority
+    const rolePermissions = isOwner
+      ? permissionCatalog
+      : isManager
+      ? permissionCatalog.filter((p) => p.startsWith('farm.') || p.startsWith('flocks.') || p.startsWith('inventory.') || p.startsWith('daily_register.') || p.startsWith('eggs.') || p.startsWith('feed.') || p.startsWith('dashboard.'))
+      : isFinance
+      ? permissionCatalog.filter((p) => p.startsWith('finance.') || p.startsWith('commercial.') || p.startsWith('payroll.') || p.startsWith('banking.') || p.startsWith('dashboard.'))
+      : isVet
+      ? permissionCatalog.filter((p) => p.startsWith('farm.health.') || p.startsWith('vaccination.') || p.startsWith('flocks.view') || p.startsWith('dashboard.'))
+      : ['dashboard.view'];
+
+    const roleScope = isOwner ? 'all' : isManager || isFinance ? 'department' : 'assigned';
+
     return {
       id: `daenem-${userRole}-001`,
       email: isOwner ? 'adedapo@daenemfarms.com' : `${userRole}@daenemfarms.com`,
@@ -108,9 +121,9 @@ export function App() {
           isWorkflowRole: true,
         },
       ],
-      permissions: permissionCatalog,
+      permissions: rolePermissions,
       deniedPermissions: [],
-      permissionScopes: Object.fromEntries(permissionCatalog.map((p) => [p, 'all'])),
+      permissionScopes: Object.fromEntries(rolePermissions.map((p) => [p, roleScope as any])),
       permissionScopeSets: {},
       organizationScope: {
         companyKey: 'daenem-farms',
