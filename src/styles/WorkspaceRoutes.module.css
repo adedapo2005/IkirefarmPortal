@@ -624,7 +624,7 @@
    The focused composer remains a drawer, but no longer erases the page context. */
 :global([data-slot="sheet-overlay"]:has(+ .master-record-sheet)) {
   background: rgba(6,31,24,.24) !important;
-  backdrop-filter: blur(1.5px) saturate(.9);
+  backdrop-filter: none;
 }
 :global(.master-record-sheet) {
   width: min(760px,calc(100vw - 28px)) !important;

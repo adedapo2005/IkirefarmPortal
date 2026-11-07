@@ -55,7 +55,7 @@ export const SignInGateway: React.FC<SignInGatewayProps> = ({ onSignInSuccess })
         <div className="relative">
           <button
             onClick={() => setShowPersonaMenu(!showPersonaMenu)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/85 hover:bg-slate-900 text-white/90 text-xs font-medium backdrop-blur-md border border-white/20 shadow-lg cursor-pointer transition-all hover:scale-105"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium border border-slate-700 shadow-lg cursor-pointer transition-all hover:scale-105"
             title="Instant Cockpit Preview"
           >
             <Shield className="w-3.5 h-3.5 text-emerald-400" />
@@ -65,7 +65,7 @@ export const SignInGateway: React.FC<SignInGatewayProps> = ({ onSignInSuccess })
           </button>
 
           {showPersonaMenu && (
-            <div className="absolute right-0 mt-2 w-64 rounded-xl bg-slate-900/95 backdrop-blur-xl border border-white/15 p-2 shadow-2xl text-xs z-50 text-white">
+            <div className="absolute right-0 mt-2 w-64 rounded-xl bg-slate-900 border border-slate-700 p-2 shadow-2xl text-xs z-50 text-white">
               <div className="px-2 py-1.5 border-b border-white/10 mb-1 text-[11px] text-white/60 font-medium">
                 Jump to Role-Specific Cockpit
               </div>

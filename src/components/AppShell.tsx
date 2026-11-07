@@ -291,10 +291,10 @@ export const AppShell: React.FC<AppShellProps> = ({
           
           {/* 100% FarmPortal Sticky Topbar */}
           <header 
-            className="topbar sticky top-[34px] z-30 flex items-center justify-between gap-4 px-4 sm:px-8 border-b border-[#125945]/15 shadow-2xs backdrop-blur-md"
+            className="topbar sticky top-[34px] z-30 flex items-center justify-between gap-4 px-4 sm:px-8 border-b border-[#125945]/15 shadow-2xs bg-white"
             style={{
               minHeight: '72px',
-              background: 'rgba(255, 255, 255, 0.94)'
+              background: '#ffffff'
             }}
           >
             {/* Left: Mobile trigger + Context Title */}

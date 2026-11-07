@@ -69,9 +69,8 @@
   min-height: 72px;
   padding-inline: clamp(18px, 2.2vw, 38px);
   border-bottom: 1px solid rgba(18, 89, 69, .11);
-  background: rgba(255,255,255,.91);
+  background: #ffffff;
   box-shadow: 0 1px 0 rgba(255,255,255,.9), 0 12px 32px rgba(13,48,40,.045);
-  backdrop-filter: blur(18px) saturate(1.08);
 }
 .topbar :global(.topbar-context) {
   display: grid;
@@ -445,8 +444,7 @@
   .topbar.topbar {
     min-height: 64px;
     padding: 10px 14px;
-    background: rgba(255,255,255,.96);
-    backdrop-filter: blur(12px);
+    background: #ffffff;
   }
   .content.content {
     padding: 15px 13px 34px;
@@ -543,11 +541,8 @@
   padding: 7px;
   border: 1px solid rgba(18, 89, 69, .14);
   border-radius: 15px;
-  background:
-    radial-gradient(circle at 100% 0%, rgba(210, 184, 96, .08), transparent 12rem),
-    rgba(255, 255, 255, .98);
+  background: #ffffff;
   box-shadow: 0 24px 64px rgba(8, 38, 30, .16), 0 2px 8px rgba(8, 38, 30, .07);
-  backdrop-filter: blur(18px) saturate(1.08);
 }
 .workspaceMenu :global([data-slot="dropdown-menu-item"]),
 .statusMenu :global([data-slot="dropdown-menu-item"]) {
@@ -1200,9 +1195,8 @@
   padding: 9px 10px 9px 12px;
   border: 1px solid rgba(18,89,69,.13);
   border-radius: 15px;
-  background: rgba(255,255,255,.94);
+  background: #ffffff;
   box-shadow: 0 12px 34px rgba(13,48,40,.08), inset 0 1px 0 #fff;
-  backdrop-filter: blur(18px) saturate(1.08);
 }
 .premiumShell :global(.workspace-toolbar-context),
 .premiumShell :global(.workspace-toolbar-actions) {
