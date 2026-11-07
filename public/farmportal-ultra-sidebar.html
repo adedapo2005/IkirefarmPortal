@@ -1,0 +1,1871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FarmPortal — Ultra-Premium SaaS Sidebar Architecture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-canvas: #061511;
+      --bg-sidebar: rgba(10, 29, 23, 0.78);
+      --bg-card: rgba(17, 44, 35, 0.65);
+      --bg-card-hover: rgba(24, 62, 49, 0.85);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-highlight: rgba(16, 185, 129, 0.35);
+      --border-glow: rgba(52, 211, 153, 0.6);
+      
+      --accent-emerald: #10b981;
+      --accent-jade: #059669;
+      --accent-teal: #0d9488;
+      --accent-gold: #f59e0b;
+      --accent-gold-soft: rgba(245, 158, 11, 0.18);
+      --accent-cyan: #06b6d4;
+      --accent-danger: #ef4444;
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --text-emerald: #34d399;
+      
+      --glow-emerald: 0 0 24px rgba(16, 185, 129, 0.35);
+      --glow-card: 0 16px 36px -10px rgba(0, 0, 0, 0.65);
+      --sidebar-width: 320px;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-pill: 9999px;
+      
+      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-display: 'Manrope', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    /* Light/Alternative theme support */
+    [data-theme="day"] {
+      --bg-canvas: #f1f5f3;
+      --bg-sidebar: rgba(255, 255, 255, 0.92);
+      --bg-card: rgba(241, 245, 243, 0.85);
+      --bg-card-hover: #e2e8e5;
+      --border-subtle: rgba(14, 66, 51, 0.12);
+      --border-highlight: rgba(16, 185, 129, 0.45);
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #64748b;
+      --glow-card: 0 16px 36px -10px rgba(14, 66, 51, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.15) transparent;
+    }
+
+    body {
+      font-family: var(--font-ui);
+      background-color: var(--bg-canvas);
+      background-image: 
+        radial-gradient(at 10% 15%, rgba(16, 185, 129, 0.12) 0px, transparent 55%),
+        radial-gradient(at 90% 85%, rgba(6, 182, 212, 0.08) 0px, transparent 50%),
+        linear-gradient(135deg, #04100c 0%, #092019 50%, #061511 100%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+    }
+
+    /* Floating Shell Layout */
+    .app-viewport {
+      display: flex;
+      width: 100vw;
+      min-height: 100vh;
+      padding: 16px;
+      gap: 18px;
+    }
+
+    /* ==========================================================================
+       ULTRA-PREMIUM FLOATING SIDEBAR
+       ========================================================================== */
+    .floating-sidebar {
+      width: var(--sidebar-width);
+      flex-shrink: 0;
+      height: calc(100vh - 32px);
+      position: sticky;
+      top: 16px;
+      background: var(--bg-sidebar);
+      backdrop-filter: blur(28px) saturate(190%);
+      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      box-shadow: 
+        0 24px 60px -12px rgba(0, 0, 0, 0.7),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        inset 0 0 20px rgba(16, 185, 129, 0.03);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 100;
+      transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease;
+    }
+
+    /* Top Sticky Header (Logo + Search) */
+    .sidebar-top-section {
+      padding: 16px 16px 10px 16px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: linear-gradient(180deg, rgba(8, 25, 20, 0.85) 0%, rgba(8, 25, 20, 0) 100%);
+    }
+
+    /* Enhanced Logo Display */
+    .brand-logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .brand-logo-container::before {
+      content: '';
+      position: absolute;
+      top: -30px;
+      left: 20%;
+      width: 120px;
+      height: 60px;
+      background: radial-gradient(ellipse, rgba(16, 185, 129, 0.35) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .brand-logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-logo-img {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 12px rgba(16, 185, 129, 0.45));
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .brand-logo-wrap:hover .brand-logo-img {
+      transform: scale(1.08) rotate(-2deg);
+    }
+
+    .brand-name-block {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 1.02rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .brand-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: linear-gradient(135deg, #059669, #0d9488);
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .brand-tagline {
+      font-size: 0.72rem;
+      color: var(--accent-emerald);
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+
+    .sidebar-collapse-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .sidebar-collapse-btn:hover {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--text-main);
+      border-color: var(--border-highlight);
+    }
+
+    /* Global Smart Search Bar */
+    .smart-search-trigger {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      cursor: pointer;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+      transition: all 0.22s ease;
+      position: relative;
+    }
+
+    .smart-search-trigger:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--border-highlight);
+      color: var(--text-main);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    .search-left {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .search-icon-svg {
+      width: 17px;
+      height: 17px;
+      color: var(--accent-emerald);
+    }
+
+    .search-shortcut-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px 7px;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Farm Branding Banner Card */
+    .farm-banner-card {
+      margin: 0 16px 12px 16px;
+      border-radius: var(--radius-md);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      background: #0d2820;
+      box-shadow: var(--glow-card);
+      flex-shrink: 0;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .farm-banner-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 42px -10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(16, 185, 129, 0.25);
+    }
+
+    .farm-banner-media {
+      height: 88px;
+      width: 100%;
+      position: relative;
+      background: linear-gradient(135deg, #0b4534, #12634c);
+      overflow: hidden;
+    }
+
+    .farm-banner-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.72;
+      filter: saturate(1.2) contrast(1.1);
+      transition: transform 0.6s ease;
+    }
+
+    .farm-banner-card:hover .farm-banner-img {
+      transform: scale(1.05);
+    }
+
+    .farm-banner-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(6, 25, 19, 0.1) 0%, rgba(6, 25, 19, 0.95) 100%);
+    }
+
+    .farm-banner-controls {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      gap: 6px;
+      z-index: 5;
+    }
+
+    .farm-banner-chip {
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-pill);
+      padding: 3px 8px;
+      font-size: 0.66rem;
+      font-weight: 600;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .farm-banner-chip:hover {
+      background: rgba(16, 185, 129, 0.35);
+      border-color: var(--accent-emerald);
+    }
+
+    .pulse-dot-green {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      animation: pulseGreen 2s infinite;
+    }
+
+    @keyframes pulseGreen {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { box-shadow: 0 0 0 7px transparent; }
+      100% { box-shadow: 0 0 0 0 transparent; }
+    }
+
+    .farm-banner-content {
+      padding: 10px 14px 12px 14px;
+      background: rgba(10, 31, 24, 0.9);
+      position: relative;
+    }
+
+    .farm-name-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 3px;
+    }
+
+    .farm-site-name {
+      font-family: var(--font-display);
+      font-size: 0.92rem;
+      font-weight: 750;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .farm-meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .farm-health-pill {
+      color: var(--text-emerald);
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Scrollable Content Container */
+    .sidebar-scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 4px 12px 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* AI Assistant Shortcut Button */
+    .ai-assistant-btn {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.15);
+      transition: all 0.25s ease;
+    }
+
+    .ai-assistant-btn::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(from 0deg, transparent 0 340deg, rgba(52, 211, 153, 0.25) 360deg);
+      animation: rotateAura 6s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes rotateAura {
+      to { transform: rotate(360deg); }
+    }
+
+    .ai-assistant-btn:hover {
+      border-color: var(--accent-emerald);
+      box-shadow: 0 0 24px rgba(16, 185, 129, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .ai-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .ai-icon-3d {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      display: grid;
+      place-items: center;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(6, 182, 212, 0.4);
+    }
+
+    .ai-title-wrap {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+
+    .ai-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .ai-subtitle {
+      font-size: 0.68rem;
+      color: #a7f3d0;
+    }
+
+    .ai-sparkle-tag {
+      background: rgba(255, 255, 255, 0.15);
+      font-size: 0.64rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #ffffff;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Pinned Quick Hub: Favorites & Recent */
+    .quick-hub-section {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .hub-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 6px;
+      font-size: 0.7rem;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+    }
+
+    .hub-item-pill {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 10px;
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+      background: transparent;
+      border: 1px solid transparent;
+      transition: all 0.18s ease;
+      cursor: pointer;
+    }
+
+    .hub-item-pill:hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-main);
+      border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .hub-item-pill.active {
+      background: rgba(16, 185, 129, 0.14);
+      color: #ffffff;
+      border-color: var(--border-highlight);
+      box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.15);
+    }
+
+    .hub-item-left {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .hub-icon-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+    }
+
+    /* Accordion Navigation Tree */
+    .nav-accordion-tree {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-section-group {
+      display: flex;
+      flex-direction: column;
+      border-radius: var(--radius-md);
+      transition: background 0.2s ease;
+    }
+
+    .nav-group-trigger {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.86rem;
+      font-weight: 600;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+
+    .nav-group-trigger:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+    }
+
+    .nav-section-group.expanded .nav-group-trigger {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(5, 150, 105, 0.06));
+      color: #ffffff;
+      border-color: rgba(16, 185, 129, 0.25);
+      box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.4);
+    }
+
+    .nav-group-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* 3D Illustrated Icon Treatment */
+    .icon-3d-box {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #123d2f 0%, #09231a 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      color: var(--accent-emerald);
+      flex-shrink: 0;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+    }
+
+    .nav-group-trigger:hover .icon-3d-box,
+    .nav-section-group.expanded .icon-3d-box {
+      transform: translateY(-2px) scale(1.05);
+      background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+
+    .icon-3d-box svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .nav-group-label {
+      font-size: 0.88rem;
+      letter-spacing: -0.01em;
+    }
+
+    .nav-group-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .live-count-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-variant-numeric: tabular-nums;
+      transition: all 0.2s ease;
+    }
+
+    .live-count-badge.has-alert {
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.4);
+      animation: alertPulse 2s infinite;
+    }
+
+    @keyframes alertPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+    }
+
+    .chevron-icon {
+      width: 14px;
+      height: 14px;
+      color: var(--text-dim);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .nav-section-group.expanded .chevron-icon {
+      transform: rotate(90deg);
+      color: var(--accent-emerald);
+    }
+
+    /* Accordion Children Panel */
+    .nav-group-children {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      padding-left: 20px;
+      margin-left: 16px;
+      border-left: 1px solid rgba(255, 255, 255, 0.08);
+      gap: 2px;
+    }
+
+    .nav-section-group.expanded .nav-group-children {
+      max-height: 480px;
+      padding-top: 6px;
+      padding-bottom: 8px;
+    }
+
+    .nav-leaf-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: all 0.18s ease;
+      position: relative;
+    }
+
+    .nav-leaf-link:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+      transform: translateX(3px);
+    }
+
+    .nav-leaf-link.active {
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.18) 0%, rgba(16, 185, 129, 0.04) 100%);
+      color: #34d399;
+      font-weight: 600;
+    }
+
+    .nav-leaf-link.active::before {
+      content: '';
+      position: absolute;
+      left: -21px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 18px;
+      background: #10b981;
+      border-radius: 0 4px 4px 0;
+      box-shadow: 0 0 10px #10b981;
+    }
+
+    .leaf-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-dim);
+    }
+
+    .leaf-badge.emerald {
+      background: rgba(16, 185, 129, 0.2);
+      color: #6ee7b7;
+    }
+
+    /* Bottom Pinned User Profile Card */
+    .sidebar-bottom-pinned {
+      padding: 14px 16px;
+      flex-shrink: 0;
+      background: linear-gradient(0deg, rgba(6, 21, 16, 0.95) 0%, rgba(6, 21, 16, 0.4) 100%);
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .profile-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .profile-card:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--border-highlight);
+    }
+
+    .profile-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .profile-avatar-wrap {
+      position: relative;
+      width: 36px;
+      height: 36px;
+    }
+
+    .profile-avatar {
+      width: 100%;
+      height: 100%;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #10b981, #064e3b);
+      color: #ffffff;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    }
+
+    .avatar-online-dot {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #10b981;
+      border: 2px solid #061511;
+    }
+
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .profile-name {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .profile-role {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .profile-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .profile-btn-icon {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      padding: 6px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: all 0.18s ease;
+    }
+
+    .profile-btn-icon:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* Main Content Demonstration Area */
+    .app-main-canvas {
+      flex: 1;
+      border-radius: var(--radius-lg);
+      background: rgba(10, 27, 21, 0.5);
+      border: 1px solid var(--border-subtle);
+      backdrop-filter: blur(20px);
+      padding: 28px 36px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .demo-hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .demo-hero h1 {
+      font-family: var(--font-display);
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .demo-hero p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: 4px;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+
+    .demo-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .demo-card strong {
+      font-size: 1.6rem;
+      font-family: var(--font-display);
+      color: #ffffff;
+    }
+
+    /* Smart Search Modal Overlay */
+    .search-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 10, 7, 0.78);
+      backdrop-filter: blur(12px);
+      z-index: 999;
+      display: none;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .search-modal-backdrop.open {
+      display: grid;
+    }
+
+    .search-modal-window {
+      width: min(640px, 95vw);
+      background: #09211a;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 20px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), 0 0 30px rgba(16, 185, 129, 0.2);
+      overflow: hidden;
+      animation: modalSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes modalSlide {
+      from { transform: translateY(-20px) scale(0.97); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .modal-search-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .modal-search-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-size: 1.1rem;
+      font-family: inherit;
+    }
+
+    .modal-results-list {
+      max-height: 380px;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .result-group-title {
+      font-size: 0.7rem;
+      font-weight: 750;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      padding: 6px 12px;
+    }
+
+    .result-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 10px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .result-item-row:hover {
+      background: rgba(16, 185, 129, 0.15);
+      color: #ffffff;
+    }
+
+    /* AI Assistant Drawer */
+    .ai-drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: none;
+      justify-content: flex-end;
+    }
+
+    .ai-drawer-overlay.open {
+      display: flex;
+    }
+
+    .ai-drawer-pane {
+      width: min(480px, 90vw);
+      height: 100%;
+      background: #071c15;
+      border-left: 1px solid rgba(16, 185, 129, 0.3);
+      box-shadow: -20px 0 60px rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      animation: drawerSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes drawerSlide {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+
+    .ai-drawer-head {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .ai-chat-body {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .ai-msg {
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .ai-msg.system {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: #e2e8f0;
+      align-self: flex-start;
+    }
+
+    .ai-msg.user {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-subtle);
+      align-self: flex-end;
+    }
+
+    .ai-prompts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .ai-chip-prompt {
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      color: #cbd5e1;
+      font-size: 0.76rem;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.18s ease;
+    }
+
+    .ai-chip-prompt:hover {
+      background: rgba(16, 185, 129, 0.18);
+      border-color: var(--accent-emerald);
+      color: #ffffff;
+    }
+
+    .ai-input-dock {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      gap: 10px;
+    }
+
+    .ai-input-field {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: #ffffff;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .ai-send-btn {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border: none;
+      border-radius: 10px;
+      padding: 0 16px;
+      color: #ffffff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-viewport">
+
+    <!-- ====================================================================
+         ULTRA-PREMIUM FLOATING SIDEBAR
+         ==================================================================== -->
+    <aside class="floating-sidebar" id="mainSidebar">
+      
+      <!-- Top Section: Improved Logo + Global Smart Search -->
+      <div class="sidebar-top-section">
+        
+        <!-- DAENEM Farms Authentic Improved Logo -->
+        <div class="brand-logo-container">
+          <a href="#" class="brand-logo-wrap" title="Daenem Farms Ikire Enterprise Portal">
+            <img src="/daenem-farms-official-logo.png" alt="Daenem Farms Official Seal" class="brand-logo-img" onerror="this.src='/assets/daenem-farms-official-logo.png'">
+            <div class="brand-name-block">
+              <span class="brand-title">DAENEM <span class="brand-badge">PRO</span></span>
+              <span class="brand-tagline">Ikire Integrated Farms</span>
+            </div>
+          </a>
+          <button class="sidebar-collapse-btn" id="toggleThemeBtn" title="Toggle Aesthetic Theme">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
+          </button>
+        </div>
+
+        <!-- Global Smart Search Trigger -->
+        <button class="smart-search-trigger" id="openSearchBtn">
+          <div class="search-left">
+            <svg class="search-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <span>Smart Search records...</span>
+          </div>
+          <span class="search-shortcut-badge">⌘K</span>
+        </button>
+
+      </div>
+
+      <!-- Farm Branding Section: Customizable Banner Card -->
+      <div class="farm-banner-card" id="farmBannerCard">
+        <div class="farm-banner-media">
+          <img src="/assets/home/farmportal-command-hero-v2.webp" alt="Balogun-Ikire Poultry Compound" class="farm-banner-img" onerror="this.src='https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=600&q=80'">
+          <div class="farm-banner-overlay"></div>
+          <div class="farm-banner-controls">
+            <div class="farm-banner-chip" title="Active D1 Live Telemetry">
+              <span class="pulse-dot-green"></span>
+              <span>D1 LIVE</span>
+            </div>
+            <button class="farm-banner-chip" id="switchBannerBtn" title="Replace Farm Banner / Seasons">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/><path d="M16 5l3 3L9 18H6v-3L16 5z"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="farm-banner-content">
+          <div class="farm-name-row">
+            <span class="farm-site-name">Balogun-Ikire Facility</span>
+            <span style="font-size: 0.72rem; color: #34d399; font-weight: 700;">29°C · Fair</span>
+          </div>
+          <div class="farm-meta-row">
+            <span>Osun State · 7.36°N, 4.19°E</span>
+            <span class="farm-health-pill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              98.8% Health
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scrollable Navigation Hub -->
+      <div class="sidebar-scroll-area">
+
+        <!-- AI Assistant Direct Shortcut -->
+        <button class="ai-assistant-btn" id="openAiBtn">
+          <div class="ai-left">
+            <div class="ai-icon-3d">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            </div>
+            <div class="ai-title-wrap">
+              <span class="ai-title">Farm AI Assistant</span>
+              <span class="ai-subtitle">Predict feed &amp; detect yield drops</span>
+            </div>
+          </div>
+          <span class="ai-sparkle-tag">ACTIVE</span>
+        </button>
+
+        <!-- ⭐ Favorites Section -->
+        <div class="quick-hub-section">
+          <div class="hub-header">
+            <span>⭐ Pinned Favorites</span>
+            <span style="font-size: 0.65rem; color: var(--accent-emerald); cursor: pointer;" title="Customize Pins">EDIT</span>
+          </div>
+          <div class="hub-item-pill active" onclick="activateLeaf(this, 'Daily Egg Collections')">
+            <div class="hub-item-left">
+              <span class="hub-icon-dot"></span>
+              <span>Egg Collection (Houses 1–4)</span>
+            </div>
+            <span class="leaf-badge emerald">1,134 Crates</span>
+          </div>
+          <div class="hub-item-pill" onclick="activateLeaf(this, 'NIP Interbank Payroll')">
+            <div class="hub-item-left">
+              <span class="hub-icon-dot" style="background: var(--accent-gold);"></span>
+              <span>NIP Interbank Payroll</span>
+            </div>
+            <span class="leaf-badge">₦1.40M</span>
+          </div>
+          <div class="hub-item-pill" onclick="activateLeaf(this, 'Wholesale Orders & Gate Pass')">
+            <div class="hub-item-left">
+              <span class="hub-icon-dot" style="background: var(--accent-cyan);"></span>
+              <span>Gate Release Dispatch</span>
+            </div>
+            <span class="leaf-badge">6 Trucks</span>
+          </div>
+        </div>
+
+        <!-- 🕘 Recently Used Section -->
+        <div class="quick-hub-section">
+          <div class="hub-header">
+            <span>🕘 Recently Accessed</span>
+          </div>
+          <div class="hub-item-pill" onclick="activateLeaf(this, 'Daily Pen Register')">
+            <div class="hub-item-left">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-dim);"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+              <span>Daily Pen Register (48,500 Birds)</span>
+            </div>
+          </div>
+          <div class="hub-item-pill" onclick="activateLeaf(this, 'Feed Silo Stock')">
+            <div class="hub-item-left">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-dim);"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+              <span>Feed Silo 2 (Layer Mash)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Accordion Navigation (Single-Open Discipline) -->
+        <div class="hub-header" style="margin-top: 6px;">
+          <span>Core Farm Operations</span>
+        </div>
+
+        <nav class="nav-accordion-tree" id="accordionTree">
+
+          <!-- 1. Command Center -->
+          <div class="nav-section-group expanded" data-group-id="command-center">
+            <button class="nav-group-trigger" onclick="toggleAccordion('command-center')">
+              <div class="nav-group-left">
+                <div class="icon-3d-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                </div>
+                <span class="nav-group-label">Command Center</span>
+              </div>
+              <div class="nav-group-meta">
+                <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            </button>
+            <div class="nav-group-children">
+              <a href="#/dashboard" class="nav-leaf-link active" onclick="activateLeaf(this, 'Situation Room')">
+                <span>Executive Situation Room</span>
+                <span class="leaf-badge emerald">Live</span>
+              </a>
+              <a href="#/daily-brief" class="nav-leaf-link" onclick="activateLeaf(this, 'Daily Briefing')">
+                <span>Daily Shift Briefing</span>
+              </a>
+              <a href="#/myday" class="nav-leaf-link" onclick="activateLeaf(this, 'My Work & Schedule')">
+                <span>My Working Day</span>
+                <span class="leaf-badge">4 Tasks</span>
+              </a>
+              <a href="#/notifications" class="nav-leaf-link" onclick="activateLeaf(this, 'Alerts & Bulletins')">
+                <span>Alerts &amp; Bulletins</span>
+                <span class="leaf-badge" style="color: #fca5a5;">3 New</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 2. Flocks & Housing -->
+          <div class="nav-section-group" data-group-id="flocks-housing">
+            <button class="nav-group-trigger" onclick="toggleAccordion('flocks-housing')">
+              <div class="nav-group-left">
+                <div class="icon-3d-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7h.01"/><path d="M3.4 18H12a8 8 0 0 0 8-8V7a4 4 0 0 0-7.28-2.3L2 18z"/><path d="m20 7 2 .5-2 1.5"/></svg>
+                </div>
+                <span class="nav-group-label">Flocks &amp; Housing</span>
+              </div>
+              <div class="nav-group-meta">
+                <span class="live-count-badge">48,500</span>
+                <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            </button>
+            <div class="nav-group-children">
+              <a href="#/flocks" class="nav-leaf-link" onclick="activateLeaf(this, 'Active Flock Registry')">
+                <span>Active Cohort Registry</span>
+                <span class="leaf-badge">4 Flocks</span>
+              </a>
+              <a href="#/daily-register" class="nav-leaf-link" onclick="activateLeaf(this, 'Daily Pen Register')">
+                <span>Daily 7-Col Pen Register</span>
+                <span class="leaf-badge emerald">Verified</span>
+              </a>
+              <a href="#/houses" class="nav-leaf-link" onclick="activateLeaf(this, 'Poultry Houses 1 to 4')">
+                <span>Poultry Houses (1 to 4)</span>
+              </a>
+              <a href="#/breed-management" class="nav-leaf-link" onclick="activateLeaf(this, 'Breed Performance')">
+                <span>ISA Brown &amp; Bovans White</span>
+              </a>
+              <a href="#/flock-transfers" class="nav-leaf-link" onclick="activateLeaf(this, 'Flock Transfers')">
+                <span>Transfers &amp; Culls</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 3. Egg Production -->
+          <div class="nav-section-group" data-group-id="egg-production">
+            <button class="nav-group-trigger" onclick="toggleAccordion('egg-production')">
+              <div class="nav-group-left">
+                <div class="icon-3d-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c4.97 0 9-4.03 9-9 0-4.97-4.03-11-9-11S3 8.03 3 13c0 4.97 4.03 9 9 9z"/></svg>
+                </div>
+                <span class="nav-group-label">Egg Production</span>
+              </div>
+              <div class="nav-group-meta">
+                <span class="live-count-badge">1,134 crt</span>
+                <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            </button>
+            <div class="nav-group-children">
+              <a href="#/eggs" class="nav-leaf-link" onclick="activateLeaf(this, 'Daily Egg Production')">
+                <span>Daily Shift Collections</span>
+              </a>
+              <a href="#/egg-grading" class="nav-leaf-link" onclick="activateLeaf(this, 'Sorting & Grading')">
+                <span>Size Grading &amp; Candling</span>
+              </a>
+              <a href="#/egg-reconciliation" class="nav-leaf-link" onclick="activateLeaf(this, 'Cold Room Stock')">
+                <span>Cold Room Inventory</span>
+                <span class="leaf-badge">2,410 Crates</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 4. Sales & Orders -->
+          <div class="nav-section-group" data-group-id="sales-orders">
+            <button class="nav-group-trigger" onclick="toggleAccordion('sales-orders')">
+              <div class="nav-group-left">
+                <div class="icon-3d-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                </div>
+                <span class="nav-group-label">Sales &amp; Orders</span>
+              </div>
+              <div class="nav-group-meta">
+                <span class="live-count-badge has-alert">4 New</span>
+                <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            </button>
+            <div class="nav-group-children">
+              <a href="#/orders" class="nav-leaf-link" onclick="activateLeaf(this, 'Wholesale Customer Orders')">
+                <span>Wholesale Orders Pipeline</span>
+                <span class="leaf-badge emerald">₦5.9M</span>
+              </a>
+              <a href="#/dispatch" class="nav-leaf-link" onclick="activateLeaf(this, 'Loading Bay & Gate Passes')">
+                <span>Digital Gate Exit Passes</span>
+                <span class="leaf-badge">6 Active</span>
+              </a>
+              <a href="#/customers" class="nav-leaf-link" onclick="activateLeaf(this, 'Wholesale Customers')">
+                <span>Customer Registry</span>
+              </a>
+              <a href="#/pricing-catalog" class="nav-leaf-link" onclick="activateLeaf(this, 'Egg Price Catalog')">
+                <span>Crate Pricing Schedule</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 5. Feed & Milling -->
+          <div class="nav-section-group" data-group-id="feed-milling">
+            <button class="nav-group-trigger" onclick="toggleAccordion('feed-milling')">
+              <div class="nav-group-left">
+                <div class="icon-3d-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 22 12 2l10 20H2z"/><path d="M12 12v6"/></svg>
+                </div>
+                <span class="nav-group-label">Feed &amp; Milling</span>
+              </div>
+              <div class="nav-group-meta">
+                <span class="live-count-badge">5.2 T</span>
+                <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            </button>
+            <div class="nav-group-children">
+              <a href="#/feed" class="nav-leaf-link" onclick="activateLeaf(this, 'Feed Mill Operations')">
+                <span>Feed Mill Production</span>
+              </a>
+              <a href="#/feed-stock" class="nav-leaf-link" onclick="activateLeaf(this, 'Silos & Ingredients')">
+                <span>Silo Monitoring &amp; Grains</span>
+              </a>
+              <a href="#/feed-formulas" class="nav-leaf-link" onclick="activateLeaf(this, 'Nutritional Formulas')">
+                <span>Layer Mash &amp; Grower Formulas</span>
+              </a>
+              <a href="#/feed-consumption" class="nav-leaf-link" onclick="activateLeaf(this, 'Pen Feed Intake')">
+                <span>Daily Grams/Bird Intake</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 6. Health & Veterinary -->
+          <div class="nav-section-group" data-group-id="health-vet">
+            <button class="nav-group-trigger" onclick="toggleAccordion('health-vet')">
+              <div class="nav-group-left">
+                <div class="icon-3d-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 14 1.5-1.5a2.12 2.12 0 0 0 0-3l-2.5-2.5a2.12 2.12 0 0 0-3 0L13.5 8.5"/><path d="m14.5 12.5-8 8a2.12 2.12 0 0 1-3 0l-.5-.5a2.12 2.12 0 0 1 0-3l8-8"/><path d="m18 15 3 3"/><path d="m15 18 3 3"/></svg>
+                </div>
+                <span class="nav-group-label">Health &amp; Veterinary</span>
+              </div>
+              <div class="nav-group-meta">
+                <span class="live-count-badge">Dr. Segun</span>
+                <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            </button>
+            <div class="nav-group-children">
+              <a href="#/medication" class="nav-leaf-link" onclick="activateLeaf(this, 'Clinical Administration')">
+                <span>Clinical Treatments</span>
+              </a>
+              <a href="#/vaccinations" class="nav-leaf-link" onclick="activateLeaf(this, 'Vaccination Schedules')">
+                <span>Vaccine Timetable (NDV/IB)</span>
+              </a>
+              <a href="#/mortality" class="nav-leaf-link" onclick="activateLeaf(this, 'Mortality Observation')">
+                <span>Mortality &amp; Post-Mortem</span>
+                <span class="leaf-badge">0.06%</span>
+              </a>
+              <a href="#/water-management" class="nav-leaf-link" onclick="activateLeaf(this, 'Water Sanitation')">
+                <span>Water PH &amp; Chlorination</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 7. Human Resources & Payroll -->
+          <div class="nav-section-group" data-group-id="hr-payroll">
+            <button class="nav-group-trigger" onclick="toggleAccordion('hr-payroll')">
+              <div class="nav-group-left">
+                <div class="icon-3d-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <span class="nav-group-label">HR &amp; Payroll</span>
+              </div>
+              <div class="nav-group-meta">
+                <span class="live-count-badge">₦1.40M</span>
+                <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            </button>
+            <div class="nav-group-children">
+              <a href="#/payroll" class="nav-leaf-link" onclick="activateLeaf(this, 'Workforce Payroll & NIP')">
+                <span>Dynamic Payroll &amp; PAYE</span>
+                <span class="leaf-badge emerald">Ready</span>
+              </a>
+              <a href="#/employees" class="nav-leaf-link" onclick="activateLeaf(this, 'Staff Directory')">
+                <span>Staff Records &amp; KYC</span>
+              </a>
+              <a href="#/attendance" class="nav-leaf-link" onclick="activateLeaf(this, 'Biometric Attendance')">
+                <span>Daily Shift Clock-In</span>
+              </a>
+              <a href="#/payslips" class="nav-leaf-link" onclick="activateLeaf(this, 'Employee Payslips')">
+                <span>Payslip Vouchers</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 8. Finance & Treasury -->
+          <div class="nav-section-group" data-group-id="finance-treasury">
+            <button class="nav-group-trigger" onclick="toggleAccordion('finance-treasury')">
+              <div class="nav-group-left">
+                <div class="icon-3d-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M3 10h18"/><path d="M5 6h14"/><path d="M4 10v11"/><path d="M20 10v11"/><path d="M8 14v3"/><path d="M12 14v3"/><path d="M16 14v3"/></svg>
+                </div>
+                <span class="nav-group-label">Finance &amp; Treasury</span>
+              </div>
+              <div class="nav-group-meta">
+                <span class="live-count-badge">₦8.5M</span>
+                <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            </button>
+            <div class="nav-group-children">
+              <a href="#/finance" class="nav-leaf-link" onclick="activateLeaf(this, 'Treasury Command')">
+                <span>Kuda &amp; Zenith Accounts</span>
+              </a>
+              <a href="#/expenses" class="nav-leaf-link" onclick="activateLeaf(this, 'Expense Vouchers')">
+                <span>Operating Expenses (OPEX)</span>
+              </a>
+              <a href="#/revenue" class="nav-leaf-link" onclick="activateLeaf(this, 'Revenue Ledger')">
+                <span>Wholesale Revenue Audit</span>
+              </a>
+              <a href="#/reconciliation" class="nav-leaf-link" onclick="activateLeaf(this, 'Bank Reconciliation')">
+                <span>NIBSS Anti-Fake-Alert Desk</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 9. AI Center & Vision -->
+          <div class="nav-section-group" data-group-id="ai-center">
+            <button class="nav-group-trigger" onclick="toggleAccordion('ai-center')">
+              <div class="nav-group-left">
+                <div class="icon-3d-box" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #7dd3fc;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2Z"/><path d="M12 12 2.1 12.5"/><path d="m16 8 5-5"/></svg>
+                </div>
+                <span class="nav-group-label">AI Center &amp; Vision</span>
+              </div>
+              <div class="nav-group-meta">
+                <span class="live-count-badge" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">Neural</span>
+                <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            </button>
+            <div class="nav-group-children">
+              <a href="#/ai-predictions" class="nav-leaf-link" onclick="activateLeaf(this, 'Production Yield Forecast')">
+                <span>30-Day Laying Predictions</span>
+              </a>
+              <a href="#/anomaly-detection" class="nav-leaf-link" onclick="activateLeaf(this, 'Microclimate Anomalies')">
+                <span>Heat Stress Early Warning</span>
+              </a>
+              <a href="#/fcr-optimizer" class="nav-leaf-link" onclick="activateLeaf(this, 'FCR Optimizer')">
+                <span>Feed Conversion Modeling</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 10. Admin & Settings -->
+          <div class="nav-section-group" data-group-id="admin-settings">
+            <button class="nav-group-trigger" onclick="toggleAccordion('admin-settings')">
+              <div class="nav-group-left">
+                <div class="icon-3d-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                </div>
+                <span class="nav-group-label">Settings &amp; Security</span>
+              </div>
+              <div class="nav-group-meta">
+                <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            </button>
+            <div class="nav-group-children">
+              <a href="#/farm-settings" class="nav-leaf-link" onclick="activateLeaf(this, 'Farm Setup')">
+                <span>Balogun-Ikire Configuration</span>
+              </a>
+              <a href="#/permissions" class="nav-leaf-link" onclick="activateLeaf(this, 'RBAC Permissions')">
+                <span>Roles &amp; Access Controls</span>
+              </a>
+              <a href="#/audit" class="nav-leaf-link" onclick="activateLeaf(this, 'Audit Ledger')">
+                <span>D1 Immutable Audit Ledger</span>
+              </a>
+            </div>
+          </div>
+
+        </nav>
+      </div>
+
+      <!-- Bottom Pinned: Executive User Profile Area -->
+      <div class="sidebar-bottom-pinned">
+        <div class="profile-card" id="userProfileCard" title="Authorized Scope: Adeleke Daenem">
+          <div class="profile-left">
+            <div class="profile-avatar-wrap">
+              <div class="profile-avatar">AD</div>
+              <div class="avatar-online-dot"></div>
+            </div>
+            <div class="profile-info">
+              <span class="profile-name">
+                Adedapo Daenem
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </span>
+              <span class="profile-role">Owner &amp; Chief Executive</span>
+            </div>
+          </div>
+          <div class="profile-actions">
+            <button class="profile-btn-icon" title="Switch Company / Farm Unit">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </button>
+            <button class="profile-btn-icon" title="Quick Settings">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </button>
+            <button class="profile-btn-icon" style="color: #f87171;" title="Sign Out">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Main Workspace Demonstration Content -->
+    <main class="app-main-canvas">
+      <div class="demo-hero">
+        <div>
+          <span style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-emerald); font-weight: 700;">Active Workspace Preview</span>
+          <h1 id="activeWorkspaceTitle">Executive Situation Room</h1>
+          <p>Real-time Balogun-Ikire operational telemetry, flock conservation, and live NIBSS banking bridge.</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <div class="farm-banner-chip" style="background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); padding: 8px 16px; font-size: 0.8rem;">
+            <span class="pulse-dot-green"></span>
+            <span>CLOUDFLARE D1 ACTIVE</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-grid">
+        <div class="demo-card">
+          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">ACTIVE FLOCK HEADCOUNT</span>
+          <strong>48,500 Birds</strong>
+          <small style="color: #34d399;">98.8% biological conservation across 4 houses</small>
+        </div>
+        <div class="demo-card">
+          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">TODAY'S EGG YIELD</span>
+          <strong>1,134 Crates</strong>
+          <small style="color: #38bdf8;">34,020 eggs · Average 91.4% HDEP</small>
+        </div>
+        <div class="demo-card">
+          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">DISBURSEMENT CASH BRIDGE</span>
+          <strong>₦8,500,000.00</strong>
+          <small style="color: #fbbf24;">Kuda MFB Payroll Account Ready</small>
+        </div>
+        <div class="demo-card">
+          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">WHOLESALE PIPELINE</span>
+          <strong>₦5,909,000.00</strong>
+          <small style="color: #a78bfa;">4 orders awaiting loading bay gate release</small>
+        </div>
+      </div>
+
+      <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 24px; margin-top: 10px;">
+        <h3 style="font-family: var(--font-display); font-size: 1.15rem; margin-bottom: 8px;">About This Ultra-Premium Sidebar Design</h3>
+        <p style="color: var(--text-muted); line-height: 1.6; font-size: 0.92rem;">
+          This layout establishes a world-class SaaS navigation standard for modern poultry enterprises.
+          It combines an improved glowing DAENEM logo, instant global search with keyboard shortcut (<code style="font-family: var(--font-mono); color: #34d399;">⌘K</code>), a customizable farm identity card with real-time biological health indicators, single-open accordion navigation with custom 3D vector icons, live quantitative badges, and an integrated Farm AI Assistant cockpit.
+        </p>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ====================================================================
+       INTERACTIVE SMART SEARCH PALETTE MODAL (Ctrl + K)
+       ==================================================================== -->
+  <div class="search-modal-backdrop" id="searchModal">
+    <div class="search-modal-window">
+      <div class="modal-search-input-wrap">
+        <svg class="search-icon-svg" style="width: 22px; height: 22px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" class="modal-search-input" id="smartInput" placeholder="Search pages, staff, egg batches, silos, orders, or ask AI..." autofocus>
+        <span class="search-shortcut-badge" style="cursor: pointer;" onclick="closeSearch()">ESC</span>
+      </div>
+      <div class="modal-results-list" id="modalResults">
+        <span class="result-group-title">⚡ AI Suggested Actions</span>
+        <div class="result-item-row" onclick="selectSearch('Record 30-Crate Egg Batch from House 2')">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="color: #10b981;">⚡</span>
+            <span>Record 30-Crate Egg Batch from House 2</span>
+          </div>
+          <span class="leaf-badge emerald">Quick Action</span>
+        </div>
+        <div class="result-item-row" onclick="selectSearch('Disburse November Payroll via Kuda NIP')">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="color: #f59e0b;">⚡</span>
+            <span>Disburse November Payroll (₦1,400,208.00)</span>
+          </div>
+          <span class="leaf-badge" style="color: #f59e0b;">Payroll</span>
+        </div>
+        <span class="result-group-title">📁 Workspaces &amp; Records</span>
+        <div class="result-item-row" onclick="selectSearch('Daily 7-Column Pen Register')">
+          <span>Daily 7-Column Biological Headcount Register</span>
+          <span class="leaf-badge">Flocks &amp; Housing</span>
+        </div>
+        <div class="result-item-row" onclick="selectSearch('Wholesale Orders & Gate Passes')">
+          <span>Wholesale Orders &amp; Gate Exit Passes</span>
+          <span class="leaf-badge">Sales &amp; Orders</span>
+        </div>
+        <div class="result-item-row" onclick="selectSearch('Feed Mill Silo 2 Storage')">
+          <span>Feed Mill Silo 2 (Layer Mash Phase I)</span>
+          <span class="leaf-badge">Feed &amp; Milling</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       INTERACTIVE FARM AI ASSISTANT DRAWER
+       ==================================================================== -->
+  <div class="ai-drawer-overlay" id="aiDrawer">
+    <div class="ai-drawer-pane">
+      <div class="ai-drawer-head">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="ai-icon-3d">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          </div>
+          <div>
+            <h3 style="font-family: var(--font-display); font-size: 1rem; color: #ffffff;">Daenem Farm Intelligence</h3>
+            <span style="font-size: 0.72rem; color: var(--accent-emerald);">Cloud D1 Connected · Autonomous Copilot</span>
+          </div>
+        </div>
+        <button class="sidebar-collapse-btn" onclick="closeAiDrawer()">✕</button>
+      </div>
+
+      <div class="ai-chat-body" id="aiChatBody">
+        <div class="ai-msg system">
+          👋 <strong>Welcome, Adeleke.</strong> I am your real-time farm intelligence copilot. I analyze today's 48,500 birds, 1,134 crates, and feed silo levels in Balogun-Ikire. How can I assist you right now?
+          
+          <div class="ai-prompts-grid">
+            <button class="ai-chip-prompt" onclick="askAi('Predict feed shortage for next 7 days')">📊 Predict feed usage</button>
+            <button class="ai-chip-prompt" onclick="askAi('Analyze egg drop in House 2')">🥚 Check House 2 yield</button>
+            <button class="ai-chip-prompt" onclick="askAi('Verify pending customer payments')">💰 Audit unverified bank receipts</button>
+            <button class="ai-chip-prompt" onclick="askAi('Draft Osun PAYE tax remittance')">📋 Check PAYE tax liability</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ai-input-dock">
+        <input type="text" class="ai-input-field" id="aiUserInput" placeholder="Ask farm questions or predict metrics..." onkeydown="if(event.key==='Enter') sendAiMessage()">
+        <button class="ai-send-btn" onclick="sendAiMessage()">Ask</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive JavaScript Logic -->
+  <script>
+    // 1. Single-Open Accordion Logic
+    function toggleAccordion(groupId) {
+      const groups = document.querySelectorAll('.nav-section-group');
+      groups.forEach(group => {
+        if (group.dataset.groupId === groupId) {
+          group.classList.toggle('expanded');
+        } else {
+          group.classList.remove('expanded');
+        }
+      });
+    }
+
+    // 2. Leaf Activation and Workspace Title Update
+    function activateLeaf(element, title) {
+      document.querySelectorAll('.nav-leaf-link, .hub-item-pill').forEach(el => el.classList.remove('active'));
+      element.classList.add('active');
+      document.getElementById('activeWorkspaceTitle').innerText = title;
+    }
+
+    // 3. Smart Search Modal Trigger (Ctrl + K / Command + K)
+    const searchModal = document.getElementById('searchModal');
+    const openSearchBtn = document.getElementById('openSearchBtn');
+    const smartInput = document.getElementById('smartInput');
+
+    function openSearch() {
+      searchModal.classList.add('open');
+      setTimeout(() => smartInput.focus(), 50);
+    }
+    function closeSearch() {
+      searchModal.classList.remove('open');
+    }
+    openSearchBtn.addEventListener('click', openSearch);
+
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        openSearch();
+      }
+      if (e.key === 'Escape') {
+        closeSearch();
+        closeAiDrawer();
+      }
+    });
+
+    searchModal.addEventListener('click', (e) => {
+      if (e.target === searchModal) closeSearch();
+    });
+
+    function selectSearch(actionName) {
+      document.getElementById('activeWorkspaceTitle').innerText = actionName;
+      closeSearch();
+    }
+
+    // 4. AI Assistant Drawer
+    const aiDrawer = document.getElementById('aiDrawer');
+    const openAiBtn = document.getElementById('openAiBtn');
+    const aiChatBody = document.getElementById('aiChatBody');
+    const aiUserInput = document.getElementById('aiUserInput');
+
+    openAiBtn.addEventListener('click', () => {
+      aiDrawer.classList.add('open');
+      aiUserInput.focus();
+    });
+
+    function closeAiDrawer() {
+      aiDrawer.classList.remove('open');
+    }
+
+    aiDrawer.addEventListener('click', (e) => {
+      if (e.target === aiDrawer) closeAiDrawer();
+    });
+
+    function askAi(query) {
+      addUserMessage(query);
+      setTimeout(() => {
+        let reply = "Processing live farm records for Balogun-Ikire...";
+        if (query.includes('feed')) {
+          reply = "🌾 **Feed Forecast:** Silo 2 (Layer Mash) currently holds 18.4 metric tonnes. At the current daily intake of 5,244 kg across Houses 1–4, silo stock will last approximately **3.5 days**. Reorder 10 tonnes of Maize and Soya meal before Tuesday morning to maintain safety buffer.";
+        } else if (query.includes('egg') || query.includes('House 2')) {
+          reply = "🥚 **House 2 Laying Audit:** Today's yield is 374 Crates (93.3% HDEP). Temperature is currently 28.5°C with 76% RH. No acute drop detected, but ventilation fans on Stage 3 should remain active through peak afternoon heat.";
+        } else if (query.includes('payment') || query.includes('receipts')) {
+          reply = "💰 **Treasury Settlement:** ₦1,225,000.00 from Madam Grace Egg Depot was verified via Moniepoint virtual account (NIBSS Session 000013261181928310). Loading Bay Gate Pass #GP-9924 is approved for 350 crates.";
+        } else {
+          reply = `🤖 **Copilot Insight:** Analyzed query "${query}" against Cloudflare D1 telemetry. All biological indicators remain within commercial benchmark targets.`;
+        }
+        addSystemMessage(reply);
+      }, 450);
+    }
+
+    function sendAiMessage() {
+      const val = aiUserInput.value.trim();
+      if (!val) return;
+      askAi(val);
+      aiUserInput.value = '';
+    }
+
+    function addUserMessage(text) {
+      const msg = document.createElement('div');
+      msg.className = 'ai-msg user';
+      msg.innerText = text;
+      aiChatBody.appendChild(msg);
+      aiChatBody.scrollTop = aiChatBody.scrollHeight;
+    }
+
+    function addSystemMessage(htmlText) {
+      const msg = document.createElement('div');
+      msg.className = 'ai-msg system';
+      msg.innerHTML = htmlText;
+      aiChatBody.appendChild(msg);
+      aiChatBody.scrollTop = aiChatBody.scrollHeight;
+    }
+
+    // 5. Theme / Banner Switcher Demo
+    const toggleThemeBtn = document.getElementById('toggleThemeBtn');
+    let isDay = false;
+    toggleThemeBtn.addEventListener('click', () => {
+      isDay = !isDay;
+      document.documentElement.setAttribute('data-theme', isDay ? 'day' : 'night');
+    });
+
+    const bannerImgs = [
+      '/assets/home/farmportal-command-hero-v2.webp',
+      'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=600&q=80'
+    ];
+    let bannerIdx = 0;
+    document.getElementById('switchBannerBtn').addEventListener('click', () => {
+      bannerIdx = (bannerIdx + 1) % bannerImgs.length;
+      document.querySelector('.farm-banner-img').src = bannerImgs[bannerIdx];
+    });
+  </script>
+</body>
+</html>
